@@ -91,7 +91,6 @@ class MatchDlg(QtGui.QDialog):
 
 
 	def selectText(self, row):
-		print(row)
 		self.chosenBlock = self.blocks[row]
 		self.accept()
 

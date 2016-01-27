@@ -26,7 +26,6 @@ from pyzotero import zotero
 
 # Local imports
 from annotation import Annotation, AnnotationListModel
-from approximateMatchDlg import MatchDlg
 from tagWidget import TagWidget, Tag
 from autocomplete import AutoCompleteEdit
 from suggestedTagMng import TagSuggester
@@ -878,6 +877,11 @@ class Window(QtGui.QMainWindow):
 
 
 		# Existing annotation has been modified
+		if self.currentAnnotation is None:
+			return
+		if self.currentAnnotation.localizer is None:
+			return
+
 		if self.currentAnnotation in self.table_model.annotationList:
 			for i, annot in enumerate(annots):
 				if self.currentAnnotation.ID == annot.ID:

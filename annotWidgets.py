@@ -17,6 +17,7 @@ from autocomplete import AutoCompleteEdit
 from annotation import TextLocalizer, FigureLocalizer, TableLocalizer, \
 	EquationLocalizer, PositionLocalizer, Annotation
 from difflib import SequenceMatcher
+from approximateMatchDlg import MatchDlg
 
 
 
@@ -87,17 +88,16 @@ class ParamModWgt(QtGui.QWidget):
 		self.paramValueEdit.setValidator(QtGui.QDoubleValidator())
 
 
-		#self.paramsEdit.setEnabled(False)
-		#self.paramValueEdit.setEnabled(False)
-		#self.paramUnitEdit.setEnabled(False)
-		#self.paramDescription.setEnabled(False)
+		self.paramsEdit.setEnabled(False)
+		self.paramValueEdit.setEnabled(False)
+		self.paramUnitEdit.setEnabled(False)
+		self.paramDescription.setEnabled(False)
 
-		#self.newParamBtn.setEnabled(False)
-		#self.deleteParamBtn.setEnabled(False)
-		#self.paramSaveAnnotBtn.setEnabled(False)
-		##buttonWidget.setEnabled(False)
-		#self.paramListTblWdg.setEnabled(False)
-		self.setEnabled(False)
+		self.newParamBtn.setEnabled(True)
+		self.deleteParamBtn.setEnabled(False)
+		self.paramSaveAnnotBtn.setEnabled(False)
+		self.paramListTblWdg.setEnabled(False)
+		#self.setEnabled(False)
 
 		self.additionMode = False
 		self.paramDescription.setReadOnly(True)
@@ -227,10 +227,10 @@ class ParamModWgt(QtGui.QWidget):
 	def loadModelingParameter(self, row = None):
 
 		if self.parent.currentAnnotation is None:
-			self.setEnabled(False)
+			#self.setEnabled(False)
 			return
-		else:
-			self.setEnabled(True)
+		#else:
+		#	self.setEnabled(True)
 
 		self.paramListModel.parameterList = self.parent.currentAnnotation.parameters
 
@@ -748,8 +748,15 @@ class EditAnnotPositionWgt(QtGui.QWidget):
 		self.yTxt.setText(str(self.selectAreaDlg.y))
 		self.widthTxt.setText(str(self.selectAreaDlg.width))
 		self.heightTxt.setText(str(self.selectAreaDlg.height))
-		print(self.selectAreaDlg.image)
 		self.imgThumbnail.setPixmap(self.selectAreaDlg.image)
+
+
+	def onResize(self, event):
+		super(self, EditAnnotPositionWgt).onResize(event)
+		p = self.imgThumbnail.pixmap()
+		w = self.imgThumbnail.width()
+		h = self.imgThumbnail.height()
+		self.imgThumbnail.setPixmap(p.scaled(w, h, QtCore.Qt.KeepAspectRatio))
 
 
 
@@ -957,8 +964,7 @@ class EditAnnotTextWgt(QtGui.QWidget):
 	def clearAnnotation(self):
 		self.textToAnnotateTxt.setText("")
 		self.contextTxt.setText("")
-
-
+		self.startTxt.setText("")
 
 
 	@QtCore.Slot(object)
@@ -984,10 +990,13 @@ class EditAnnotTextWgt(QtGui.QWidget):
 
 
 	def updateCurrentAnnotation(self):
-		self.container.currentAnnotation.localizer = TextLocalizer(self.textToAnnotateTxt.text(), int(self.startTxt.text()))
-
-
-
-
+		try:
+			self.container.currentAnnotation.localizer = TextLocalizer(self.textToAnnotateTxt.text(), int(self.startTxt.text()))
+		except ValueError:
+			msgBox = QtGui.QMessageBox(self)
+			msgBox.setWindowTitle("Invalide localizer")
+			msgBox.setText("Before saving changes to this annotation, you must enter and \"Annotated text\" and then localize it.")
+			msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+			msgBox.exec_()
 
 
