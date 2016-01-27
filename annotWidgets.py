@@ -100,7 +100,7 @@ class ParamModWgt(QtGui.QWidget):
 		self.setEnabled(False)
 
 		self.additionMode = False
-
+		self.paramDescription.setReadOnly(True)
 
 
 	def selectedParameterChanged(self, selected, deselected):
@@ -420,12 +420,13 @@ class EditAnnotWgt(QtGui.QWidget):
 
 	@QtCore.Slot(object)
 	def annotationSelectionChanged(self):
-		self.deleteAnnotationBtn.setEnabled(True)
+		#self.deleteAnnotationBtn.setEnabled(True)
 		self.newAnnotationBtn.setEnabled(True)
 		if not self.parent.currentAnnotation is None:
 			self.commentEdt.setText(self.currentAnnotation.comment)
 			enableTextWidget(self.commentEdt)
-
+		
+		self.deleteAnnotationBtn.setDisabled(self.parent.currentAnnotation is None)
 
 	def newAnnotation(self):
 		if self.parent.newAnnotation() :

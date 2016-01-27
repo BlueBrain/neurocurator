@@ -280,6 +280,10 @@ class Window(QtGui.QMainWindow):
 		self.setCentralWidget(self.mainWidget)
 
 
+		# Initial behavior
+		self.taggingTabs.setDisabled(True)		
+
+
 	def setupZoteroGB(self): 
 		# Widgets
 		self.zoteroTblWdg  		= QtGui.QTableView()
@@ -421,10 +425,6 @@ class Window(QtGui.QMainWindow):
 		gridTagAnnotations.setColumnStretch(1, 1)
 		gridTagAnnotations.setColumnStretch(2, 1)
 
-		# Initial behavior
-		self.tagAnnotGroupBox.setDisabled(True)		
-
-
 
 
 	def refreshModelingParam(self):
@@ -486,14 +486,12 @@ class Window(QtGui.QMainWindow):
 			# The current index is invalid. Thus, we deactivate controls
 			# used to modify the current annotation.
 			self.clearAddAnnotation()
-			self.refreshTagList()
-			self.tagAnnotGroupBox.setDisabled(True)	
-			#self.deleteAnnotationBtn.setDisabled(True)
 		else:
-			self.tagAnnotGroupBox.setDisabled(False)		
-			self.refreshTagList()
 			self.editAnnotWgt.selectAnnotType(self.currentAnnotation.type)
-		
+
+		self.refreshTagList()
+		#self.tagAnnotGroupBox.setDisabled(self.currentAnnotation is None)	
+		self.taggingTabs.setDisabled(self.currentAnnotation is None)	
 
 		self.detectAnnotChange = False
 		self.selectedAnnotationChangedConfirmed.emit()
@@ -595,9 +593,11 @@ class Window(QtGui.QMainWindow):
 				# paper, ask if the persistence should also be applied to them.
 				fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
 				with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
-					lines = f.readlines()
-				annot = Annotation()
-				annotations = [deepcopy(annot.readIn(line)) for line in lines] 
+					try:
+						annotations = Annotation.readIn(f)
+					except ValueError:
+						raise ValueError("Problem reading file " + fileName + ". The JSON coding of this file seems corrupted.")
+			
 				if len(annotations) > 1 :
 					msgBox = QtGui.QMessageBox(self)
 					msgBox.setWindowTitle("Tag persistence propagation")
@@ -691,7 +691,7 @@ class Window(QtGui.QMainWindow):
 			msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
 			msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
 			if msgBox.exec_() == QtGui.QMessageBox.Yes:
-				self.annotationEdt.setFocus()
+				self.editAnnotWgt.commentEdt.setFocus()
 				if self.saveAnnotation() == False:
 					return False
 			self.needSaving = False
@@ -758,7 +758,8 @@ class Window(QtGui.QMainWindow):
 		self.clearAddAnnotation()
 		self.refreshTagList()
 		self.editAnnotWgt.setDisabled(True)
-		self.tagAnnotGroupBox.setDisabled(True)	
+		#self.tagAnnotGroupBox.setDisabled(True)	
+		self.taggingTabs.setDisabled(True)	
 		self.paperGroupBox.setDisabled(True)		
 		self.listAnnotGroupBox.setDisabled(True)			
 
@@ -869,7 +870,12 @@ class Window(QtGui.QMainWindow):
 		fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
 
 		with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
-			annots = Annotation.readIn(f)
+			try:
+				annots = Annotation.readIn(f)
+			except ValueError:
+				raise ValueError("Problem reading file " + fileName + ". The JSON coding of this file seems corrupted.")
+			
+
 
 		# Existing annotation has been modified
 		if self.currentAnnotation in self.table_model.annotationList:
@@ -910,6 +916,7 @@ class Window(QtGui.QMainWindow):
 		self.needSaving = False
 		#self.saveAnnotationBtn.setEnabled(False)
 		self.refreshTagList()
+		self.taggingTabs.setEnabled(True)	
 		return True
 
 

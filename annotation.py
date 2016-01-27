@@ -142,7 +142,14 @@ class Annotation:
 	@staticmethod	
 	def readIn(fileObject):
 		returnedAnnots = []
-		jsonAnnots = json.load(fileObject)
+		try:
+			jsonAnnots = json.load(fileObject)
+		except ValueError:
+			if fileObject.read() == "":
+				return []
+			else:
+				raise
+
 		for jsonAnnot in jsonAnnots:
 			if jsonAnnot["version"] == "1":
 				annot 			 = Annotation()

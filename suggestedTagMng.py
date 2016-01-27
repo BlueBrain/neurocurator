@@ -34,8 +34,15 @@ class TagSuggester:
 		
 		# Computing global indice
 		maxGlobalUse = np.max(list(tagScores.values())) / self.globalVsLocalRatio
+
+		# To avoid zero division
+		if maxGlobalUse == 0:
+			maxGlobalUse = 1.0 / self.globalVsLocalRatio
+
 		for key in tagScores:
 			tagScores[key] /= maxGlobalUse 
+
+
 
 		# Computing local indices
 		localScores = {}
