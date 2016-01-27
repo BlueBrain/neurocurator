@@ -1,0 +1,11 @@
+"BBP-00001";"soma_length";"Length of the soma of a neuron."
+"BBP-00002";"soma_diameter";"Diameter of the soma of a neuron."
+"BBP-00003";"cell_area";"Area of a neuronal cell."
+"BBP-00004";"membrane_capacitance";"Capacitance of the cell membrane."
+"BBP-00005";"soma_area";"Area of the membrane of the soma of a neuron."
+"BBP-00006";"cytoplasmic_resistance";"Electrical resistance of the cytoplasm of a cell."
+"BBP-00007";"eq_potential_k";"Electrical equilibrium potential of the potasium inside a cell."
+"BBP-00008";"eq_potential_na";"Electrical equilibrium potential of the sodium inside a cell."
+"BBP-00009";"leaking_conductance";"Electrical equilibrium potential of the sodium inside a cell."
+"BBP-00010";"neuron_density";"Density of a specific kind of neurons in a specific region."
+
