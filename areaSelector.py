@@ -331,7 +331,7 @@ class ImageWidget(QtGui.QLabel):
 		y2 = y2 if y2 >= 0.0 else 0.0
 		y2 = y2 if y2 <= 1.0 else 1.0
 
-		rect = QtCore.QRect(10, 20, 30, 40)
+		rect = QtCore.QRect(min(pixX1, pixX2), min(pixY1, pixY2), abs(pixX1- pixX2), abs(pixY1- pixY2))
 		selectedImg = self.pixmap().copy(rect)
 		
 		self.areaSelected.emit(min(x1, x2), min(y1, y2), np.abs(x1-x2), np.abs(y1-y2), selectedImg)
