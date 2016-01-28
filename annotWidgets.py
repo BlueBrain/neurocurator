@@ -84,21 +84,14 @@ class ParamModWgt(QtGui.QWidget):
 		grid.addWidget(self.paramListTblWdg, 3, 0, 1, 4)
 
 		# Initial behavior
-		#self.attributeParameter.setChecked(False)
 		self.paramValueEdit.setValidator(QtGui.QDoubleValidator())
-
-
 		self.paramsEdit.setEnabled(False)
 		self.paramValueEdit.setEnabled(False)
 		self.paramUnitEdit.setEnabled(False)
 		self.paramDescription.setEnabled(False)
-
 		self.newParamBtn.setEnabled(True)
 		self.deleteParamBtn.setEnabled(False)
 		self.paramSaveAnnotBtn.setEnabled(False)
-		#self.paramListTblWdg.setEnabled(False)
-		#self.setEnabled(False)
-
 		self.additionMode = False
 		self.paramDescription.setReadOnly(True)
 
@@ -145,6 +138,7 @@ class ParamModWgt(QtGui.QWidget):
 		self.paramValueEdit.setText("")
 		self.paramUnitEdit.setText("")
 		self.paramsEdit.setCurrentIndex(-1)
+		self.paramDescription.setText("")
 		self.paramsEdit.setFocus()
 
 		self.paramListTblWdg.clearSelection()
@@ -173,58 +167,45 @@ class ParamModWgt(QtGui.QWidget):
 		if error is None:
 			param.setValue(value, unit)
 			param.setAnnotation(self.parent.currentAnnotation.ID, self.parent.IdTxt.text())
-			self.parent.currentAnnotation.parameters.append(param)
-			self.parent.saveAnnotation()
+
+			selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
+			# Even when there is no selection, selectedRow can take a zero value. This "if" 
+			# controls for that.
+			if len(self.paramListTblWdg.selectionModel().selectedRows()) == 0:
+				selectedRow = -1
+
+			if selectedRow >= 0:
+				self.parent.currentAnnotation.parameters[selectedRow] = param
+			else:
+				self.parent.currentAnnotation.parameters.append(param)
+
 			self.additionMode = False
+			self.parent.saveAnnotation()			
+
+			if selectedRow >= 0:
+				self.loadModelingParameter(selectedRow)
+			else:
+				self.loadModelingParameter(len(self.parent.currentAnnotation.parameters)-1)				
+
 		else:
 			msgBox = QtGui.QMessageBox(self)
 			msgBox.setWindowTitle("Invalid modeling parameter")
 			msgBox.setText("To save this annotation with an associated modeling parameter, a valid value and unit must be entered. The " + error + " entered is not valid.")
-
-			"""
-			removeButton	= QtGui.QPushButton("Remove modeling parameter")
-			correctButton	= QtGui.QPushButton("Correct parameter")
-			cancelButton	= QtGui.QPushButton("Don't save")
-			msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
-			msgBox.addButton(correctButton, QtGui.QMessageBox.YesRole)
-			msgBox.addButton(cancelButton, QtGui.QMessageBox.NoRole)
-			msgBox.addButton(removeButton, QtGui.QMessageBox.ActionRole)
-			msgBox.setDefaultButton(correctButton)
-			"""
-
 			msgBox.exec_() 
 
-			"""
-			if msgBox.clickedButton() == correctButton:
-				if error == "value":
-					self.paramValueEdit.setFocus()
-				else:
-					self.paramUnitEdit.setFocus()
-				return False
-
-			elif msgBox.clickedButton() == removeButton:
-				self.attributeParameter.setChecked(False) 
-				self.paramsEdit.setCurrentIndex(-1)
-				self.currentAnnotation.tagIds.remove(chosenParamTypeId)
-
-				print("required removal for :", chosenParamTypeId)
-				if chosenParamTypeId in self.modelingParamToRemove:
-					self.modelingParamToRemove[chosenParamTypeId].append(self.currentAnnotation.ID)
-				else:
-					self.modelingParamToRemove[chosenParamTypeId] = [self.currentAnnotation.ID] 
-				self.saveModelingParamRemoval()
-
-				return True
-			else:
-				return False
-			"""
 
 
 	def deleteParameter(self):
 		selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
 		del self.parent.currentAnnotation.parameters[selectedRow]
 		self.parent.saveAnnotation()
+		self.refreshModelingParameters()
 
+
+
+	def refreshModelingParameters(self):
+		selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
+		self.loadModelingParameter(selectedRow)
 
 
 	def loadModelingParameter(self, row = None):
@@ -263,6 +244,7 @@ class ParamModWgt(QtGui.QWidget):
 		self.paramUnitEdit.setText(currentParameter.unit)
 
 		aRowIsSelected = True
+
 		self.paramsEdit.setEnabled(aRowIsSelected)
 		self.paramValueEdit.setEnabled(aRowIsSelected)
 		self.paramUnitEdit.setEnabled(aRowIsSelected)
@@ -271,10 +253,15 @@ class ParamModWgt(QtGui.QWidget):
 		self.deleteParamBtn.setEnabled(aRowIsSelected)
 		self.paramSaveAnnotBtn.setEnabled(aRowIsSelected)
 
-
 		for i in range(self.paramsEdit.count()):
 			if self.paramsEdit.itemText(i) == currentParameter.name:
 				self.paramsEdit.setCurrentIndex(i)
+				self.paramTypeChanged(currentParameter.name)
+				break
+
+
+
+
 
 
 
