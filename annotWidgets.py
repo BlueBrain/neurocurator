@@ -96,7 +96,7 @@ class ParamModWgt(QtGui.QWidget):
 		self.newParamBtn.setEnabled(True)
 		self.deleteParamBtn.setEnabled(False)
 		self.paramSaveAnnotBtn.setEnabled(False)
-		self.paramListTblWdg.setEnabled(False)
+		#self.paramListTblWdg.setEnabled(False)
 		#self.setEnabled(False)
 
 		self.additionMode = False
@@ -147,7 +147,6 @@ class ParamModWgt(QtGui.QWidget):
 		self.paramsEdit.setCurrentIndex(-1)
 		self.paramsEdit.setFocus()
 
-		#self.paramListTblWdg.selectRow(-1)
 		self.paramListTblWdg.clearSelection()
 
 
@@ -156,8 +155,12 @@ class ParamModWgt(QtGui.QWidget):
 
 	def saveParam(self):
 
-		error = None		
-		param = ParameterInstance(getParameterTypeIDFromName(self.paramsEdit.currentText()))
+		error = None
+		typeID = getParameterTypeIDFromName(self.paramsEdit.currentText())
+		if typeID is None:
+			error = "parameter type"
+		
+		param = ParameterInstance(typeID)
 		try:
 			value = float(self.paramValueEdit.text())
 		except:
@@ -227,31 +230,28 @@ class ParamModWgt(QtGui.QWidget):
 	def loadModelingParameter(self, row = None):
 
 		if self.parent.currentAnnotation is None:
-			#self.setEnabled(False)
-			return
-		#else:
-		#	self.setEnabled(True)
-
-		self.paramListModel.parameterList = self.parent.currentAnnotation.parameters
-
-		aRowIsSelected = not row is None
-		if aRowIsSelected:
-			if row < 0:
-				self.paramListTblWdg.selectRow(self.paramListTblWdg.model().rowCount()-row)
-			else:
-				self.paramListTblWdg.selectRow(row)
-
+			self.paramListModel.parameterList = []
 		else:
-			## No rows are selected
-			self.paramListTblWdg.selectRow(-1)
+			self.paramListModel.parameterList = self.parent.currentAnnotation.parameters
+
+			aRowIsSelected = not row is None
+			if aRowIsSelected:
+				if row < 0:
+					self.paramListTblWdg.selectRow(self.paramListTblWdg.model().rowCount()-row)
+				else:
+					self.paramListTblWdg.selectRow(row)
+
+			else:
+				## No rows are selected
+				self.paramListTblWdg.selectRow(-1)
 		
-		self.paramsEdit.setEnabled(aRowIsSelected)
-		self.paramValueEdit.setEnabled(aRowIsSelected)
-		self.paramUnitEdit.setEnabled(aRowIsSelected)
+			self.paramsEdit.setEnabled(aRowIsSelected)
+			self.paramValueEdit.setEnabled(aRowIsSelected)
+			self.paramUnitEdit.setEnabled(aRowIsSelected)
 	
-		self.newParamBtn.setEnabled(True)
-		self.deleteParamBtn.setEnabled(aRowIsSelected)
-		self.paramSaveAnnotBtn.setEnabled(aRowIsSelected)
+			self.newParamBtn.setEnabled(True)
+			self.deleteParamBtn.setEnabled(aRowIsSelected)
+			self.paramSaveAnnotBtn.setEnabled(aRowIsSelected)
 
 		self.paramListModel.refresh()
 

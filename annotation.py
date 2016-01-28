@@ -148,6 +148,7 @@ class Annotation:
 			if fileObject.read() == "":
 				return []
 			else:
+				print("File content: ", fileObject.read())
 				raise
 
 		for jsonAnnot in jsonAnnots:

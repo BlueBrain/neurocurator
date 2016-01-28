@@ -920,9 +920,12 @@ class Window(QtGui.QMainWindow):
 		self.needSaving = False
 		#self.saveAnnotationBtn.setEnabled(False)
 		self.refreshTagList()
+		self.refreshModelingParam()
 		self.taggingTabs.setEnabled(True)	
 		return True
 
+	def refreshModelingParam(self):
+		self.modParamWgt.loadModelingParameter()
 
 
 	def checkIdInDB(self, ID):
