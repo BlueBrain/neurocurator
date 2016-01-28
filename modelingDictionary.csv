@@ -8,4 +8,4 @@
 "BBP-00008";"eq_potential_na";"Electrical equilibrium potential of the sodium inside a cell."
 "BBP-00009";"leaking_conductance";"Electrical equilibrium potential of the sodium inside a cell."
 "BBP-00010";"neuron_density";"Density of a specific kind of neurons in a specific region."
-
+"BBP-00011";"Q_10";"Temperature coefficient for taking into account the effect of recording temperature on channels kinetic."
