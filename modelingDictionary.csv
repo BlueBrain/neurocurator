@@ -1,71 +1,71 @@
-BBP-00001;soma_length;Length of the soma of a neuron.
-BBP-00002;soma_diameter;Diameter of the soma of a neuron.
-BBP-00003;cell_area;Area of a neuronal cell.
-BBP-00004;membrane_capacitance;Capacitance of the cell membrane.
-BBP-00005;soma_area;Area of the membrane of the soma of a neuron.
-BBP-00006;cytoplasmic_resistance;Electrical resistance of the cytoplasm of a cell.
-BBP-00007;eq_potential_k;Electrical equilibrium potential of the potasium inside a cell.
-BBP-00008;eq_potential_na;Electrical equilibrium potential of the sodium inside a cell.
-BBP-00009;leaking_conductance;Electrical equilibrium potential of the sodium inside a cell.
-BBP-00010;neuron_density;Density of a specific kind of neurons in a specific region.
-BBP-00011;Q_10;Temperature coefficient for taking into account the effect of recording temperature on channels kinetic.
-BBP-00012;maximum_conductance;Maximum conductance or permeability of an ion channel (as a unitary value or as a density)
-BBP-00013;AHP_depth_from_peak;
-BBP-00014;AHP_depth;
-BBP-00015;AHP_depth_abs;
-BBP-00016;AHP_depth_abs_slow;
-BBP-00017;AP_begin_voltage;
-BBP-00018;AP_begin_width;
-BBP-00019;AP_peak;
-BBP-00020;AP_width;
-BBP-00021;AP_amplitude;
-BBP-00022;AP_amplitude_change;
-BBP-00023;AP_amplitude_diff;
-BBP-00024;AP_amplitude_from_voltagebase;
-BBP-00025;AP_duration;
-BBP-00026;AP_duration_change;
-BBP-00027;AP_duration_half_width;
-BBP-00028;AP_duration_half_width_change;
-BBP-00029;AP_fall_rate;
-BBP-00030;AP_fall_rate_change;
-BBP-00031;AP_fall_time;
-BBP-00032;AP_height;
-BBP-00033;AP_phaseslope;
-BBP-00034;AP_phaseslope_AIS;
-BBP-00035;AP_rise_rate;
-BBP-00036;AP_rise_rate_change;
-BBP-00037;AP_rise_time;
-BBP-00038;ISI_CV;
-BBP-00039;ISI_log_slope;
-BBP-00040;ISI_semilog_slope;
-BBP-00041;ISI_values;
-BBP-00042;Spikecount;
-BBP-00043;adaptation_index;
-BBP-00044;burst_mean_freq;
-BBP-00045;burst_number;
-BBP-00046;decay_time_constant_after_stim;
-BBP-00047;depolarized_base;
-BBP-00048;doublet_ISI;
-BBP-00049;fast_AHP;
-BBP-00050;fast_AHP_change;
-BBP-00051;interburst_voltage;
-BBP-00052;inv_time_to_first_spike;
-BBP-00053;irregularity_index;
-BBP-00054;max_amp_difference;
-BBP-00055;maximum_voltage;
-BBP-00056;mean_frequency;
-BBP-00057;min_AHP;
-BBP-00058;min_voltage_between_spikes;
-BBP-00059;minimum_voltage;
-BBP-00060;number_initial_spikes;
-BBP-00061;ohmic_input_resistance;
-BBP-00062;peak_voltage;
-BBP-00063;single_burst_ratio;
-BBP-00064;spike_half_width;
-BBP-00065;steady_state_hyper;
-BBP-00066;steady_state_voltage;
-BBP-00067;steady_state_voltage_stimend;
-BBP-00068;time_constant;
-BBP-00069;time_to_first_spike;
-BBP-00070;voltage_base;
-BBP-00071;voltage_deflection;
+"BBP-00001";"soma_length";"Length of the soma of a neuron."
+"BBP-00002";"soma_diameter";"Diameter of the soma of a neuron."
+"BBP-00003";"cell_area";"Area of a neuronal cell."
+"BBP-00004";"membrane_capacitance";"Capacitance of the cell membrane."
+"BBP-00005";"soma_area";"Area of the membrane of the soma of a neuron."
+"BBP-00006";"cytoplasmic_resistance";"Electrical resistance of the cytoplasm of a cell."
+"BBP-00007";"eq_potential_k";"Electrical equilibrium potential of the potasium inside a cell."
+"BBP-00008";"eq_potential_na";"Electrical equilibrium potential of the sodium inside a cell."
+"BBP-00009";"leaking_conductance";"Electrical equilibrium potential of the sodium inside a cell."
+"BBP-00010";"neuron_density";"Density of a specific kind of neurons in a specific region."
+"BBP-00011";"Q_10";"Temperature coefficient for taking into account the effect of recording temperature on channels kinetic."
+"BBP-00012";"maximum_conductance";"Maximum conductance or permeability of an ion channel (as a unitary value or as a density)."
+"BBP-00013";"AHP_depth_from_peak";""
+"BBP-00014";"AHP_depth";""
+"BBP-00015";"AHP_depth_abs";""
+"BBP-00016";"AHP_depth_abs_slow";""
+"BBP-00017";"AP_begin_voltage";""
+"BBP-00018";"AP_begin_width";""
+"BBP-00019";"AP_peak";""
+"BBP-00020";"AP_width";""
+"BBP-00021";"AP_amplitude";""
+"BBP-00022";"AP_amplitude_change";""
+"BBP-00023";"AP_amplitude_diff";""
+"BBP-00024";"AP_amplitude_from_voltagebase";""
+"BBP-00025";"AP_duration";""
+"BBP-00026";"AP_duration_change";""
+"BBP-00027";"AP_duration_half_width";""
+"BBP-00028";"AP_duration_half_width_change";""
+"BBP-00029";"AP_fall_rate";""
+"BBP-00030";"AP_fall_rate_change";""
+"BBP-00031";"AP_fall_time";""
+"BBP-00032";"AP_height";""
+"BBP-00033";"AP_phaseslope";""
+"BBP-00034";"AP_phaseslope_AIS";""
+"BBP-00035";"AP_rise_rate";""
+"BBP-00036";"AP_rise_rate_change";""
+"BBP-00037";"AP_rise_time";""
+"BBP-00038";"ISI_CV";""
+"BBP-00039";"ISI_log_slope";""
+"BBP-00040";"ISI_semilog_slope";""
+"BBP-00041";"ISI_values";""
+"BBP-00042";"Spikecount";""
+"BBP-00043";"adaptation_index";""
+"BBP-00044";"burst_mean_freq";""
+"BBP-00045";"burst_number";""
+"BBP-00046";"decay_time_constant_after_stim";""
+"BBP-00047";"depolarized_base";""
+"BBP-00048";"doublet_ISI";""
+"BBP-00049";"fast_AHP";""
+"BBP-00050";"fast_AHP_change";""
+"BBP-00051";"interburst_voltage";""
+"BBP-00052";"inv_time_to_first_spike";""
+"BBP-00053";"irregularity_index";""
+"BBP-00054";"max_amp_difference";""
+"BBP-00055";"maximum_voltage";""
+"BBP-00056";"mean_frequency";""
+"BBP-00057";"min_AHP";""
+"BBP-00058";"min_voltage_between_spikes";""
+"BBP-00059";"minimum_voltage";""
+"BBP-00060";"number_initial_spikes";""
+"BBP-00061";"ohmic_input_resistance";""
+"BBP-00062";"peak_voltage";""
+"BBP-00063";"single_burst_ratio";""
+"BBP-00064";"spike_half_width";""
+"BBP-00065";"steady_state_hyper";""
+"BBP-00066";"steady_state_voltage";""
+"BBP-00067";"steady_state_voltage_stimend";""
+"BBP-00068";"time_constant";""
+"BBP-00069";"time_to_first_spike";""
+"BBP-00070";"voltage_base";""
+"BBP-00071";"voltage_deflection";""
