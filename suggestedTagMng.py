@@ -50,7 +50,6 @@ class TagSuggester:
 			with open(annotationFileName, 'r', encoding="utf-8", errors='ignore') as f:		
 				annots = Annotation.readIn(f)
 				for annot in annots:
-					print(annot.tags)
 					for tagId in annot.tags:
 						if tagId in localScores:
 							localScores[tagId] += 1

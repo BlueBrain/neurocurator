@@ -48,6 +48,5 @@ class TagWidget(QtGui.QLabel):
 			palette.setColor(self.backgroundRole(),QtCore.Qt.lightGray)
 			self.setPalette(palette)
 		self.__persist = shouldPersist
-		print(self.tag.name, shouldPersist)
 
 

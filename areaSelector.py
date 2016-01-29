@@ -3,10 +3,12 @@
 __author__ = "Christian O'Reilly"
 
 # Contributed libraries imports
+import pickle
 from PySide import QtGui, QtCore
 from wand.image import Image
 from time import sleep
 import numpy as np
+import os.path
 
 class SplashDlg(QtGui.QDialog):
 
@@ -27,9 +29,6 @@ class RenderingThread(QtCore.QThread):
 		self.parent = parent
 
 	def run(self):
-
-		#sleep(0.05)
-		#QtGui.QApplication.processEvents()
 		self.parent.pages = []
 		with Image(filename=self.parent.fileName, resolution=self.parent.resolution) as pdf:
 			pages = len(pdf.sequence)
@@ -37,12 +36,6 @@ class RenderingThread(QtCore.QThread):
 				with Image(width=pdf.width, height=pdf.height) as im:
 					im.composite(pdf.sequence[i], top=0, left=0)
 					self.parent.pages.append(im.make_blob('png'))
-		#self.renderThread.renderingFinished = True
-		#while not self.renderingFinished:
-		#	QtGui.QApplication.processEvents()
-		#	sleep(0.1)
-
-		#self.renderThread.waitWidget.close()
 
 
 
@@ -65,6 +58,14 @@ class PDFAreaSelector(QtCore.QObject):
 
 
 	def open(self):
+		if self.hasBeenCached():
+			self.loadCachedRendering()
+			if not self.pages is None:
+				# Loading cached version succeeded
+				self.selectDlg = PDFAreaSelectorDlg(self)
+				self.selectDlg.exec_()
+				return
+
 		self.waitWidget = SplashDlg()
 		self.waitWidget.show()
 
@@ -72,14 +73,50 @@ class PDFAreaSelector(QtCore.QObject):
 		self.renderThread.start()
 		self.renderThread.finished.connect(self.pdfRendered)
 
+
+
 	@QtCore.Slot()
 	def pdfRendered(self):
+		
 		self.waitWidget.close()
 		self.selectDlg = PDFAreaSelectorDlg(self)
 		self.selectDlg.exec_()
+		self.cacheRendering()		
+
+
+	def cacheRendering(self):
+		fileName = self.fileName + "_cachedRendering"
+		try:
+			with open(fileName, 'wb') as f:
+				pickle.dump(self.pages, f)
+		except:
+			pass
+
+
+	def loadCachedRendering(self):
+		fileName = self.fileName + "_cachedRendering"
+		try:
+			with open(fileName, 'rb') as f:
+				self.pages = pickle.load(f)
+		except:
+				self.pages = None
 
 
 
+	def hasBeenCached(self):
+		return os.path.isfile(self.fileName + "_cachedRendering") 
+
+
+
+
+
+
+
+
+
+
+
+	
 
 class PDFAreaSelectorDlg(QtGui.QDialog):
 
