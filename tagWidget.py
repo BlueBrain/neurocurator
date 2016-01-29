@@ -14,7 +14,10 @@ class Tag:
 
 
 class TagWidget(QtGui.QLabel):
-	
+
+	clicked = QtCore.Signal(Tag)
+		
+
 	def __init__(self, tag, *args, **kwargs):
 		self.tag = tag
 		super(TagWidget, self).__init__(tag.name, *args, **kwargs)
@@ -23,7 +26,6 @@ class TagWidget(QtGui.QLabel):
 		self.persist = False
 
 
-	clicked = QtCore.Signal(Tag)
 	def mouseReleaseEvent(self, event):
 		modifiers = QtGui.QApplication.keyboardModifiers()
 		if modifiers == QtCore.Qt.ShiftModifier:
@@ -46,6 +48,6 @@ class TagWidget(QtGui.QLabel):
 			palette.setColor(self.backgroundRole(),QtCore.Qt.lightGray)
 			self.setPalette(palette)
 		self.__persist = shouldPersist
-
+		print(self.tag.name, shouldPersist)
 
 

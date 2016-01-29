@@ -70,8 +70,6 @@ class MatchDlg(QtGui.QDialog):
 			textEdit.clicked.connect(self.selectText)
 
 
-
-		#listWidget.setItemDelegate(MyDelegate(listWidget))
 		self.listWidget.showMaximized()
 
 		self.listWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)

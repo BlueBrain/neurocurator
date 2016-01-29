@@ -139,6 +139,19 @@ class Annotation:
 		self.tags		= {}
 		self.localizer  = localizer 
 
+
+	@property
+	def tags(self):
+		return self.__tags
+
+	@tags.setter
+	def tags(self, tags):
+		if isinstance(tags, dict):
+			self.__tags = tags
+		else:
+			raise TypeError
+
+
 	@staticmethod	
 	def readIn(fileObject):
 		returnedAnnots = []

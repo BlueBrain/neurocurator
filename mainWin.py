@@ -549,7 +549,8 @@ class Window(QtGui.QMainWindow):
 			self.selectedTagsWidget.setItemWidget(item, tagEdit)
 			tagEdit.clicked.connect(self.selectedTagClicked)
 
-			# Check if the tag has been persisted for this paper		
+			# Check if the tag has been persisted for this paper	
+			#print(self.selectedTagPersist)	
 			if self.IdTxt.text() in self.selectedTagPersist:
 				tagEdit.persist = tagId in self.selectedTagPersist[self.IdTxt.text()]
 
@@ -570,11 +571,11 @@ class Window(QtGui.QMainWindow):
 		tag = Tag(tagId, tagName)
 		item = QtGui.QListWidgetItem()
 		tagEdit = TagWidget(tag, self.suggestedTagsWidget)
-		tagEdit.persist = tagId in self.suggestTagPersist
 		self.suggestedTagsWidget.addItem(item)
 		self.suggestedTagsWidget.setItemWidget(item, tagEdit)
 		tagEdit.clicked.connect(self.suggestedTagClicked)
-
+		tagEdit.persist = tagId in self.suggestTagPersist
+	
 
 
 	def selectedTagClicked(self, tag):
@@ -597,7 +598,8 @@ class Window(QtGui.QMainWindow):
 					except ValueError:
 						raise ValueError("Problem reading file " + fileName + ". The JSON coding of this file seems corrupted.")
 			
-				if len(annotations) > 1 :
+				isNewAnnot = not self.currentAnnotation in self.table_model.annotationList or self.currentAnnotation is None
+				if len(annotations) > 1 - int(isNewAnnot) :
 					msgBox = QtGui.QMessageBox(self)
 					msgBox.setWindowTitle("Tag persistence propagation")
 					msgBox.setText("There is already existing annotations for this paper. Do you want this tag to be added to them too?")
@@ -605,17 +607,23 @@ class Window(QtGui.QMainWindow):
 					msgBox.setDefaultButton(QtGui.QMessageBox.No)
 					if msgBox.exec_() == QtGui.QMessageBox.Yes:
 						# Add this tag to existing annotations (associated with the current publication)
-						lines = []
 						commit = False
 						for annot in annotations:
-							if not tag.id in annot.tagIds:
-								annot.tagIds.append(tag.id)
+							if not tag.id in [id for id in annot.tags.keys()]:
+								annot.tags[tag.id] = tag.name
 								commit = True
-							lines.append(str(annot) + "\n")
+
+						if isNewAnnot:
+							if not self.currentAnnotation is None:
+								annotations.append(self.currentAnnotation)
+								commit = True
 
 						if commit:
+							# TODO: Should be in a try block and if it generate an exception
+							# we should role back to last git version.
 							with open(fileName, "w", encoding="utf-8", errors='ignore') as f:
-								f.writelines(lines)
+								Annotation.dump(f, annotations)
+
 							self.gitMng.addFiles([fileName])
 							self.refreshListAnnotation()
 

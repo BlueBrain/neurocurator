@@ -38,6 +38,12 @@ class ParamModWgt(QtGui.QWidget):
 		self.paramValueEdit		= QtGui.QLineEdit(self)
 		self.paramUnitEdit		= QtGui.QLineEdit(self)
 		self.paramDescription	= QtGui.QTextEdit(self)
+		unitLabel			    = QtGui.QLabel()
+		unitLabel.setOpenExternalLinks(True)
+		unitLabel.setTextFormat(QtCore.Qt.RichText)
+		unitLabel.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
+		unitLabel.setText("Unit (<a href=\"docs/_build/html/units.html\">?</a>)")
+
 
 		self.newParamBtn        = QtGui.QPushButton("New")
 		self.deleteParamBtn     = QtGui.QPushButton("Delete")
@@ -72,7 +78,7 @@ class ParamModWgt(QtGui.QWidget):
 		grid 	= QtGui.QGridLayout(self)
 		grid.addWidget(QtGui.QLabel("Parameter"), 0, 0)
 		grid.addWidget(QtGui.QLabel("Value"),     0, 1)
-		grid.addWidget(QtGui.QLabel("Unit"),      0, 2)
+		grid.addWidget(unitLabel,      			  0, 2)
 
 		grid.addWidget(self.paramsEdit,     1, 0)
 		grid.addWidget(self.paramValueEdit, 1, 1)
@@ -88,7 +94,7 @@ class ParamModWgt(QtGui.QWidget):
 		self.paramsEdit.setEnabled(False)
 		self.paramValueEdit.setEnabled(False)
 		self.paramUnitEdit.setEnabled(False)
-		self.paramDescription.setEnabled(False)
+		#self.paramDescription.setEnabled(False)
 		self.newParamBtn.setEnabled(True)
 		self.deleteParamBtn.setEnabled(False)
 		self.paramSaveAnnotBtn.setEnabled(False)
