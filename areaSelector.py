@@ -132,7 +132,10 @@ class PDFAreaSelectorDlg(QtGui.QDialog):
 		self.controlBarWgt 		= QtGui.QWidget(self)
 		self.nextPageBtn 		= QtGui.QPushButton("Next page (Ctrl+right arrow)")
 		self.previousPageBtn 	= QtGui.QPushButton("Previous page (Ctrl+left arrow)")
-		self.noPageTxt 			= QtGui.QLineEdit("1")
+		self.noPageTxt 			= QtGui.QLabel("1")
+		self.noPageTxt.setStyleSheet("border: 1px solid grey")
+		self.noPageTxt.setFixedWidth(40)
+
 		self.controlBarWgt.setLayout(QtGui.QHBoxLayout())
 
 
@@ -165,6 +168,9 @@ class PDFAreaSelectorDlg(QtGui.QDialog):
 		self.imageLabel.areaSelected.connect(self.resendSelectedEvent)
 
 		self.loadImage()
+
+
+
 
 
 	@QtCore.Slot(object, float, float, float, float, QtGui.QPixmap)

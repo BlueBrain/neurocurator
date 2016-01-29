@@ -550,7 +550,6 @@ class Window(QtGui.QMainWindow):
 			tagEdit.clicked.connect(self.selectedTagClicked)
 
 			# Check if the tag has been persisted for this paper	
-			#print(self.selectedTagPersist)	
 			if self.IdTxt.text() in self.selectedTagPersist:
 				tagEdit.persist = tagId in self.selectedTagPersist[self.IdTxt.text()]
 
