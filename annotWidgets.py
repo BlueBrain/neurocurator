@@ -637,6 +637,25 @@ class EditAnnotTableWgt(QtGui.QWidget):
 
 
 
+class ImageThumbnail(QtGui.QLabel):
+
+	def __init__(self, parent=None):
+		super(ImageThumbnail, self).__init__(parent=parent)	
+
+		self.setBackgroundRole(QtGui.QPalette.Base)
+		self.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
+		#self.setScaledContents(True)
+
+	#def resizeEvent(self, event):
+	#	img = QtGui.QPixmap()
+	#	w   = self.width()
+	#	h   = self.height()
+	#	self.setPixmap(self.pixmap().scaled(w, h, QtCore.Qt.KeepAspectRatio))
+
+
+
+
+
 
 class EditAnnotPositionWgt(QtGui.QWidget):
 
@@ -651,7 +670,7 @@ class EditAnnotPositionWgt(QtGui.QWidget):
 		self.yTxt		 	= QtGui.QLineEdit('', self)
 		self.widthTxt	 	= QtGui.QLineEdit('', self)
 		self.heightTxt	 	= QtGui.QLineEdit('', self)
-		self.imgThumbnail   = QtGui.QLabel()
+		self.imgThumbnail   = ImageThumbnail(self)
 		self.selectAreaBtn 	= QtGui.QPushButton('Select area', self)
 
 		# Signals
@@ -690,8 +709,7 @@ class EditAnnotPositionWgt(QtGui.QWidget):
 		disableTextWidget(self.yTxt)
 		disableTextWidget(self.widthTxt)
 		disableTextWidget(self.heightTxt)
-		self.imgThumbnail.setBackgroundRole(QtGui.QPalette.Base)
-		self.imgThumbnail.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
+
 
 
 	@QtCore.Slot(object)
@@ -741,20 +759,10 @@ class EditAnnotPositionWgt(QtGui.QWidget):
 		self.yTxt.setText(str(self.selectAreaDlg.y))
 		self.widthTxt.setText(str(self.selectAreaDlg.width))
 		self.heightTxt.setText(str(self.selectAreaDlg.height))
-		self.imgThumbnail.setPixmap(self.selectAreaDlg.image)
 
-
-	def onResize(self, event):
-		super(self, EditAnnotPositionWgt).onResize(event)
-		p = self.imgThumbnail.pixmap()
-		w = self.imgThumbnail.width()
-		h = self.imgThumbnail.height()
-		self.imgThumbnail.setPixmap(p.scaled(w, h, QtCore.Qt.KeepAspectRatio))
-
-
-
-
-
+		w   = self.imgThumbnail.width()
+		h   = self.imgThumbnail.height()
+		self.imgThumbnail.setPixmap(self.selectAreaDlg.image.scaled(w, h, QtCore.Qt.KeepAspectRatio))
 
 
 

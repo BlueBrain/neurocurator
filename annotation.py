@@ -287,6 +287,8 @@ class AnnotationListModel(QtCore.QAbstractTableModel):
 		self.annotationList = annotationList
 		self.header = header
 		self.nbCol = len(header)
+		self.sortCol   = 0 
+		self.sortOrder = QtCore.Qt.AscendingOrder		
 
 	def rowCount(self, parent=None):
 		return len(self.annotationList)
@@ -336,11 +338,16 @@ class AnnotationListModel(QtCore.QAbstractTableModel):
 		    return self.header[col]
 		return None
 
-	def sort(self, col, order):
+	def sort(self, col=None, order=None):
+		if col is None:
+			col = self.sortCol 
+		if order is None:
+			order = self.sortOrder
+
 		"""sort table by given column number col"""
 		self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
 		reverse = (order == QtCore.Qt.DescendingOrder)
-		self.annotationList = sorted(self.annotationList, key=lambda x: x.getByIndex(col), reverse = reverse) #operator.itemgetter(col))
+		self.annotationList = sorted(self.annotationList, key=lambda x: self.getByIndex(x, col), reverse = reverse) #operator.itemgetter(col))
 		#if order == QtCore.Qt.DescendingOrder:
 		#    self.mylist.reverse()
 		self.emit(QtCore.SIGNAL("layoutChanged()"))

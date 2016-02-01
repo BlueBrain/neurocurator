@@ -29,6 +29,8 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
 		self.fields = {0:"ID", 1:"title", 2:"creators", 3:"date", 4:"publicationTitle"}
 		self.checkIdFct = checkIdFct
 		self.refList = []
+		self.sortCol   = 0 
+		self.sortOrder = QtCore.Qt.AscendingOrder
 
 	#@property
 	#def zotLib(self):
@@ -158,13 +160,23 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
 		    return self.header[col]
 		return None
 
-	def sort(self, col, order):
+
+	def sort(self, col=None, order=None):
+		if col is None:
+			col = self.sortCol 
+		if order is None:
+			order = self.sortOrder
+
 		"""sort table by given column number col"""
 		self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
 		reverse = (order == QtCore.Qt.DescendingOrder)
 		self.refList = sorted(self.refList, key=lambda x: self.getByIndex(x, col), reverse = reverse)
 		self.emit(QtCore.SIGNAL("layoutChanged()"))
 
+
 	def refresh(self):
 		self.emit(QtCore.SIGNAL("layoutChanged()"))
+
+
+
 

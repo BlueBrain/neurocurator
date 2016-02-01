@@ -69,7 +69,8 @@ class ZoteroUpdateThread(QtCore.QThread):
 												 self.window.settings.config['ZOTERO']['libraryType'], 
 												 self.window.settings.config['ZOTERO']['apiKey'])
 
-		self.window.zoteroTableModel.sort(0, QtCore.Qt.DescendingOrder)
+		self.window.zoteroTableModel.sort(self.window.zoteroTableModel.sortCol , 
+										  self.window.zoteroTableModel.sortOrder)
 		self.window.zoteroTableModel.refresh()
 		#statusBar.clearMessage()
 		self.window.statusLabel.setText("Ready.")
@@ -175,6 +176,12 @@ class Window(QtGui.QMainWindow):
 		self.settings.config['WINDOW']['mainSplitterPos'] = str(self.mainWidget.sizes())
 		colWidths = str([self.zoteroTblWdg.columnWidth(i) for i in range(self.zoteroTableModel.columnCount())])
 		self.settings.config['WINDOW']['zotTableViewColWidth'] = colWidths
+		colWidths = str([self.annotListTblWdg.columnWidth(i) for i in range(self.annotTableModel.columnCount())])
+		self.settings.config['WINDOW']['annotTableViewColWidth'] = colWidths
+		self.settings.config['WINDOW']['zotTableSortOrder'] 	 = str(int(self.zoteroTableModel.sortOrder))
+		self.settings.config['WINDOW']['zotTableSortCol'] 		 = str(self.zoteroTableModel.sortCol)
+		self.settings.config['WINDOW']['annotTableSortOrder'] 	 = str(int(self.annotTableModel.sortOrder))
+		self.settings.config['WINDOW']['annotTableSortCol'] 	 = str(self.annotTableModel.sortCol)
 		self.settings.save()
 
 		if self.needSaving:
@@ -206,6 +213,30 @@ class Window(QtGui.QMainWindow):
 			if 'zotTableViewColWidth' in self.settings.config['WINDOW']:			
 				for i, width in enumerate(eval(self.settings.config['WINDOW']['zotTableViewColWidth'])):
 					self.zoteroTblWdg.setColumnWidth(i, width)
+			if 'annotTableViewColWidth' in self.settings.config['WINDOW']:			
+				for i, width in enumerate(eval(self.settings.config['WINDOW']['annotTableViewColWidth'])):
+					self.annotListTblWdg.setColumnWidth(i, width)
+
+
+			if 'zotTableSortOrder' in self.settings.config['WINDOW']:
+				self.zoteroTableModel.sortOrder = QtCore.Qt.SortOrder(int(self.settings.config['WINDOW']['zotTableSortOrder']))
+
+			if 'zotTableSortCol' in self.settings.config['WINDOW']:
+				self.zoteroTableModel.sortCol = int(self.settings.config['WINDOW']['zotTableSortCol'])
+
+			if 'annotTableSortOrder' in self.settings.config['WINDOW']:
+				self.annotTableModel.sortOrder = QtCore.Qt.SortOrder(int(self.settings.config['WINDOW']['annotTableSortOrder']))
+
+			if 'annotTableSortCol' in self.settings.config['WINDOW']:
+				self.annotTableModel.sortCol = int(self.settings.config['WINDOW']['annotTableSortCol'])
+			
+			self.zoteroTblWdg.sortByColumn(self.zoteroTableModel.sortCol, 
+										self.zoteroTableModel.sortOrder)
+
+			self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, 
+										   self.annotTableModel.sortOrder)
+
+
 
 			self.firstShow = False
 
@@ -303,6 +334,13 @@ class Window(QtGui.QMainWindow):
 
 		# Initial behavior
 		self.zoteroTblWdg.setSortingEnabled(True)
+		self.zoteroTblWdg.horizontalHeader().sectionClicked.connect(self.setZotSortCol)
+
+
+
+	def setZotSortCol(self, col):
+		self.zoteroTableModel.sortCol = col		
+		self.zoteroTableModel.sortOrder = self.zoteroTblWdg.horizontalHeader().sortIndicatorOrder()
 
 
 	def updateZotLib(self):
@@ -338,11 +376,11 @@ class Window(QtGui.QMainWindow):
 
 		# Widget		
 		self.annotListTblWdg  	= QtGui.QTableView() 
-		self.table_model 		= AnnotationListModel(self)
+		self.annotTableModel 	= AnnotationListModel(self)
 		self.annotListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 		self.annotListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-		self.annotListTblWdg.setModel(self.table_model)
-		
+		self.annotListTblWdg.setModel(self.annotTableModel)
+
 		# Signals
 		self.annotationSelectionModel = self.annotListTblWdg.selectionModel()
 		self.annotationSelectionModel.selectionChanged.connect(self.selectedAnnotationChanged)
@@ -354,7 +392,13 @@ class Window(QtGui.QMainWindow):
 		
 		# Initial behavior
 		self.listAnnotGroupBox.setDisabled(True)		
+		self.annotListTblWdg.setSortingEnabled(True)
+		self.annotListTblWdg.horizontalHeader().sectionClicked.connect(self.setAnnotSortCol)
 
+
+	def setAnnotSortCol(self, col):
+		self.annotTableModel.sortCol = col		
+		self.annotTableModel.sortOrder = self.annotListTblWdg.horizontalHeader().sortIndicatorOrder()
 
 
 	def setupEditAnnotGB(self):
@@ -480,7 +524,7 @@ class Window(QtGui.QMainWindow):
 
 		self.needSavingDisabled = True 
 		self.editAnnotWgt.setDisabled(False)
-		self.currentAnnotation = self.table_model.getSelectedAnnotation(selection)
+		self.currentAnnotation = self.annotTableModel.getSelectedAnnotation(selection)
 		if self.currentAnnotation is None:
 			# The current index is invalid. Thus, we deactivate controls
 			# used to modify the current annotation.
@@ -597,7 +641,7 @@ class Window(QtGui.QMainWindow):
 					except ValueError:
 						raise ValueError("Problem reading file " + fileName + ". The JSON coding of this file seems corrupted.")
 			
-				isNewAnnot = not self.currentAnnotation in self.table_model.annotationList or self.currentAnnotation is None
+				isNewAnnot = not self.currentAnnotation in self.annotTableModel.annotationList or self.currentAnnotation is None
 				if len(annotations) > 1 - int(isNewAnnot) :
 					msgBox = QtGui.QMessageBox(self)
 					msgBox.setWindowTitle("Tag persistence propagation")
@@ -848,12 +892,12 @@ class Window(QtGui.QMainWindow):
 
 
 	def deleteAnnotation(self):
-		self.table_model.annotationList.remove(self.currentAnnotation)
+		self.annotTableModel.annotationList.remove(self.currentAnnotation)
 		self.currentAnnotation = None
 
 		fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
 		with open(fileName, "w", encoding="utf-8", errors='ignore') as f:
-			Annotation.dump(f, self.table_model.annotationList)
+			Annotation.dump(f, self.annotTableModel.annotationList)
 
 		self.clearAddAnnotation()
 		self.gitMng.addFiles([fileName])
@@ -889,7 +933,7 @@ class Window(QtGui.QMainWindow):
 		if self.currentAnnotation.localizer is None:
 			return
 
-		if self.currentAnnotation in self.table_model.annotationList:
+		if self.currentAnnotation in self.annotTableModel.annotationList:
 			for i, annot in enumerate(annots):
 				if self.currentAnnotation.ID == annot.ID:
 					annots[i] = self.currentAnnotation
@@ -957,10 +1001,10 @@ class Window(QtGui.QMainWindow):
 
 	def refreshListAnnotation(self, row = None):
 
-		self.table_model.annotationList = []
+		self.annotTableModel.annotationList = []
 		try :
 			with open(join(self.dbPath, self.Id2FileName(self.IdTxt.text()) + ".pcr"), 'r', encoding="utf-8", errors='ignore') as f:		
-				self.table_model.annotationList = Annotation.readIn(f)	
+				self.annotTableModel.annotationList = Annotation.readIn(f)	
 
 			if not row is None:
 				if row < 0:
@@ -974,7 +1018,10 @@ class Window(QtGui.QMainWindow):
 		finally:
 			self.selectedAnnotationChanged(self.annotListTblWdg.selectedIndexes())
 
-			self.table_model.refresh()
+			self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, 
+										   self.annotTableModel.sortOrder)
+
+			self.annotTableModel.refresh()
 
 
 
