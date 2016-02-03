@@ -10,7 +10,7 @@ import numpy as np
 
 
 from uiUtilities import disableTextWidget, enableTextWidget
-from areaSelector import PDFAreaSelector
+from areaSelector import PDFAreaSelector, loadImage
 from modelingParameter import getParameterTypes, ParameterListModel, ParameterInstance, \
 	getParameterTypeIDFromName, unitIsValid
 from autocomplete import AutoCompleteEdit
@@ -418,6 +418,9 @@ class EditAnnotWgt(QtGui.QWidget):
 		if not self.parent.currentAnnotation is None:
 			self.commentEdt.setText(self.currentAnnotation.comment)
 			enableTextWidget(self.commentEdt)
+		else:
+			self.commentEdt.setText("")
+			disableTextWidget(self.commentEdt)			
 		
 		self.deleteAnnotationBtn.setDisabled(self.parent.currentAnnotation is None)
 
@@ -486,10 +489,13 @@ class EditAnnotFigureWgt(QtGui.QWidget):
 
 	@QtCore.Slot(object)
 	def annotationSelectionChanged(self):
-
 		if not self.container.currentAnnotation is None:
+			enableTextWidget(self.noFigure)
 			if self.container.currentAnnotation.type == "figure":
 				self.noFigure.setText(self.container.currentAnnotation.localizer.no)
+		else:
+			disableTextWidget(self.noFigure)
+			self.noFigure.setText("")
 
 
 	def newAnnotation(self):
@@ -545,15 +551,22 @@ class EditAnnotEquationWgt(QtGui.QWidget):
 	def annotationSelectionChanged(self):
 
 		if not self.container.currentAnnotation is None:
+			enableTextWidget(self.noEquation)
+			enableTextWidget(self.pythonStringEdt)
 			if self.container.currentAnnotation.type == "equation":
 				self.noEquation.setText(self.container.currentAnnotation.localizer.no)
 				self.pythonStringEdt.setText(self.container.currentAnnotation.localizer.equation)
-
+		else:
+			disableTextWidget(self.noEquation)
+			disableTextWidget(self.pythonStringEdt)
+			self.noEquation.setText("")
+			self.pythonStringEdt.setText("")
 
 
 	def newAnnotation(self):
 		enableTextWidget(self.noEquation)
 		enableTextWidget(self.pythonStringEdt)
+
 
 	def clearAnnotation(self):
 		self.noEquation.setText("")
@@ -612,10 +625,21 @@ class EditAnnotTableWgt(QtGui.QWidget):
 	def annotationSelectionChanged(self):
 
 		if not self.container.currentAnnotation is None:
+			enableTextWidget(self.noTable)
+			enableTextWidget(self.noRow)
+			enableTextWidget(self.noCol)
 			if self.container.currentAnnotation.type == "table":
 				self.noTable.setText(self.container.currentAnnotation.localizer.no)
 				self.noRow.setText(str(self.container.currentAnnotation.localizer.noRow))
 				self.noCol.setText(str(self.container.currentAnnotation.localizer.noCol))
+		else:
+			disableTextWidget(self.noTable)
+			disableTextWidget(self.noRow)
+			disableTextWidget(self.noCol)
+			self.noTable.setText("")
+			self.noRow.setText("")
+			self.noCol.setText("")
+
 
 	def newAnnotation(self):
 		enableTextWidget(self.noTable)
@@ -722,10 +746,14 @@ class EditAnnotPositionWgt(QtGui.QWidget):
 				self.yTxt.setText(str(self.container.currentAnnotation.localizer.y))
 				self.widthTxt.setText(str(self.container.currentAnnotation.localizer.width))
 				self.heightTxt.setText(str(self.container.currentAnnotation.localizer.height))
-
-
-
-
+				self.loadThumbnail()
+		else:
+			self.noPageTxt.setText("")
+			self.xTxt.setText("")
+			self.yTxt.setText("")
+			self.widthTxt.setText("")
+			self.heightTxt.setText("")
+			self.imgThumbnail.setPixmap(None)
 
 	def newAnnotation(self):
 		pass
@@ -764,6 +792,15 @@ class EditAnnotPositionWgt(QtGui.QWidget):
 		h   = self.imgThumbnail.height()
 		self.imgThumbnail.setPixmap(self.selectAreaDlg.image.scaled(w, h, QtCore.Qt.KeepAspectRatio))
 
+	def loadThumbnail(self):
+		pdfFileName = join(self.container.parent.dbPath, self.container.parent.Id2FileName(self.container.parent.IdTxt.text())) + ".pdf"
+		pixmap = loadImage(pdfFileName,
+					      self.container.currentAnnotation.localizer.noPage,
+						  self.container.currentAnnotation.localizer.x,
+						  self.container.currentAnnotation.localizer.y,
+						  self.container.currentAnnotation.localizer.width,
+						  self.container.currentAnnotation.localizer.height)
+		self.imgThumbnail.setPixmap(pixmap)
 
 
 
@@ -978,7 +1015,10 @@ class EditAnnotTextWgt(QtGui.QWidget):
 				self.startTxt.setText(str(self.container.currentAnnotation.start))	
 				self.localizeBtn.setEnabled(False)
 				disableTextWidget(self.textToAnnotateTxt)
-
+		else:
+			self.textToAnnotateTxt.setText("")
+			self.contextTxt.setText("")	
+			self.startTxt.setText("")	
 
 	def setLocalizable(self):
 		self.localizeBtn.setDisabled(len(self.textToAnnotateTxt.text()) < 3)

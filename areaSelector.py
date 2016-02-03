@@ -9,6 +9,7 @@ from wand.image import Image
 from time import sleep
 import numpy as np
 import os.path
+from warnings import warn
 
 class SplashDlg(QtGui.QDialog):
 
@@ -39,8 +40,6 @@ class RenderingThread(QtCore.QThread):
 
 
 
-
-
 class PDFAreaSelector(QtCore.QObject):
 
 	areaSelected = QtCore.Signal()
@@ -57,13 +56,15 @@ class PDFAreaSelector(QtCore.QObject):
 		self.currentPageInd = 0
 
 
-	def open(self):
+	def open(self, interactive=True):
+		self.isInteractive = interactive
 		if self.hasBeenCached():
 			self.loadCachedRendering()
 			if not self.pages is None:
 				# Loading cached version succeeded
-				self.selectDlg = PDFAreaSelectorDlg(self)
-				self.selectDlg.exec_()
+				if interactive:
+					self.selectDlg = PDFAreaSelectorDlg(self)
+					self.selectDlg.exec_()
 				return
 
 		self.waitWidget = SplashDlg()
@@ -74,13 +75,13 @@ class PDFAreaSelector(QtCore.QObject):
 		self.renderThread.finished.connect(self.pdfRendered)
 
 
-
 	@QtCore.Slot()
 	def pdfRendered(self):
 		
 		self.waitWidget.close()
-		self.selectDlg = PDFAreaSelectorDlg(self)
-		self.selectDlg.exec_()
+		if self.isInteractive:
+			self.selectDlg = PDFAreaSelectorDlg(self)
+			self.selectDlg.exec_()
 		self.cacheRendering()		
 
 
@@ -90,6 +91,7 @@ class PDFAreaSelector(QtCore.QObject):
 			with open(fileName, 'wb') as f:
 				pickle.dump(self.pages, f)
 		except:
+			warn("Failed to cach the rendering of the PDF paper.")
 			pass
 
 
@@ -99,7 +101,8 @@ class PDFAreaSelector(QtCore.QObject):
 			with open(fileName, 'rb') as f:
 				self.pages = pickle.load(f)
 		except:
-				self.pages = None
+			warn("Failed to load the cached rendering of the PDF paper.")
+			self.pages = None
 
 
 
@@ -379,3 +382,39 @@ class ImageWidget(QtGui.QLabel):
 		
 		self.areaSelected.emit(min(x1, x2), min(y1, y2), np.abs(x1-x2), np.abs(y1-y2), selectedImg)
 	
+
+
+
+
+
+
+
+
+
+def loadImage(fileName, pageNo, x, y, width, height):
+
+	areaSelector = PDFAreaSelector(fileName)
+	areaSelector.open(interactive=False)
+	i = 0
+	timer = QtCore.QTimer()
+	while len(areaSelector.pages) == 0 and i < 120:
+		i += 1
+		timer.start(500)
+		
+	image = QtGui.QImage.fromData(areaSelector.pages[pageNo-1],"PNG");
+	pixmap = QtGui.QPixmap.fromImage(image)
+
+	pixmapSize = pixmap.size()
+	widthImg  = pixmapSize.width()
+	heightImg = pixmapSize.height()
+
+	rect = QtCore.QRect(x*widthImg, y*heightImg, width*widthImg, height*heightImg)
+	return pixmap.copy(rect)
+	
+
+
+
+
+
+
+
