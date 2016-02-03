@@ -37,11 +37,7 @@ from uiUtilities import errorMessage, disableTextWidget, enableTextWidget
 from settingsDlg import getSettings, SettingsDlg
 from modelingParameter import getParameterTypes, ParameterInstance, \
 	ParameterListModel, getParameterTypeIDFromName, unitIsValid
-
-
 from annotWidgets import ParamModWgt, EditAnnotWgt
-
-
 
 
 
