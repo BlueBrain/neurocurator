@@ -89,6 +89,9 @@ class Window(QtGui.QMainWindow):
 		# Annotation curently being displayed, modified, or created
 		self.currentAnnotation = None
 
+		# True when the current annotation has been modified and require saving
+		self.needSaving 		= False
+
 		self.needSavingDisabled = False
 
 		self._statusBar = self.statusBar()
@@ -134,9 +137,6 @@ class Window(QtGui.QMainWindow):
 		self.setupWindowsUI()
 
 		self.firstShow = True
-
-		# True when the current annotation has been modified and require saving
-		self.needSaving 		= False
 
 
 	@property
@@ -380,6 +380,8 @@ class Window(QtGui.QMainWindow):
 		# Signals
 		self.annotationSelectionModel = self.annotListTblWdg.selectionModel()
 		self.annotationSelectionModel.selectionChanged.connect(self.selectedAnnotationChanged)
+		self.annotTableModel.layoutChanged.connect(self.annotTableLayoutChanged)
+
 
 		# Layout
 		self.listAnnotGroupBox 	= QtGui.QGroupBox("Listing of existing annotations")
@@ -501,7 +503,17 @@ class Window(QtGui.QMainWindow):
 			self.needSaving = True
 
 
+	def annotTableLayoutChanged(self):
+		self.selectedAnnotationChanged(self.annotListTblWdg.selectedIndexes())
+
+
 	def selectedAnnotationChanged(self, selection, deselected=None):
+
+		if not hasattr(self, "editAnnotWgt"):
+			# This if is triggered when selectedAnnotationChanged is automatically called
+			# in the construction of the dialog. We don't want to run this function in this 
+			# context because not all the components of the dialog has been initialized yet.
+			return
 
 		######## This block of code is to manage the cancelation of the change in selected
 		######## annotation when the saving of the previously selected annotation has 
@@ -663,11 +675,6 @@ class Window(QtGui.QMainWindow):
 								annot.tags[tag.id] = tag.name
 								commit = True
 
-						#if isNewAnnot:
-						#	if not self.currentAnnotation is None:
-						#		annotations.append(self.currentAnnotation)
-						#		commit = True
-
 						if commit:
 							# TODO: Should be in a try block and if it generate an exception
 							# we should role back to last git version.
@@ -752,6 +759,7 @@ class Window(QtGui.QMainWindow):
 				if self.saveAnnotation() == False:
 					return False
 			self.needSaving = False
+		return True
 
 
 
@@ -968,8 +976,10 @@ class Window(QtGui.QMainWindow):
 		self.clearAddAnnotation()
 		self.annotListTblWdg.setCurrentIndex(QtCore.QModelIndex())
 		self.currentAnnotation = Annotation(pubId=self.IdTxt.text())
+		for id in self.selectedTagPersist[self.IdTxt.text()]:
+			self.currentAnnotation.addTag(id, self.dicData[id])
+
 		self.needSaving = False
-		#self.saveAnnotationBtn.setEnabled(False)
 		self.refreshTagList()
 		self.modParamWgt.refreshModelingParameters()
 		self.taggingTabs.setEnabled(True)	

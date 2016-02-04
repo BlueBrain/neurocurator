@@ -598,6 +598,8 @@ class EditAnnotTableWgt(QtGui.QWidget):
 	
 		# Signals
 		self.noTable.textChanged.connect(self.container.annotationChanged)
+		self.noRow.textChanged.connect(self.container.annotationChanged)
+		self.noCol.textChanged.connect(self.container.annotationChanged)
 
 		# Layout
 		self.editAnnotGroupBox = QtGui.QGroupBox()
