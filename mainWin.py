@@ -641,21 +641,32 @@ class Window(QtGui.QMainWindow):
 				if len(annotations) > 1 - int(isNewAnnot) :
 					msgBox = QtGui.QMessageBox(self)
 					msgBox.setWindowTitle("Tag persistence propagation")
-					msgBox.setText("There is already existing annotations for this paper. Do you want this tag to be added to them too?")
+					msgBox.setText("There is already existing annotations for this paper. Do you want this tag to be added " +
+								   "to them too (any unsaved changes would be saved first)?")
 					msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
 					msgBox.setDefaultButton(QtGui.QMessageBox.No)
 					if msgBox.exec_() == QtGui.QMessageBox.Yes:
 						# Add this tag to existing annotations (associated with the current publication)
+
+						# Save unsaved modifications if there are any...
+						if self.needSaving:
+							self.saveAnnotation()
+							with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
+								try:
+									annotations = Annotation.readIn(f)
+								except ValueError:
+									raise ValueError("Problem reading file " + fileName + ". The JSON coding of this file seems corrupted.")
+
 						commit = False
 						for annot in annotations:
 							if not tag.id in [id for id in annot.tags.keys()]:
 								annot.tags[tag.id] = tag.name
 								commit = True
 
-						if isNewAnnot:
-							if not self.currentAnnotation is None:
-								annotations.append(self.currentAnnotation)
-								commit = True
+						#if isNewAnnot:
+						#	if not self.currentAnnotation is None:
+						#		annotations.append(self.currentAnnotation)
+						#		commit = True
 
 						if commit:
 							# TODO: Should be in a try block and if it generate an exception
@@ -907,11 +918,6 @@ class Window(QtGui.QMainWindow):
 
 	def saveAnnotation(self):
 
-		# If there is a modeling parameter associate with this annotation
-		#if not self.getCurrentModParam() is None:
-		#	if not self.processAnnotatedParameter():
-		#		return False
-			
 		self.editAnnotWgt.updateCurrentAnnotation()
 		fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
 
@@ -921,8 +927,6 @@ class Window(QtGui.QMainWindow):
 			except ValueError:
 				raise ValueError("Problem reading file " + fileName + ". The JSON coding of this file seems corrupted.")
 			
-
-
 		# Existing annotation has been modified
 		if self.currentAnnotation is None:
 			return
