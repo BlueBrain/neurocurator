@@ -981,8 +981,8 @@ class Window(QtGui.QMainWindow):
 
 		self.needSaving = False
 		self.refreshTagList()
-		self.modParamWgt.refreshModelingParameters()
 		self.taggingTabs.setEnabled(True)	
+		self.refreshModelingParam()
 		return True
 
 
