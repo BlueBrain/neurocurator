@@ -59,13 +59,15 @@ class GitManager:
 		try:
 			# Setup a local tracking branch of a remote branch
 			self.repo.create_head('master', self.origin.refs.master).set_tracking_branch(self.origin.refs.master)
-			self.pull()
 		except:
 			pass
+
+		self.pull()
 
 
 	def pull(self):
 		#with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.ssh_executable): 
+		print("Pulling")
 		self.repo.remotes.origin.pull()
 
 	def push(self):
