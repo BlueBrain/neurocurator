@@ -432,7 +432,8 @@ class EditAnnotWgt(QtGui.QWidget):
 			self.clearAddAnnotation()
 			for widget in self.editAnnotWgt.values():
 				widget.newAnnotation()
-			self.annotationTypesCbo.setDisabled(False)
+			self.annotationTypesCbo.setEnabled(True)
+			enableTextWidget(self.commentEdt)
 
 
 

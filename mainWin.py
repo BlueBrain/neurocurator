@@ -976,8 +976,9 @@ class Window(QtGui.QMainWindow):
 		self.clearAddAnnotation()
 		self.annotListTblWdg.setCurrentIndex(QtCore.QModelIndex())
 		self.currentAnnotation = Annotation(pubId=self.IdTxt.text())
-		for id in self.selectedTagPersist[self.IdTxt.text()]:
-			self.currentAnnotation.addTag(id, self.dicData[id])
+		if self.IdTxt.text() in self.selectedTagPersist:
+			for id in self.selectedTagPersist[self.IdTxt.text()]:
+				self.currentAnnotation.addTag(id, self.dicData[id])
 
 		self.needSaving = False
 		self.refreshTagList()

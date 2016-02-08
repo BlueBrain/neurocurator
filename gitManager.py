@@ -67,7 +67,6 @@ class GitManager:
 
 	def pull(self):
 		#with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.ssh_executable): 
-		print("Pulling")
 		self.repo.remotes.origin.pull()
 
 	def push(self):
