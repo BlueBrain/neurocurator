@@ -6,23 +6,6 @@ import os
 
 from PySide import QtGui, QtCore
 
-"""
-class PasswordDlg(QtGui.QDialog):
-	def __init__(self):
-		QtGui.QDialog.__init__(self)
-		self.textPass = QtGui.QLineEdit(self)
-
-		self.textPass.setEchoMode(QtGui.QLineEdit.Password);
-		self.textPass.setInputMethodHints(QtCore.Qt.ImhHiddenText | QtCore.Qt.ImhNoPredictiveText | QtCore.Qt.ImhNoAutoUppercase)
-
-
-		self.buttonLogin = QtGui.QPushButton('OK', self)
-		self.buttonLogin.clicked.connect(self.accept)
-		layout = QtGui.QVBoxLayout(self)
-		layout.addWidget(self.textPass)
-		layout.addWidget(self.buttonLogin)
-"""
-
 
 class GitManager:
 
@@ -32,29 +15,12 @@ class GitManager:
 		
 		try:
 			self.repo = Repo(self.localRepoDir)
-			#except exc.NoSuchPathError:
-			#	os.makedirs(self.localRepoDir)
-			#	self.repo = Repo(self.localRepoDir)
-			#
 			assert not self.repo.bare
 
 		except (exc.InvalidGitRepositoryError,exc.NoSuchPathError):
-			#self.repo = Repo.init(self.localRepoDir, bare=True)
-			#assert self.repo.bare
 			self.repo = Repo.clone_from("ssh://" + settings.config["GIT"]["user"] + "@" + settings.config["GIT"]["remote"], self.localRepoDir)
 
-		#passwordDlg = PasswordDlg()
-		#self.ssh_executable = None
-		#if passwordDlg.exec_() == QtGui.QDialog.Accepted:
-		#	self.ssh_executable = "sshpass -p '" + passwordDlg.textPass.text() + "' ssh"
-
-		
 		self.repo.remotes.origin.fetch()
-		#with self.repo.git.custom_environment(GIT_SSH=self.ssh_executable): 
-		#	print("fetch")
-		#	self.repo.remotes.origin.fetch()
-		#	print("after fetch")
-
 
 		try:
 			# Setup a local tracking branch of a remote branch
@@ -62,22 +28,35 @@ class GitManager:
 		except:
 			pass
 
-		self.pull()
+	
+		fetchInfo = self.pull()
+		if fetchInfo.flags & fetchInfo.ERROR:
+			raise IOError("An error occured while trying to pull the GIT repository from the server. Error flag: '" + 
+						  str(fetchInfo.flags) + "', message: '" + str(fetchInfo.note) + "'.")
+
 
 
 	def pull(self):
-		#with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.ssh_executable): 
-		self.repo.remotes.origin.pull()
+		return self.repo.remotes.origin.pull()[0]
 
 	def push(self):
-		#with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.ssh_executable): 
-		self.repo.remotes.origin.push()
+		"""
+		 Adding the no_thin argument to the GIT push because we had some issues pushing previously.
+		 According to http://stackoverflow.com/questions/16586642/git-unpack-error-on-push-to-gerrit#comment42953435_23610917,
+		 "a new optimization which causes git to send as little data as possible over the network caused this bug to manifest, 
+		  so my guess is --no-thin just turns these optimizations off. From git push --help: "A thin transfer significantly 
+          reduces the amount of sent data when the sender and receiver share many of the same objects in common." (--thin is the default)."
+		"""
+		return self.repo.remotes.origin.push(no_thin=True)[0]
 
 	def addFiles(self, files):
 		self.repo.index.add(files)
 		self.commit()
 
-	def commit(self, msg = ""):
-		self.repo.index.commit(msg) 
+	def commit(self, msg = "..."): 
+		# We don't really need a msg value for this application. Yet, leaving
+		# empty commit messages sometimes create problems in GIT. This is why
+		# we use this "..." default message.
+		self.repo.index.commit(msg)
 
 

@@ -886,10 +886,23 @@ class Window(QtGui.QMainWindow):
 		return False
 
 
-	def pushToServer(self):
-		self.gitMng.push()
-		self.needPush = False
 
+	def pushToServer(self):
+		info = self.gitMng.push()
+		if info.flags & info.ERROR :
+			msgBox = QtGui.QMessageBox(self)
+			msgBox.setWindowTitle("Push error")
+			msgBox.setText("An error occured while trying to push to the server. Error flag: '" + str(info.flags) + "', message: '" + str(info.summary) + "'.")
+			msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+			msgBox.exec_()
+		else:
+			msgBox = QtGui.QMessageBox(self)
+			msgBox.setWindowTitle("Repository pushed to the server")
+			msgBox.setText("Modifications has been successfully pushed to the server.")
+			msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+			msgBox.exec_()
+
+		self.needPush = False
 
 
 
