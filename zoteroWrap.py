@@ -141,7 +141,9 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
 
 		if role == QtCore.Qt.BackgroundRole:
 			if self.checkIdFct(self.getID(index.row())):
-				return QtGui.QBrush(QtGui.QColor(215, 214, 213), QtCore.Qt.SolidPattern)
+				#color = QtGui.QColor(215, 214, 213)
+				color = QtGui.QColor(191, 237, 135)
+				return QtGui.QBrush(color, QtCore.Qt.SolidPattern)
 			else:
 				return None
 
@@ -176,7 +178,4 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
 
 	def refresh(self):
 		self.emit(QtCore.SIGNAL("layoutChanged()"))
-
-
-
 

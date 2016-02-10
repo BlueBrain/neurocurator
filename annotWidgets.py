@@ -186,12 +186,13 @@ class ParamModWgt(QtGui.QWidget):
 				self.parent.currentAnnotation.parameters.append(param)
 
 			self.additionMode = False
+			nbParams = len(self.parent.currentAnnotation.parameters)
 			self.parent.saveAnnotation()			
 
 			if selectedRow >= 0:
 				self.loadModelingParameter(selectedRow)
 			else:
-				self.loadModelingParameter(len(self.parent.currentAnnotation.parameters)-1)				
+				self.loadModelingParameter(nbParams-1)				
 
 		else:
 			msgBox = QtGui.QMessageBox(self)

@@ -44,8 +44,9 @@ class TagWidget(QtGui.QLabel):
 			palette.setColor(self.backgroundRole(),ligthRed)
 			self.setPalette(palette)		
 		else:
+			#lightGreen = QtGui.QColor(191, 237, 135)
 			palette = QtGui.QPalette()
-			palette.setColor(self.backgroundRole(),QtCore.Qt.lightGray)
+			palette.setColor(self.backgroundRole(), QtGui.QColor(255, 255, 255))
 			self.setPalette(palette)
 		self.__persist = shouldPersist
 
