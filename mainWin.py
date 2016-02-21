@@ -889,7 +889,14 @@ class Window(QtGui.QMainWindow):
 
 	def pushToServer(self):
 		info = self.gitMng.push()
-		if info.flags & info.ERROR :
+		if info is None:
+                        msgBox = QtGui.QMessageBox(self)
+                        msgBox.setWindowTitle("Push error")
+                        msgBox.setText("The push operation has not been performed because you are in offline mode.")
+                        msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+                        msgBox.exec_()
+
+		elif info.flags & info.ERROR :
 			msgBox = QtGui.QMessageBox(self)
 			msgBox.setWindowTitle("Push error")
 			msgBox.setText("An error occured while trying to push to the server. Error flag: '" + str(info.flags) + "', message: '" + str(info.summary) + "'.")
