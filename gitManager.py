@@ -12,7 +12,8 @@ class GitManager:
 	def __init__(self, settings):
 
 		self.localRepoDir = settings.config["GIT"]["local"]
-		
+		self.offline = False		
+
 		try:
 			self.repo = Repo(self.localRepoDir)
 			assert not self.repo.bare
@@ -23,7 +24,17 @@ class GitManager:
 
 		try:
 			self.repo.remotes.origin.fetch()
+		except:
+			msgBox = QtGui.QMessageBox()
+			msgBox.setWindowTitle("Error pulling from GIT")
+			msgBox.setText("An error occured while trying to access the GIT server. Going in offline mode.")
+			msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+			msgBox.exec_()			
+			self.offline = True
+			return
 
+
+		try:
 			# Setup a local tracking branch of a remote branch
 			self.repo.create_head('master', self.origin.refs.master).set_tracking_branch(self.origin.refs.master)
 		except:
@@ -38,6 +49,8 @@ class GitManager:
 
 
 	def pull(self):
+		if self.offline:
+			return None
 		return self.repo.remotes.origin.pull()[0]
 
 	def push(self):
@@ -48,6 +61,8 @@ class GitManager:
 		  so my guess is --no-thin just turns these optimizations off. From git push --help: "A thin transfer significantly 
           reduces the amount of sent data when the sender and receiver share many of the same objects in common." (--thin is the default)."
 		"""
+		if self.offline:
+                        return None
 		return self.repo.remotes.origin.push(no_thin=True)[0]
 
 	def addFiles(self, files):
