@@ -5,6 +5,7 @@ __author__ = "Christian O'Reilly"
 # Import PySide classes
 from PySide import QtGui, QtCore
 import configparser
+import getpass
 
 def getSettings():
 	try:
@@ -42,9 +43,9 @@ class SettingsDlg(QtGui.QDialog):
 
 		# Creating widgets with initial values
 		if self.settings is None:
-			self.gitRemoteTxt 	= QtGui.QLineEdit('bbpcode.epfl.ch/user/oreilly/curator_DB', self)
+			self.gitRemoteTxt 	= QtGui.QLineEdit('bbpcode.epfl.ch/project/proj55/curator_DB', self)
 			self.gitLocalTxt 	= QtGui.QLineEdit('curator_DB', self)
-			self.gitUserTxt 	= QtGui.QLineEdit('oreilly', self)
+			self.gitUserTxt 	= QtGui.QLineEdit(getpass.getuser(), self)
 
 			self.zoteroLibIDTxt 	= QtGui.QLineEdit('427244', self)
 			self.zoteroApiKeyTxt 	= QtGui.QLineEdit('4D3rDZsAVBd139alqoVZBKOO', self)
