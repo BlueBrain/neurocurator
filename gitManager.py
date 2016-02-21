@@ -20,9 +20,10 @@ class GitManager:
 		except (exc.InvalidGitRepositoryError,exc.NoSuchPathError):
 			self.repo = Repo.clone_from("ssh://" + settings.config["GIT"]["user"] + "@" + settings.config["GIT"]["remote"], self.localRepoDir)
 
-		self.repo.remotes.origin.fetch()
 
 		try:
+			self.repo.remotes.origin.fetch()
+
 			# Setup a local tracking branch of a remote branch
 			self.repo.create_head('master', self.origin.refs.master).set_tracking_branch(self.origin.refs.master)
 		except:
