@@ -1,71 +1,195 @@
-"BBP-00001";"soma_length";"Length of the soma of a neuron."
-"BBP-00002";"soma_diameter";"Diameter of the soma of a neuron."
-"BBP-00003";"cell_area";"Area of a neuronal cell."
-"BBP-00004";"membrane_capacitance";"Capacitance of the cell membrane."
-"BBP-00005";"soma_area";"Area of the membrane of the soma of a neuron."
-"BBP-00006";"cytoplasmic_resistance";"Electrical resistance of the cytoplasm of a cell."
-"BBP-00007";"eq_potential_k";"Electrical equilibrium potential of the potasium inside a cell."
-"BBP-00008";"eq_potential_na";"Electrical equilibrium potential of the sodium inside a cell."
-"BBP-00009";"leaking_conductance";"Electrical equilibrium potential of the sodium inside a cell."
-"BBP-00010";"neuron_density";"Density of a specific kind of neurons in a specific region."
-"BBP-00011";"Q_10";"Temperature coefficient for taking into account the effect of recording temperature on channels kinetic."
-"BBP-00012";"maximum_conductance";"Maximum conductance or permeability of an ion channel (as a unitary value or as a density)."
-"BBP-00013";"AHP_depth_from_peak";""
-"BBP-00014";"AHP_depth";""
-"BBP-00015";"AHP_depth_abs";""
-"BBP-00016";"AHP_depth_abs_slow";""
-"BBP-00017";"AP_begin_voltage";""
-"BBP-00018";"AP_begin_width";""
-"BBP-00019";"AP_peak";""
-"BBP-00020";"AP_width";""
-"BBP-00021";"AP_amplitude";""
-"BBP-00022";"AP_amplitude_change";""
-"BBP-00023";"AP_amplitude_diff";""
-"BBP-00024";"AP_amplitude_from_voltagebase";""
-"BBP-00025";"AP_duration";""
-"BBP-00026";"AP_duration_change";""
-"BBP-00027";"AP_duration_half_width";""
-"BBP-00028";"AP_duration_half_width_change";""
-"BBP-00029";"AP_fall_rate";""
-"BBP-00030";"AP_fall_rate_change";""
-"BBP-00031";"AP_fall_time";""
-"BBP-00032";"AP_height";""
-"BBP-00033";"AP_phaseslope";""
-"BBP-00034";"AP_phaseslope_AIS";""
-"BBP-00035";"AP_rise_rate";""
-"BBP-00036";"AP_rise_rate_change";""
-"BBP-00037";"AP_rise_time";""
-"BBP-00038";"ISI_CV";""
-"BBP-00039";"ISI_log_slope";""
-"BBP-00040";"ISI_semilog_slope";""
-"BBP-00041";"ISI_values";""
-"BBP-00042";"Spikecount";""
-"BBP-00043";"adaptation_index";""
-"BBP-00044";"burst_mean_freq";""
-"BBP-00045";"burst_number";""
-"BBP-00046";"decay_time_constant_after_stim";""
-"BBP-00047";"depolarized_base";""
-"BBP-00048";"doublet_ISI";""
-"BBP-00049";"fast_AHP";""
-"BBP-00050";"fast_AHP_change";""
-"BBP-00051";"interburst_voltage";""
-"BBP-00052";"inv_time_to_first_spike";""
-"BBP-00053";"irregularity_index";""
-"BBP-00054";"max_amp_difference";""
-"BBP-00055";"maximum_voltage";""
-"BBP-00056";"mean_frequency";""
-"BBP-00057";"min_AHP";""
-"BBP-00058";"min_voltage_between_spikes";""
-"BBP-00059";"minimum_voltage";""
-"BBP-00060";"number_initial_spikes";""
-"BBP-00061";"ohmic_input_resistance";""
-"BBP-00062";"peak_voltage";""
-"BBP-00063";"single_burst_ratio";""
-"BBP-00064";"spike_half_width";""
-"BBP-00065";"steady_state_hyper";""
-"BBP-00066";"steady_state_voltage";""
-"BBP-00067";"steady_state_voltage_stimend";""
-"BBP-00068";"time_constant";""
-"BBP-00069";"time_to_first_spike";""
-"BBP-00070";"voltage_base";""
-"BBP-00071";"voltage_deflection";""
+########## All parameter can be specified as point-measurements or densities. The ambiguity is resolved by the unit of the annotated parameter.
+########## Format: Record_ID; parent_categorie; name; description;required tags
+########## Mono versus bi-exponential process with one or two time constants
+
+#### Other potential currents
+#(just in heart?)
+#"BBP-01410";"BBP-01400";"conductance_del_rect_k		"Delayed rectifier, slow component [K(DRs), Ks]
+#"BBP-01410";"BBP-01400";"conductance_del_rect_k		"Delayed rectifier, fast component [K(DRf), Kr]
+#inwardly-rectifying currents [K(ir)] -> anoumalous rectifier (because conducting in inverse direction as usual)
+#inward L-type Ca current
+
+#### Other potential parameters
+# half_amp_potential
+
+
+#requirement: 
+#
+#types of parameters: 
+#- oriented (from(TAG_CATEGORIE), to(TAG_CATEGORIE)) [required_tags]
+#- single_value [required_tags] [single measurement/value; mean, median, mode, sem, sd, var, N, min, max] [require_unit, entity_tag, type:[single, directed, undirected]], [other required tags]
+#- function/distribution (fonction_definition, #parameters#)
+#- num_functions ([keys:vectors])
+
+
+#id
+#type: {point_value, function, numerical_trace}
+#description : {depend on type}
+#experiment_properties: {}
+
+#point_value: {
+#value
+#unit
+#stat
+#relationship: {single, directed, undirected}
+#required_tags: {}
+#}
+
+#function:
+
+#numerical_trace:
+
+
+#"BBP-010000";"BBP-000000";"cell_mech";"General category for parameters modeling cell mechanisms such as ion channels and membrane properties.";{"sao1813327414":"Cell"}
+
+
+
+
+
+
+
+
+
+
+
+"BBP-000000";"";"parameter";"Root of the parameter ontology three.";{}
+
+"BBP-010000";"BBP-000000";"potential";"Potential."; {}
+"BBP-011000";"BBP-010000";"eq_potential";"Equilibrium potential of a biochemical process."; {"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-011001";"BBP-011000";"eq_potential_ion_curr";"Equilibrium potential (a.k.a. reversal potential, voltage) of a channel current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-020000";"BBP-000000";"resistivity";"Resistivity.";{}
+"BBP-021000";"BBP-020000";"resist_membrane";"Resistivity in the cell membrane, e.g. in Ohm*cm^2.";{"sao1813327414":"Cell"}
+"BBP-021001";"BBP-021000";"resist_membrane_soma";"Resistance for displacement of ionic current across the membrane of the soma.";{"sao1813327414":"Cell"}
+"BBP-021002";"BBP-021000";"resist_membrane_dend";"Resistance for displacement of ionic current across the membrane of a(the) dendrite(s).";{"sao1813327414":"Cell"}
+"BBP-021003";"BBP-021000";"resist_membrane_axon";"Resistance for displacement of ionic current across the membrane of the axon.";{"sao1813327414":"Cell"}
+"BBP-022000";"BBP-020000";"internal_resist";"Resistivity within the cell (because cytoplasm is not a perfect conductor), e.g. in Ohm*cm.";{"sao1813327414":"Cell"}
+"BBP-022001";"BBP-022000";"resist_internal_soma";"Resistance for displacement of ionic current in the soma.";{"sao1813327414":"Cell"}
+"BBP-022002";"BBP-022000";"resist_internal_dend";"Resistance for displacement of ionic current in a(the) dendrite(s).";{"sao1813327414":"Cell"}
+"BBP-022003";"BBP-022000";"resist_internal_axon";"Resistance for displacement of ionic current in the axon.";{"sao1813327414":"Cell"}
+
+"BBP-030000";"BBP-000000";"conductance";"General category for conductances or electrical permeability (generally of ionic channels). Normally specified in Siemens if taken as point measurement or in Siemens per surface units if it is specified as a density. [g]";{}
+"BBP-030001";"BBP-030000";"conductance_ion_curr";"Conductance of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-030002";"BBP-030000";"conductance_synap";"Conductance for synapses.";{"GO:0045202":"Synapse", "sao1813327414":"Cell"}
+
+"BBP-040000";"BBP-000000";"capacitance";"Capacitance.";{}
+"BBP-040001";"BBP-040000";"capacitance_membrane";"Capacitance of the cell membrane.";{"sao1813327414":"Cell"}
+
+"BBP-050000";"BBP-000000";"proportion";"Proportion, or fraction (normally taking value between 0 and 1).";{}
+"BBP-050001";"BBP-050000";"prop_active_synap";"Fraction of active synapses.";{"sao1813327414":"Cell", "GO:0045202":"Synapse"}
+
+"BBP-060000";"BBP-000000";"gain";"Gain.";{}
+"BBP-060001";"BBP-060000";"gain_synap";"Synaptic gain. Generally associated with modeling of populations rather than channels.";{"sao1813327414":"Cell"}
+
+"BBP-070000";"BBP-000000";"current";"";{}
+"BBP-070001";"BBP-070000";"current_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-080000";"BBP-000000";"time_const";"Time constants are generally entered in exponential equations and represent the time at which the amplitude of the process as decayed by about 63% (i.e., 1-1/e).";{}
+"BBP-080001";"BBP-080000";"time_const_activ_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-080002";"BBP-080000";"time_const_inact_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-080003";"BBP-080000";"time_const_recov_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-090000";"BBP-000000";"mid_amp";"Mid amplitude of some phenomenon. It is often used as a shape parameter for sigmoidal functions, such as the Boltzmann function.";{}
+"BBP-090001";"BBP-090000";"mid_amp_activ";"Mid amplitude of an ion channel activation function.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-100000";"BBP-000000";"slope";"Variable specifying the slope of a relationship between two variables.";{}
+"BBP-101000";"BBP-100000";"slope_factor";"Factor specifying the slope of a relationship between two variables. It is often used as a shape parameter for sigmoidal functions, such as the Boltzmann function.";{}
+"BBP-101001";"BBP-101000";"slope_factor_activ";"Factor specifying the slope of the activation function of an ion channel.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-110000";"BBP-000000";"connectivity";"From X to Y [as matrix; value takes the form of a JSON string specifying a list of tags (for col/row names) and a 2D array of values].";{}
+"BBP-110001";"BBP-110000";"connectivity_prob";"Probability of connection.";{}
+"BBP-110002";"BBP-110000";"connectivity_strength";"Coefficient stating the strength of connectivity. Generally a pure number.";{}
+"BBP-110003";"BBP-110000";"connectivity_delay";"Delay for propagation of information from X to Y.";{}
+
+"BBP-120000";"BBP-000000";"morphology";"";{}
+"BBP-121000";"BBP-120000";"morphology_neuron";"";{"sao1813327414":"Cell"}
+"BBP-121001";"BBP-121000";"soma_length";"Length of the soma of a neuron.";{"sao1813327414":"Cell"}
+"BBP-131002";"BBP-121000";"soma_diameter";"Diameter of the soma of a neuron.";{"sao1813327414":"Cell"}	
+"BBP-121003";"BBP-121000";"cell_area";"Area of a neuronal cell.";{"sao1813327414":"Cell"}
+"BBP-121004";"BBP-212000";"soma_area";"Area of the membrane of the soma of a neuron.";{"sao1813327414":"Cell"}
+   
+
+"BBP-130000";"BBP-000000";"structure";"";{}
+"BBP-131000";"BBP-130000";"structure_brain_region";"";{}
+"BBP-131001";"BBP-131000";"neuron_density";"Density of a specific kind of neurons in a specific region.";{}
+"BBP-131002";"BBP-131000";"neuron_number";"Total number of neurons (of a specific class if a type of neuron has been tagged) in a defined region.";{}
+"BBP-131003";"BBP-131000";"neuron_type_proportion";"Proportion of a given type of neurons in a specific structure.";{}
+"BBP-131004";"BBP-131000";"layer_thickness";"Thickness of a layer of neurons (in layered structures such as human cortex).";{}
+
+"BBP-140000";"BBP-000000";"rate";"Rate or frequency.";{}
+"BBP-140001";"BBP-140000";"tonic_firing_rate";"Firing rate in tonic mode.";{}
+"BBP-141002";"BBP-140000";"burst_firing_rate";"Firing rate in bursting mode.";{}
+
+
+"BBP-970000";"BBP-000000";"other_coefficients";"Categorie for various other coefficients that were not fitting in any other categorie.";{}
+"BBP-970001";"BBP-970000";"Q_10";"Temperature coefficient for taking into account the effect of recording temperature on channels kinetic.";{}
+
+"BBP-980000";"BBP-000000";"functions";"Functions.";{}
+"BBP-980001";"BBP-980000";"func_activ";"Activation function.";{}
+
+"BBP-990000";"BBP-000000";"eFel_param";"Parameter defined in eFEL.";{}
+"BBP-990003";"BBP-990000";"spikecount";"eFEL: The number of peaks during stimulus.";{}
+"BBP-990004";"BBP-990000";"adaptation_index";"eFEL: Normalized average difference of two consecutive ISIs.";{}
+"BBP-990005";"BBP-990000";"burst_mean_freq";"eFEL: The mean frequency during a burst for each burst.";{}
+"BBP-990006";"BBP-990000";"burst_number";"eFEL: ";{}
+"BBP-990007";"BBP-990000";"decay_time_constant_after_stim";"eFEL: ";{}
+"BBP-990008";"BBP-990000";"depolarized_base";"eFEL: ";{}
+"BBP-990009";"BBP-990000";"interburst_voltage";"eFEL: The voltage average in between two bursts.";{}
+"BBP-990010";"BBP-990000";"inv_time_to_first_spike";"eFEL: ";{}
+"BBP-990011";"BBP-990000";"irregularity_index";"eFEL; ";{}
+"BBP-990012";"BBP-990000";"max_amp_difference";"eFEL: Maximum difference of the height of two subsequent peaks.";{}
+"BBP-990013";"BBP-990000";"maximum_voltage";"eFEL: The maximum voltage during a stimulus.";{}
+"BBP-990014";"BBP-990000";"mean_frequency";"eFEL: The mean frequency of the firing rate.";{}
+"BBP-990015";"BBP-990000";"min_voltage_between_spikes";"eFEL: ";{}
+"BBP-990016";"BBP-990000";"minimum_voltage";"eFEL: ";{}
+"BBP-990017";"BBP-990000";"number_initial_spikes";"eFEL: ";{}
+"BBP-990018";"BBP-990000";"ohmic_input_resistance";"eFEL: The ohmic input resistance Rin of the cell.";{}
+"BBP-990019";"BBP-990000";"peak_voltage";"eFEL: The voltages at the maxima of the peaks.";{}
+"BBP-990020";"BBP-990000";"single_burst_ratio";"eFEL: ";{}
+"BBP-990021";"BBP-990000";"spike_half_width";"eFEL: The FWHM of each peak";{}
+"BBP-990022";"BBP-990000";"steady_state_hyper";"eFEL: Steady state voltage during hyperpolarization.";{}
+"BBP-990023";"BBP-990000";"steady_state_voltage";"eFEL: Average voltage after the stimulus.";{}
+"BBP-990024";"BBP-990000";"steady_state_voltage_stimend";"eFEL: ";{}
+"BBP-990025";"BBP-990000";"time_constant";"eFEL: The membrane time constant.";{}
+"BBP-990026";"BBP-990000";"time_to_first_spike";"eFEL: Time from the start of the stimulus to the maximum of the first peak.";{}
+"BBP-990027";"BBP-990000";"voltage_deflection";"eFEL: The relative steady state voltage in a hyperpolarized state.";{}
+
+"BBP-990100";"BBP-990000";"after_hyperpolarisation";"";{}
+"BBP-990101";"BBP-990100";"AHP_depth_from_peak";"eFEL: ";{}
+"BBP-990102";"BBP-990100";"AHP_depth";"eFEL: Relative voltage values at the after-hyperpolarization.";{}
+"BBP-990103";"BBP-990100";"AHP_depth_abs";"eFEL: Voltage values at the after-hyperpolarization.";{}
+"BBP-990104";"BBP-990100";"AHP_depth_abs_slow";"eFEL: Voltage values at the "slow" after-hyperpolarization.";{}
+"BBP-990105";"BBP-990100";"fast_AHP";"eFEL: Voltage value of the action potential onset relative to the subsequent AHP.";{}
+"BBP-990106";"BBP-990100";"fast_AHP_change";"eFEL: Difference of the fast AHP of the second and the first action potential divided by the fast AHP of the first action potential.";{}
+"BBP-990107";"BBP-990100";"min_AHP";"eFEL: ";{}
+
+"BBP-990200";"BBP-990000";"action_porential";"";{}
+"BBP-990201";"BBP-990200";"AP_begin_voltage";"eFEL: Voltage values at the onset of each action potential.";{}
+"BBP-990202";"BBP-990200";"AP_begin_width";"eFEL: ";{}
+"BBP-990203";"BBP-990200";"AP_peak";"eFEL: ";{}
+"BBP-990204";"BBP-990200";"AP_width";"eFEL: Width of each peak at the value of Threshold.";{}
+"BBP-990205";"BBP-990200";"AP_amplitude";"eFEL: The relative height of the action potential.";{}
+"BBP-990206";"BBP-990200";"AP_amplitude_change";"eFEL: Difference of the amplitudes of the second and the first action potential divided by the amplitude of the first action potential.";{}
+"BBP-990207";"BBP-990200";"AP_amplitude_diff";"eFEL: ";{}
+"BBP-990208";"BBP-990200";"AP_amplitude_from_voltagebase";"eFEL: The height of the action potential measured from voltage base.";{}
+"BBP-990209";"BBP-990200";"AP_duration";"eFEL: Duration of an action potential from onset to offset.";{}
+"BBP-990210";"BBP-990200";"AP_duration_change";"eFEL: Difference of the durations of the second and the first action potential divided by the duration of the first action potential.";{}
+"BBP-990211";"BBP-990200";"AP_duration_half_width";"eFEL: FWHM of each action potential.";{}
+"BBP-990212";"BBP-990200";"AP_duration_half_width_change";"eFEL: Difference of the FWHM of the second and the first action potential divided by the FWHM of the first action potential.";{}
+"BBP-990213";"BBP-990200";"AP_fall_rate";"eFEL: Voltage change rate during the falling phase of the action potential.";{}
+"BBP-990214";"BBP-990200";"AP_fall_rate_change";"eFEL: Difference of the fall rates of the second and the first action potential divided by the fall rate of the first action potential.";{}
+"BBP-990215";"BBP-990200";"AP_fall_time";"eFEL: Time from action potential maximum to the offset.";{}
+"BBP-990216";"BBP-990200";"AP_height";"eFEL: The voltages at the maxima of the peaks.";{}
+"BBP-990217";"BBP-990200";"AP_phaseslope";"eFEL: ";{}
+"BBP-990218";"BBP-990200";"AP_phaseslope_AIS";"eFEL: ";{}
+"BBP-990219";"BBP-990200";"AP_rise_rate";"eFEL: Voltage change rate during the rising phase of the action potential.";{}
+"BBP-990220";"BBP-990200";"AP_rise_rate_change";"eFEL: Difference of the rise rates of the second and the first action potential divided by the rise rate of the first action potential.";{}
+"BBP-990221";"BBP-990200";"AP_rise_time";"eFEL: Time from action potential onset to the maximum.";{}
+
+"BBP-990300";"BBP-990000";"inter_spike_interval";"";{}
+"BBP-990301";"BBP-990300";"ISI_CV";"eFEL: The coefficient of variation of the ISIs";{}
+"BBP-990302";"BBP-990300";"ISI_log_slope";"eFEL: ";{}
+"BBP-990303";"BBP-990300";"ISI_semilog_slope";"eFEL: ";{}
+"BBP-990304";"BBP-990300";"ISI_values";"eFEL: The interspike intervals (i.e. time intervals) between adjacent peaks, starting at the second peak.";{}
+"BBP-990305";"BBP-990300";"doublet_ISI";"eFEL: The time interval between the first too peaks.";{}
+

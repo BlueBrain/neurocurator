@@ -26,7 +26,7 @@ class TagSuggester:
 
 
 
-	def suggestions(self, annotationFileName, selectedIds, numberOfSuggestions=10):
+	def suggestions(self, annotationFileName, selectedIds, numberOfSuggestions=30):
 		if len(self.usedTag) == 0:
 			return []
 
@@ -74,7 +74,7 @@ class TagSuggester:
 
 		if len(tagScores):
 			keys, values = zip(*sorted(tagScores.items(), key=operator.itemgetter(1) , reverse=True))
-			return keys[:min(numberOfSuggestions, len(keys))]
+			return list(keys[:min(numberOfSuggestions, len(keys))])
 		else:
 			return []
 

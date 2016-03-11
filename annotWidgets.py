@@ -8,280 +8,12 @@ from os.path import join
 import re
 import numpy as np
 
-
 from uiUtilities import disableTextWidget, enableTextWidget
 from areaSelector import PDFAreaSelector, loadImage
-from modelingParameter import getParameterTypes, ParameterListModel, ParameterInstance, \
-	getParameterTypeIDFromName, unitIsValid
-from autocomplete import AutoCompleteEdit
 from annotation import TextLocalizer, FigureLocalizer, TableLocalizer, \
 	EquationLocalizer, PositionLocalizer, Annotation
 from difflib import SequenceMatcher
 from approximateMatchDlg import MatchDlg
-
-
-
-
-class ParamModWgt(QtGui.QWidget):
-
-	def __init__(self, parent):
-
-		self.parent = parent
-		super(ParamModWgt, self).__init__()
-
-		self.parameterTypes = getParameterTypes()
-
-		# Widgets		
-		self.paramsEdit = AutoCompleteEdit(self)
-
-		self.paramsEdit.setModel([paramType.name for paramType in self.parameterTypes])
-		self.paramValueEdit		= QtGui.QLineEdit(self)
-		self.paramUnitEdit		= QtGui.QLineEdit(self)
-		self.paramDescription	= QtGui.QTextEdit(self)
-		unitLabel			    = QtGui.QLabel()
-		unitLabel.setOpenExternalLinks(True)
-		unitLabel.setTextFormat(QtCore.Qt.RichText)
-		unitLabel.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
-		unitLabel.setText("Unit (<a href=\"docs/_build/html/units.html\">?</a>)")
-
-
-		self.newParamBtn        = QtGui.QPushButton("New")
-		self.deleteParamBtn     = QtGui.QPushButton("Delete")
-		self.paramSaveAnnotBtn  = QtGui.QPushButton("Save") 
-		buttonWidget = QtGui.QWidget(self)
-
-		self.paramListTblWdg  	= QtGui.QTableView() 
-		self.paramListModel 	= ParameterListModel(self)
-		self.paramListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-		self.paramListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-		self.paramListTblWdg.setModel(self.paramListModel)
-		
-
-		# Signals
-		self.paramsEdit.activated[str].connect(self.paramTypeChanged)
-		selectionModel = self.paramListTblWdg.selectionModel()
-		selectionModel.selectionChanged.connect(self.selectedParameterChanged)
-
-		#self.attributeParameter.stateChanged.connect(self.refreshModelingParam)
-		self.paramValueEdit.textChanged.connect(self.parent.setNeedSaving)
-		self.paramUnitEdit.textChanged.connect(self.parent.setNeedSaving)
-		self.newParamBtn.clicked.connect(self.newParameter)
-		self.deleteParamBtn.clicked.connect(self.deleteParameter)
-		self.paramSaveAnnotBtn.clicked.connect(self.saveParam)
-
-
-		# Layout
-		buttonLayout = QtGui.QHBoxLayout(buttonWidget)
-		buttonLayout.addWidget(self.paramSaveAnnotBtn)
-		buttonLayout.addWidget(self.deleteParamBtn)
-		buttonLayout.addWidget(self.newParamBtn)
-		grid 	= QtGui.QGridLayout(self)
-		grid.addWidget(QtGui.QLabel("Parameter"), 0, 0)
-		grid.addWidget(QtGui.QLabel("Value"),     0, 1)
-		grid.addWidget(unitLabel,      			  0, 2)
-
-		grid.addWidget(self.paramsEdit,     1, 0)
-		grid.addWidget(self.paramValueEdit, 1, 1)
-		grid.addWidget(self.paramUnitEdit,  1, 2)
-
-		grid.addWidget(buttonWidget, 2, 0, 1, 3)
-		grid.addWidget(self.paramDescription, 0, 3, 3, 1)
-
-		grid.addWidget(self.paramListTblWdg, 3, 0, 1, 4)
-
-		# Initial behavior
-		self.paramValueEdit.setValidator(QtGui.QDoubleValidator())
-		self.paramsEdit.setEnabled(False)
-		self.paramValueEdit.setEnabled(False)
-		self.paramUnitEdit.setEnabled(False)
-		#self.paramDescription.setEnabled(False)
-		self.newParamBtn.setEnabled(True)
-		self.deleteParamBtn.setEnabled(False)
-		self.paramSaveAnnotBtn.setEnabled(False)
-		self.additionMode = False
-		self.paramDescription.setReadOnly(True)
-
-
-	def selectedParameterChanged(self, selected, deselected):
-		if len(selected.indexes()) == 0:
-			return
-		if self.additionMode:
-			msgBox = QtGui.QMessageBox(self)
-			msgBox.setWindowTitle("Cancellation")
-			msgBox.setText("Are you sure you want to cancel the addition of the new parameter being edited? If not, say no and then hit 'Save' to save this new parameter.")
-			msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-			msgBox.setDefaultButton(QtGui.QMessageBox.No)
-			if msgBox.exec_() == QtGui.QMessageBox.Yes:
-				self.additionMode = False
-				self.loadRow()
-			else:
-				#self.paramListTblWdg.selectRow(-1)
-				self.paramListTblWdg.clearSelection()
-		else:
-			self.loadRow()
-
-
-	def paramTypeChanged(self, paramName):
-		for paramType in self.parameterTypes:
-			if paramType.name == paramName:
-				self.paramDescription.setText(paramType.description)
-				self.paramValueEdit.setFocus()
-			
-
-
-	def newParameter(self):
-		self.additionMode = True
-
-		self.paramsEdit.setEnabled(True)
-		self.paramValueEdit.setEnabled(True)
-		self.paramUnitEdit.setEnabled(True)
-	
-		self.newParamBtn.setEnabled(False)
-		self.deleteParamBtn.setEnabled(False)
-		self.paramSaveAnnotBtn.setEnabled(True)
-		#self.paramListTblWdg.setEnabled(False)
-
-		self.paramValueEdit.setText("")
-		self.paramUnitEdit.setText("")
-		self.paramsEdit.setCurrentIndex(-1)
-		self.paramDescription.setText("")
-		self.paramsEdit.setFocus()
-
-		self.paramListTblWdg.clearSelection()
-
-
-
-
-
-	def saveParam(self):
-
-		error = None
-		typeID = getParameterTypeIDFromName(self.paramsEdit.currentText())
-		if typeID is None:
-			error = "parameter type"
-		
-		param = ParameterInstance(typeID)
-		try:
-			value = float(self.paramValueEdit.text())
-		except:
-			error = "value"
-
-		unit = self.paramUnitEdit.text()
-		if not unitIsValid(unit):
-			error = "unit"
-
-		if error is None:
-			param.setValue(value, unit)
-			param.setAnnotation(self.parent.currentAnnotation.ID, self.parent.IdTxt.text())
-
-			selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
-			# Even when there is no selection, selectedRow can take a zero value. This "if" 
-			# controls for that.
-			if len(self.paramListTblWdg.selectionModel().selectedRows()) == 0:
-				selectedRow = -1
-
-			if selectedRow >= 0:
-				self.parent.currentAnnotation.parameters[selectedRow] = param
-			else:
-				self.parent.currentAnnotation.parameters.append(param)
-
-			self.additionMode = False
-			nbParams = len(self.parent.currentAnnotation.parameters)
-			self.parent.saveAnnotation()			
-
-			if selectedRow >= 0:
-				self.loadModelingParameter(selectedRow)
-			else:
-				self.loadModelingParameter(nbParams-1)				
-
-		else:
-			msgBox = QtGui.QMessageBox(self)
-			msgBox.setWindowTitle("Invalid modeling parameter")
-			msgBox.setText("To save this annotation with an associated modeling parameter, a valid value and unit must be entered. The " + error + " entered is not valid.")
-			msgBox.exec_() 
-
-
-
-	def deleteParameter(self):
-		selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
-		del self.parent.currentAnnotation.parameters[selectedRow]
-		self.parent.saveAnnotation()
-		self.refreshModelingParameters()
-
-
-
-	def refreshModelingParameters(self):
-		selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
-		self.loadModelingParameter(selectedRow)
-
-
-	def loadModelingParameter(self, row = None):
-
-		if self.parent.currentAnnotation is None:
-			self.paramListModel.parameterList = []
-		else:
-			self.paramListModel.parameterList = self.parent.currentAnnotation.parameters
-
-			aRowIsSelected = not row is None
-			if aRowIsSelected:
-				if row < 0:
-					self.paramListTblWdg.selectRow(self.paramListTblWdg.model().rowCount()-row)
-				else:
-					self.paramListTblWdg.selectRow(row)
-
-			else:
-				## No rows are selected
-				self.paramListTblWdg.selectRow(-1)
-		
-			self.paramsEdit.setEnabled(aRowIsSelected)
-			self.paramValueEdit.setEnabled(aRowIsSelected)
-			self.paramUnitEdit.setEnabled(aRowIsSelected)
-	
-			self.newParamBtn.setEnabled(True)
-			self.deleteParamBtn.setEnabled(aRowIsSelected)
-			self.paramSaveAnnotBtn.setEnabled(aRowIsSelected)
-
-		self.paramListModel.refresh()
-
-
-	def loadRow(self):
-		selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
-		currentParameter = self.parent.currentAnnotation.parameters[selectedRow]
-		self.paramValueEdit.setText(str(currentParameter.value))
-		self.paramUnitEdit.setText(currentParameter.unit)
-
-		aRowIsSelected = True
-
-		self.paramsEdit.setEnabled(aRowIsSelected)
-		self.paramValueEdit.setEnabled(aRowIsSelected)
-		self.paramUnitEdit.setEnabled(aRowIsSelected)
-	
-		self.newParamBtn.setEnabled(True)
-		self.deleteParamBtn.setEnabled(aRowIsSelected)
-		self.paramSaveAnnotBtn.setEnabled(aRowIsSelected)
-
-		for i in range(self.paramsEdit.count()):
-			if self.paramsEdit.itemText(i) == currentParameter.name:
-				self.paramsEdit.setCurrentIndex(i)
-				self.paramTypeChanged(currentParameter.name)
-				break
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -312,10 +44,10 @@ class EditAnnotWgt(QtGui.QWidget):
 
 		self.annotationTypesCbo.addItems(self.annotTypeLst)
 
-		self.editAnnotTabs = QtGui.QTabWidget(self)
+		self.editAnnotStack = QtGui.QStackedWidget(self)
 
 		for annotType in self.annotTypeLst:
-			self.editAnnotTabs.addTab(self.editAnnotWgt[annotType], annotType)
+			self.editAnnotStack.addWidget(self.editAnnotWgt[annotType])
 
 
 
@@ -328,7 +60,7 @@ class EditAnnotWgt(QtGui.QWidget):
 		gridAddAnnotations.addWidget(self.deleteAnnotationBtn, 2, 3)
 		gridAddAnnotations.addWidget(self.newAnnotationBtn, 2, 4)
 
-		gridAddAnnotations.addWidget(self.editAnnotTabs, 3, 0, 1, 5)
+		gridAddAnnotations.addWidget(self.editAnnotStack, 3, 0, 1, 5)
 
 		gridAddAnnotations.addWidget(QtGui.QLabel('Comment', self), 4, 0)
 		gridAddAnnotations.addWidget(self.commentEdt, 4, 1, 1, 4)
@@ -341,7 +73,7 @@ class EditAnnotWgt(QtGui.QWidget):
 		self.newAnnotationBtn.clicked.connect(self.newAnnotation)
 		self.deleteAnnotationBtn.clicked.connect(self.parent.deleteAnnotation)
 		self.commentEdt.textChanged.connect(self.annotationChanged)
-		self.annotationTypesCbo.currentIndexChanged.connect(self.setCurrentTab)
+		self.annotationTypesCbo.currentIndexChanged.connect(self.setCurrentStack)
 
 		self.parent.selectedAnnotationChangedConfirmed.connect(self.annotationSelectionChanged)
 		for wgt in self.editAnnotWgt.values():
@@ -353,7 +85,7 @@ class EditAnnotWgt(QtGui.QWidget):
 		# Initial behavior
 		self.deleteAnnotationBtn.setDisabled(True)
 		self.annotationTypesCbo.setCurrentIndex(0)
-		self.setCurrentTab(0)
+		self.setCurrentStack(0)
 		self.annotationTypesCbo.setDisabled(True)
 
 
@@ -376,11 +108,11 @@ class EditAnnotWgt(QtGui.QWidget):
 		self.annotationTypesCbo.setEnabled(False)
 
 
-	def setCurrentTab(self, ind):
-		self.editAnnotTabs.setCurrentIndex(ind) 
+	def setCurrentStack(self, ind):
+		self.editAnnotStack.setCurrentIndex(ind) 
 
-		for no in range(len(self.annotTypeLst)):
-			self.editAnnotTabs.setTabEnabled(no, no == ind)
+		#for no in range(len(self.annotTypeLst)):
+		#	self.editAnnotStack.setTabEnabled(no, no == ind)
 	
 
 
@@ -416,14 +148,14 @@ class EditAnnotWgt(QtGui.QWidget):
 	def annotationSelectionChanged(self):
 		#self.deleteAnnotationBtn.setEnabled(True)
 		self.newAnnotationBtn.setEnabled(True)
-		if not self.parent.currentAnnotation is None:
+		if not self.currentAnnotation is None:
 			self.commentEdt.setText(self.currentAnnotation.comment)
 			enableTextWidget(self.commentEdt)
 		else:
 			self.commentEdt.setText("")
 			disableTextWidget(self.commentEdt)			
 		
-		self.deleteAnnotationBtn.setDisabled(self.parent.currentAnnotation is None)
+		self.deleteAnnotationBtn.setDisabled(self.currentAnnotation is None)
 
 	def newAnnotation(self):
 		if self.parent.newAnnotation() :
@@ -446,7 +178,6 @@ class EditAnnotWgt(QtGui.QWidget):
 
 
 	def updateCurrentAnnotation(self):
-
 		self.currentAnnotation.comment = self.commentEdt.toPlainText()
 		if not self.parent.username in self.currentAnnotation.users:
 			self.currentAnnotation.users.append(self.parent.username)

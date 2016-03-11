@@ -30,14 +30,15 @@ from tagWidget import TagWidget, Tag
 from autocomplete import AutoCompleteEdit
 from suggestedTagMng import TagSuggester
 from gitManager import GitManager
-from qtNeurolexTree import TreeData, TreeModel, TreeView
+from qtNeurolexTree import TreeData, TreeModel, TreeView 
 from zoteroWrap import ZoteroTableModel
 from id import checkID
 from uiUtilities import errorMessage, disableTextWidget, enableTextWidget
 from settingsDlg import getSettings, SettingsDlg
 from modelingParameter import getParameterTypes, ParameterInstance, \
 	ParameterListModel, getParameterTypeIDFromName, unitIsValid
-from annotWidgets import ParamModWgt, EditAnnotWgt
+from annotWidgets import EditAnnotWgt
+from modParamWidgets import ParamModWgt
 
 
 
@@ -169,15 +170,21 @@ class Window(QtGui.QMainWindow):
 
 
 	def closeEvent(self, event):
-		self.settings.config['WINDOW']['mainSplitterPos'] = str(self.mainWidget.sizes())
+		self.settings.config['WINDOW']['mainSplitterPos']  = str(self.mainWidget.sizes())
+		self.settings.config['WINDOW']['leftSplitterPos']  = str(self.leftPanel.sizes())
+		self.settings.config['WINDOW']['rightSplitterPos'] = str(self.rightPanel.sizes())
+		self.settings.config['WINDOW']['paramModWgtSplitterPos'] = str(self.modParamWgt.rootLayout.sizes())
+
 		colWidths = str([self.zoteroTblWdg.columnWidth(i) for i in range(self.zoteroTableModel.columnCount())])
 		self.settings.config['WINDOW']['zotTableViewColWidth'] = colWidths
-		colWidths = str([self.annotListTblWdg.columnWidth(i) for i in range(self.annotTableModel.columnCount())])
-		self.settings.config['WINDOW']['annotTableViewColWidth'] = colWidths
 		self.settings.config['WINDOW']['zotTableSortOrder'] 	 = str(int(self.zoteroTableModel.sortOrder))
 		self.settings.config['WINDOW']['zotTableSortCol'] 		 = str(self.zoteroTableModel.sortCol)
+
+		colWidths = str([self.annotListTblWdg.columnWidth(i) for i in range(self.annotTableModel.columnCount())])
+		self.settings.config['WINDOW']['annotTableViewColWidth'] = colWidths
 		self.settings.config['WINDOW']['annotTableSortOrder'] 	 = str(int(self.annotTableModel.sortOrder))
 		self.settings.config['WINDOW']['annotTableSortCol'] 	 = str(self.annotTableModel.sortCol)
+
 		self.settings.save()
 
 		if self.needSaving:
@@ -206,13 +213,19 @@ class Window(QtGui.QMainWindow):
 		if self.firstShow:
 			if 'mainSplitterPos' in self.settings.config['WINDOW']:
 				self.mainWidget.setSizes(eval(self.settings.config['WINDOW']['mainSplitterPos']))
+			if 'leftSplitterPos' in self.settings.config['WINDOW']:
+				self.leftPanel.setSizes(eval(self.settings.config['WINDOW']['leftSplitterPos']))
+			if 'rightSplitterPos' in self.settings.config['WINDOW']:
+				self.rightPanel.setSizes(eval(self.settings.config['WINDOW']['rightSplitterPos']))
+			if 'paramModWgtSplitterPos' in self.settings.config['WINDOW']:
+				self.modParamWgt.rootLayout.setSizes(eval(self.settings.config['WINDOW']['paramModWgtSplitterPos']))
+
 			if 'zotTableViewColWidth' in self.settings.config['WINDOW']:			
 				for i, width in enumerate(eval(self.settings.config['WINDOW']['zotTableViewColWidth'])):
 					self.zoteroTblWdg.setColumnWidth(i, width)
 			if 'annotTableViewColWidth' in self.settings.config['WINDOW']:			
 				for i, width in enumerate(eval(self.settings.config['WINDOW']['annotTableViewColWidth'])):
 					self.annotListTblWdg.setColumnWidth(i, width)
-
 
 			if 'zotTableSortOrder' in self.settings.config['WINDOW']:
 				self.zoteroTableModel.sortOrder = QtCore.Qt.SortOrder(int(self.settings.config['WINDOW']['zotTableSortOrder']))
@@ -251,14 +264,27 @@ class Window(QtGui.QMainWindow):
 		openPreferencesAction.setStatusTip('Edit preferences')
 		openPreferencesAction.triggered.connect(self.editPreferences)
 
+
+		refreshZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Refresh Zotero', self)
+		refreshZoteroAction.setStatusTip('Refresh Zotero database')
+		refreshZoteroAction.triggered.connect(self.updateZotLib)
+
+		pushToServerAction = QtGui.QAction(QtGui.QIcon(), '&Push to server', self)
+		pushToServerAction.setStatusTip('Push modifications to the server')
+		pushToServerAction.triggered.connect(self.pushToServer)
+
 		self.statusBar()
 
 		menubar = self.menuBar()
 		fileMenu = menubar.addMenu('&File')
 		fileMenu.addAction(exitAction)        
 
-		fileMenu = menubar.addMenu('&Edit')
-		fileMenu.addAction(openPreferencesAction)
+		editMenu = menubar.addMenu('&Edit')
+		editMenu.addAction(openPreferencesAction)
+
+		commandMenu = menubar.addMenu('&Command')
+		commandMenu.addAction(refreshZoteroAction)
+		commandMenu.addAction(pushToServerAction)
 
 
 
@@ -270,10 +296,13 @@ class Window(QtGui.QMainWindow):
 		self.setupListAnnotGB()
 		self.setupEditAnnotGB()
 		self.setupTagAnnotGB()
-		self.setupControlGB()
 		self.modParamWgt = ParamModWgt(self)
 
 		# Main layout
+		self.mainTabs = QtGui.QTabWidget(self)
+		self.mainTabs.addTab(self.zoteroGroupBox, "Paper Zotero database")		
+
+
 		self.taggingTabs = QtGui.QTabWidget(self)
 		self.taggingTabs.addTab(self.tagAnnotGroupBox, "Tagging")
 		self.taggingTabs.addTab(self.modParamWgt,      "Modeling parameter")
@@ -281,33 +310,48 @@ class Window(QtGui.QMainWindow):
 		self.rightPanel = QtGui.QSplitter(self, QtCore.Qt.Vertical)
 		self.rightPanel.setOrientation(QtCore.Qt.Vertical)
 
-		topPannel = QtGui.QWidget(self)
-		topPannel.setLayout(QtGui.QVBoxLayout())
-		topPannel.layout().addWidget(self.paperGroupBox)
-		topPannel.layout().addWidget(self.listAnnotGroupBox)
+		self.leftPanel = QtGui.QSplitter(self, QtCore.Qt.Vertical)
+		self.leftPanel.setOrientation(QtCore.Qt.Vertical)
+
+		paperPannel = QtGui.QWidget(self)
+		paperPannel.setLayout(QtGui.QVBoxLayout())
+		paperPannel.layout().addWidget(self.paperGroupBox)
+		paperPannel.layout().addWidget(self.listAnnotGroupBox)
 
 		bottomPannel = QtGui.QWidget(self)
 		bottomPannel.setLayout(QtGui.QVBoxLayout())
 		bottomPannel.layout().addWidget(self.taggingTabs)
-		bottomPannel.layout().addWidget(self.controlsGroupBox)
 
-		self.rightPanel.addWidget(topPannel)
-		self.rightPanel.addWidget(self.editAnnotWgt)
+
+
 		self.rightPanel.addWidget(bottomPannel)
 
+
+		self.leftPanel.addWidget(paperPannel)
+		self.leftPanel.addWidget(self.editAnnotWgt)
+
+
+
 		self.mainWidget = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
-		self.mainWidget.addWidget(self.zoteroGroupBox)
+		self.mainWidget.addWidget(self.leftPanel)
 		self.mainWidget.addWidget(self.rightPanel)
 
+		self.mainTabs.addTab(self.mainWidget, "Annotations")	
+
+
+		self.searchWidget = QtGui.QWidget(self)
+		self.mainTabs.addTab(self.searchWidget, "Search")	
 		
 		#self.mainWidget.setSizes([1,1])
-		self.mainWidget.setStretchFactor(0, 1)
-		self.mainWidget.setStretchFactor(1, 1)
-		self.setCentralWidget(self.mainWidget)
-
+		#self.mainWidget.setStretchFactor(0, 1)
+		#self.mainWidget.setStretchFactor(1, 1)
+		self.setCentralWidget(self.mainTabs)
 
 		# Initial behavior
 		self.taggingTabs.setDisabled(True)		
+
+
+
 
 
 	def setupZoteroGB(self): 
@@ -401,7 +445,11 @@ class Window(QtGui.QMainWindow):
 
 	def setupEditAnnotGB(self):
 
-		self.editAnnotWgt = EditAnnotWgt(self)
+		self.editAnnotSubWgt = EditAnnotWgt(self)
+
+		self.editAnnotWgt = QtGui.QGroupBox("Annotation details")
+		layout 			  = QtGui.QVBoxLayout(self.editAnnotWgt)
+		layout.addWidget(self.editAnnotSubWgt)
 		self.editAnnotWgt.setEnabled(False)
 
 
@@ -473,22 +521,6 @@ class Window(QtGui.QMainWindow):
 
 
 
-	def setupControlGB(self):
-		# Widgets
-		self.pushBtn 			= QtGui.QPushButton('Push to server', self)
-		self.updateZoteroBtn	= QtGui.QPushButton('Refresh Zotero DB', self)
-
-		# Signals
-		self.pushBtn.clicked.connect(self.pushToServer)
-		self.updateZoteroBtn.clicked.connect(self.updateZotLib)
-
-		# Layout
-		self.controlsGroupBox = QtGui.QGroupBox("Controls")
-		gridControl = QtGui.QHBoxLayout(self.controlsGroupBox)
-		gridControl.addWidget(self.updateZoteroBtn)
-		gridControl.addWidget(self.pushBtn)
-
-
 
 	def editPreferences(self):
 		settingsDlg = SettingsDlg(self.settings, self)
@@ -538,7 +570,7 @@ class Window(QtGui.QMainWindow):
 			# used to modify the current annotation.
 			self.clearAddAnnotation()
 		else:
-			self.editAnnotWgt.selectAnnotType(self.currentAnnotation.type)
+			self.editAnnotSubWgt.selectAnnotType(self.currentAnnotation.type)
 
 		self.refreshTagList()
 		#self.tagAnnotGroupBox.setDisabled(self.currentAnnotation is None)	
@@ -755,7 +787,7 @@ class Window(QtGui.QMainWindow):
 			msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
 			msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
 			if msgBox.exec_() == QtGui.QMessageBox.Yes:
-				self.editAnnotWgt.commentEdt.setFocus()
+				self.editAnnotSubWgt.commentEdt.setFocus()
 				if self.saveAnnotation() == False:
 					return False
 			self.needSaving = False
@@ -840,6 +872,8 @@ class Window(QtGui.QMainWindow):
 		if not self.currentAnnotation is None:
 			for id in self.currentAnnotation.tagIds:
 				self.addTagToSelected(id)
+		self.refreshModelingParam()	
+
 
 
 	def refreshSuggestedTagList(self):
@@ -848,7 +882,18 @@ class Window(QtGui.QMainWindow):
 		if not self.currentAnnotation is None:
 			annotationFileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
 			tagIds = self.tagSuggester.suggestions(annotationFileName, [tag.id for tag in self.getSelectedTags()])
-			for id in tagIds:	
+
+			unusedPersistedSuggestedTags = []
+			selectedTags				 = [tag.id for tag in self.getSelectedTags()] 
+			for persistId in self.suggestTagPersist:
+				if persistId in tagIds:
+					tagIds.remove(persistId)
+				if not persistId in selectedTags:
+					unusedPersistedSuggestedTags.append(persistId)
+
+
+
+			for id in unusedPersistedSuggestedTags + tagIds:	
 				self.addSuggestedTagFromId(id)
 
 
@@ -939,7 +984,7 @@ class Window(QtGui.QMainWindow):
 
 	def saveAnnotation(self):
 
-		self.editAnnotWgt.updateCurrentAnnotation()
+		self.editAnnotSubWgt.updateCurrentAnnotation()
 		fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
 
 		with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
@@ -961,6 +1006,7 @@ class Window(QtGui.QMainWindow):
 					break
 			row = None
 
+
 		# New annotation has been created
 		else:
 			annots.append(self.currentAnnotation)
@@ -970,8 +1016,6 @@ class Window(QtGui.QMainWindow):
 
 		with open(fileName, "w", encoding="utf-8", errors='ignore') as f:
 			Annotation.dump(f, annots)
-
-
 
 		self.gitMng.addFiles([fileName])
 		self.needPush = True
@@ -985,6 +1029,7 @@ class Window(QtGui.QMainWindow):
 	def newAnnotation(self):
 		if self.checkSavingAnnot() == False:
 			return False
+
 
 		self.clearAddAnnotation()
 		self.annotListTblWdg.setCurrentIndex(QtCore.QModelIndex())

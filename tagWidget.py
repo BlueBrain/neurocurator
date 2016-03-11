@@ -5,12 +5,7 @@ __email__  = 'christian.oreilly@epfl.ch'
 
 import sys
 from PySide import QtGui, QtCore
-
-
-class Tag:
-	def __init__(self, id, name):
-		self.id = id
-		self.name = name
+from tag import Tag
 
 
 class TagWidget(QtGui.QLabel):
