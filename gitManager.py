@@ -47,7 +47,7 @@ class GitManager:
 				msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
 				msgBox.exec_()			
 				self.offline = True
-				return
+			return
 
 		if self.offline:
 			self.offline = False
