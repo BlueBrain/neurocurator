@@ -428,7 +428,7 @@ def loadTreeData(fileNamePattern="onto/onto*"):
 def addSuppTerms(dic):
     
     idsToAdd = ["NIFINV:birnlex_2300", "GO:0030431", "NIFMOL:sao1797800540",
-                "NIFMOL:sao1846985919"]
+                "NIFMOL:sao1846985919", "NIFGA:nlx_anat_1010", "NIFCELL:nifext_156"]
 
     vocab = Vocabulary()
     termDic = {}   

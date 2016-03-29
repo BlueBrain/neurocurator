@@ -39,7 +39,13 @@ nlx2ks = {"birnlex_254":"NIFORG:birnlex_254",
           'sao1813327414':'NIFCELL:sao1813327414',
           'nlx_organ_109041':"NIFORG:birnlex_160",
           'PATO_0000146':'PATO:0000146',
-          "sao1846985919":"NIFMOL:sao1797800540"}
+          "sao1846985919":"NIFMOL:sao1797800540",
+          'nlx_15593':"NIFGA:nlx_anat_1010",
+          'nlx_anat_090811':'NIFGA:nlx_anat_090811',
+          'nlx_anat_090812':'NIFGA:nlx_anat_090812',
+          "nifext_156":"NIFCELL:nifext_156",
+          'nlx_cell_091205':'NIFCELL:nlx_cell_091205',
+          'sao830368389':'NIFCELL:sao830368389'}
 
 class Tag:
     def __init__(self, id, name):
