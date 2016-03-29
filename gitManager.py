@@ -59,8 +59,6 @@ class GitManager:
 
 
 
-
-
 	def canRunRemoteCmd(self):		
 
 		if self.repo.is_dirty():
@@ -118,7 +116,7 @@ class GitManager:
 		 According to http://stackoverflow.com/questions/16586642/git-unpack-error-on-push-to-gerrit#comment42953435_23610917,
 		 "a new optimization which causes git to send as little data as possible over the network caused this bug to manifest, 
 		  so my guess is --no-thin just turns these optimizations off. From git push --help: "A thin transfer significantly 
-          reduces the amount of sent data when the sender and receiver share many of the same objects in common." (--thin is the default)."
+                  reduces the amount of sent data when the sender and receiver share many of the same objects in common." (--thin is the default)."
 		"""
 
 		if not self.canRunRemoteCmd(): 
