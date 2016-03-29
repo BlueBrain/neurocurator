@@ -5,12 +5,8 @@ __author__ = "Christian O'Reilly"
 
 import sys
 from PySide import QtGui
-from mainWin import Window
-
-
-# This import is necessary because we are pickling TreeData object in
-# the application. Without the import here, we get an AttributeError.
 from qtNeurolexTree import TreeData
+from mainWin import Window
 
 if __name__ == '__main__':
 	app = QtGui.QApplication(sys.argv)
@@ -21,4 +17,3 @@ if __name__ == '__main__':
 	window.showMaximized()
 	window.show()
 	sys.exit(app.exec_())
-

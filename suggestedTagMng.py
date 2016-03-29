@@ -50,11 +50,11 @@ class TagSuggester:
 			with open(annotationFileName, 'r', encoding="utf-8", errors='ignore') as f:		
 				annots = Annotation.readIn(f)
 				for annot in annots:
-					for tagId in annot.tags:
-						if tagId in localScores:
-							localScores[tagId] += 1
+					for tag in annot.tags:
+						if tag.id in localScores:
+							localScores[tag.id] += 1
 						else:
-							localScores[tagId] = 1
+							localScores[tag.id] = 1
 		except FileNotFoundError:
 			pass
 		

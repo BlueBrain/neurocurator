@@ -1,60 +1,24 @@
-########## All parameter can be specified as point-measurements or densities. The ambiguity is resolved by the unit of the annotated parameter.
+########## All parameter can be specified as point-measurements or densities (i.e., specific values). The ambiguity is resolved by the unit of the annotated parameter.
 ########## Format: Record_ID; parent_categorie; name; description;required tags
-########## Mono versus bi-exponential process with one or two time constants
-
-#### Other potential currents
-#(just in heart?)
-#"BBP-01410";"BBP-01400";"conductance_del_rect_k		"Delayed rectifier, slow component [K(DRs), Ks]
-#"BBP-01410";"BBP-01400";"conductance_del_rect_k		"Delayed rectifier, fast component [K(DRf), Kr]
-#inwardly-rectifying currents [K(ir)] -> anoumalous rectifier (because conducting in inverse direction as usual)
-#inward L-type Ca current
-
-#### Other potential parameters
-# half_amp_potential
-
-
-#requirement: 
-#
-#types of parameters: 
-#- oriented (from(TAG_CATEGORIE), to(TAG_CATEGORIE)) [required_tags]
-#- single_value [required_tags] [single measurement/value; mean, median, mode, sem, sd, var, N, min, max] [require_unit, entity_tag, type:[single, directed, undirected]], [other required tags]
-#- function/distribution (fonction_definition, #parameters#)
-#- num_functions ([keys:vectors])
-
-
-#id
-#type: {point_value, function, numerical_trace}
-#description : {depend on type}
-#experiment_properties: {}
-
-#point_value: {
-#value
-#unit
-#stat
-#relationship: {single, directed, undirected}
-#required_tags: {}
-#}
-
-#function:
-
-#numerical_trace:
-
 
 #"BBP-010000";"BBP-000000";"cell_mech";"General category for parameters modeling cell mechanisms such as ion channels and membrane properties.";{"sao1813327414":"Cell"}
 
 
 
-
-
-
-
-
-
-
-
 "BBP-000000";"";"parameter";"Root of the parameter ontology three.";{}
 
+"BBP-001000";"BBP-000000";"fundamental_variables";"Root for some fundamental variables such as time."; {}
+"BBP-001001";"BBP-001000";"time";"Time."; {}
+
+"BBP-002000";"BBP-000000";"experimental_properties";"Root for some experimental properties."; {}
+"BBP-002001";"BBP-002000";"age";"Age of subjects/animals."; {}
+"BBP-002002";"BBP-002000";"temperature";"Temperature used for the experiment."; {}
+"BBP-002003";"BBP-002000";"junction_potential";"Junction potential used for recording correction."; {}
+
 "BBP-010000";"BBP-000000";"potential";"Potential."; {}
+"BBP-010001";"BBP-010000";"potential_membrane";"Potential of a cell membrane."; {"sao1813327414":"Cell"}
+"BBP-010002";"BBP-010000";"resting_membrane_potential";"Potential of a cell membrane, at rest."; {"sao1813327414":"Cell"}
+
 "BBP-011000";"BBP-010000";"eq_potential";"Equilibrium potential of a biochemical process."; {"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 "BBP-011001";"BBP-011000";"eq_potential_ion_curr";"Equilibrium potential (a.k.a. reversal potential, voltage) of a channel current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 
@@ -63,20 +27,23 @@
 "BBP-021001";"BBP-021000";"resist_membrane_soma";"Resistance for displacement of ionic current across the membrane of the soma.";{"sao1813327414":"Cell"}
 "BBP-021002";"BBP-021000";"resist_membrane_dend";"Resistance for displacement of ionic current across the membrane of a(the) dendrite(s).";{"sao1813327414":"Cell"}
 "BBP-021003";"BBP-021000";"resist_membrane_axon";"Resistance for displacement of ionic current across the membrane of the axon.";{"sao1813327414":"Cell"}
-"BBP-022000";"BBP-020000";"internal_resist";"Resistivity within the cell (because cytoplasm is not a perfect conductor), e.g. in Ohm*cm.";{"sao1813327414":"Cell"}
+"BBP-022000";"BBP-020000";"internal_resist";"Resistivity within the cell (because cytoplasm is not a perfect conductor; also known as cytoplasmic resistance), e.g. in Ohm*cm.";{"sao1813327414":"Cell"}
 "BBP-022001";"BBP-022000";"resist_internal_soma";"Resistance for displacement of ionic current in the soma.";{"sao1813327414":"Cell"}
 "BBP-022002";"BBP-022000";"resist_internal_dend";"Resistance for displacement of ionic current in a(the) dendrite(s).";{"sao1813327414":"Cell"}
 "BBP-022003";"BBP-022000";"resist_internal_axon";"Resistance for displacement of ionic current in the axon.";{"sao1813327414":"Cell"}
 
-"BBP-030000";"BBP-000000";"conductance";"General category for conductances or electrical permeability (generally of ionic channels). Normally specified in Siemens if taken as point measurement or in Siemens per surface units if it is specified as a density. [g]";{}
+"BBP-030000";"BBP-000000";"conductance";"General category for conductances or electrical permeability. Normally specified in Siemens if taken as point measurement or in Siemens per surface units if it is specified as a density. [g]";{}
 "BBP-030001";"BBP-030000";"conductance_ion_curr";"Conductance of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 "BBP-030002";"BBP-030000";"conductance_synap";"Conductance for synapses.";{"GO:0045202":"Synapse", "sao1813327414":"Cell"}
+"BBP-030003";"BBP-030000";"conductance_ion_curr_max";"Maximal conductance of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 
 "BBP-040000";"BBP-000000";"capacitance";"Capacitance.";{}
 "BBP-040001";"BBP-040000";"capacitance_membrane";"Capacitance of the cell membrane.";{"sao1813327414":"Cell"}
 
 "BBP-050000";"BBP-000000";"proportion";"Proportion, or fraction (normally taking value between 0 and 1).";{}
-"BBP-050001";"BBP-050000";"prop_active_synap";"Fraction of active synapses.";{"sao1813327414":"Cell", "GO:0045202":"Synapse"}
+"BBP-050001";"BBP-050000";"prop_activ_synap";"Fraction of active synapses.";{"sao1813327414":"Cell", "GO:0045202":"Synapse"}
+"BBP-050002";"BBP-050000";"prop_inact_ion_curr";"Fraction of inactive ionic channels.";{"sao1813327414":"Cell", "nifext_8054":"Transmembrane ionic current"}
+"BBP-050003";"BBP-050000";"prop_activ_ion_curr";"Fraction of active ionic channels.";{"sao1813327414":"Cell", "nifext_8054":"Transmembrane ionic current"}
 
 "BBP-060000";"BBP-000000";"gain";"Gain.";{}
 "BBP-060001";"BBP-060000";"gain_synap";"Synaptic gain. Generally associated with modeling of populations rather than channels.";{"sao1813327414":"Cell"}
@@ -88,13 +55,16 @@
 "BBP-080001";"BBP-080000";"time_const_activ_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 "BBP-080002";"BBP-080000";"time_const_inact_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 "BBP-080003";"BBP-080000";"time_const_recov_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-080004";"BBP-080000";"time_const_membrane";"Time constant for a cell to reach its equilibrium potential when an input step function is applied. This correspond to the eFel 'time_constant' parameter.";{"sao1813327414":"Cell"}
 
 "BBP-090000";"BBP-000000";"mid_amp";"Mid amplitude of some phenomenon. It is often used as a shape parameter for sigmoidal functions, such as the Boltzmann function.";{}
 "BBP-090001";"BBP-090000";"mid_amp_activ";"Mid amplitude of an ion channel activation function.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-090002";"BBP-090000";"mid_amp_inact";"Mid amplitude of an ion channel inactivation function.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 
 "BBP-100000";"BBP-000000";"slope";"Variable specifying the slope of a relationship between two variables.";{}
 "BBP-101000";"BBP-100000";"slope_factor";"Factor specifying the slope of a relationship between two variables. It is often used as a shape parameter for sigmoidal functions, such as the Boltzmann function.";{}
 "BBP-101001";"BBP-101000";"slope_factor_activ";"Factor specifying the slope of the activation function of an ion channel.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-101002";"BBP-101000";"slope_factor_inact";"Factor specifying the slope of the inactivation function of an ion channel.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 
 "BBP-110000";"BBP-000000";"connectivity";"From X to Y [as matrix; value takes the form of a JSON string specifying a list of tags (for col/row names) and a 2D array of values].";{}
 "BBP-110001";"BBP-110000";"connectivity_prob";"Probability of connection.";{}
@@ -103,11 +73,12 @@
 
 "BBP-120000";"BBP-000000";"morphology";"";{}
 "BBP-121000";"BBP-120000";"morphology_neuron";"";{"sao1813327414":"Cell"}
-"BBP-121001";"BBP-121000";"soma_length";"Length of the soma of a neuron.";{"sao1813327414":"Cell"}
+"BBP-121001";"BBP-121000";"soma_length";"Length of the soma of a neuron [should probably be merged with soma_diameter].";{"sao1813327414":"Cell"}
 "BBP-131002";"BBP-121000";"soma_diameter";"Diameter of the soma of a neuron.";{"sao1813327414":"Cell"}	
 "BBP-121003";"BBP-121000";"cell_area";"Area of a neuronal cell.";{"sao1813327414":"Cell"}
-"BBP-121004";"BBP-212000";"soma_area";"Area of the membrane of the soma of a neuron.";{"sao1813327414":"Cell"}
-   
+"BBP-121004";"BBP-121000";"soma_area";"Area of the membrane of the soma of a neuron.";{"sao1813327414":"Cell"}
+"BBP-121005";"BBP-121000";"dendrite_length";"Length of the dendrites of a neuron.";{"sao1813327414":"Cell"}  
+"BBP-121006";"BBP-121000";"dendrite_diameter";"Diameter of the dendrites of a neuron.";{"sao1813327414":"Cell"}  
 
 "BBP-130000";"BBP-000000";"structure";"";{}
 "BBP-131000";"BBP-130000";"structure_brain_region";"";{}
@@ -150,7 +121,6 @@
 "BBP-990022";"BBP-990000";"steady_state_hyper";"eFEL: Steady state voltage during hyperpolarization.";{}
 "BBP-990023";"BBP-990000";"steady_state_voltage";"eFEL: Average voltage after the stimulus.";{}
 "BBP-990024";"BBP-990000";"steady_state_voltage_stimend";"eFEL: ";{}
-"BBP-990025";"BBP-990000";"time_constant";"eFEL: The membrane time constant.";{}
 "BBP-990026";"BBP-990000";"time_to_first_spike";"eFEL: Time from the start of the stimulus to the maximum of the first peak.";{}
 "BBP-990027";"BBP-990000";"voltage_deflection";"eFEL: The relative steady state voltage in a hyperpolarized state.";{}
 
