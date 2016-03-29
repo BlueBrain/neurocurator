@@ -190,7 +190,7 @@ class Annotation:
                 if isinstance(jsonAnnot["tags"], dict):
                     annot.tags = [Tag(id, name) for id, name in jsonAnnot["tags"].items()]
                 else:
-                    annot.tags = jsonAnnot["tags"]   
+                    annot.tags = [Tag.fromJSON(tag) for tag in jsonAnnot["tags"]]   
                 
                 
                 if "experimentProperties" in jsonAnnot:
@@ -296,7 +296,7 @@ class Annotation:
         self.tags.append(Tag(id, name))
 
     def removeTag(self, id):
-        ids = self.tagIds()
+        ids = self.tagIds
         
         del self.tags[ids.index(id)]
 

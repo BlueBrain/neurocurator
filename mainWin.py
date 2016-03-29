@@ -371,6 +371,11 @@ class Window(QtGui.QMainWindow):
                                            self.settings.config['ZOTERO']['libraryType'], 
                                            self.settings.config['ZOTERO']['apiKey'])
 
+
+
+        self.zoteroTblWdg.doubleClicked.connect(self.changeTagToAnnotations)
+
+
         # Layout
         self.zoteroGroupBox     = QtGui.QGroupBox("Zotero database content")
         gridZotero                 = QtGui.QGridLayout(self.zoteroGroupBox)
@@ -383,6 +388,10 @@ class Window(QtGui.QMainWindow):
         self.zoteroTblWdg.horizontalHeader().sectionClicked.connect(self.setZotSortCol)
 
 
+
+    def changeTagToAnnotations(self):
+        self.mainTabs.setCurrentIndex(1)
+        
 
     def setZotSortCol(self, col):
         self.zoteroTableModel.sortCol = col        
