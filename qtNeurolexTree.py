@@ -427,19 +427,30 @@ def loadTreeData(fileNamePattern="onto/onto*"):
 
 def addSuppTerms(dic):
     
-    idsToAdd = ["NIFINV:birnlex_2300", "GO:0030431", "NIFMOL:sao1797800540",
-                "NIFMOL:sao1846985919", "NIFGA:nlx_anat_1010", "NIFCELL:nifext_156",
-                "NIFMOL:sao940366596"]
+    
+    # Previously, we were doing something like...
+    #    
+    #idsToAdd = [...]
+    #vocab = Vocabulary()
+    #for id in idsToAdd:
+    #    term = vocab.findById(id)      
+    #    dic[id] = term["labels"][0] 
+    #
+    # ...but this calls the SciGraph interface which queries for the information
+    # online. This fails when working offline. Thus, for now, we just specify
+    # the terms name by hand.
+    
+    idsToAdd = {"NIFINV:birnlex_2300"   :"Computational model", 
+                "GO:0030431"            :"sleep", 
+                "NIFMOL:sao1797800540"  :"Sodium Channel",
+                "NIFMOL:sao1846985919"  :"Calcium Channel", 
+                "NIFGA:nlx_anat_1010"   :"Afferent role", 
+                "NIFCELL:nifext_156"    :"Hippocampal pyramidal cell",
+                "NIFMOL:sao940366596"   :"Ion Channel"}
 
-    vocab = Vocabulary()
-    termDic = {}   
-    for id in idsToAdd:
-        term = vocab.findById(id)
-        name = term["labels"][0]         
-        termDic[id] = name
-    dic.update(termDic)
+    dic.update(idsToAdd)
     
-    
+    # These terms were in Neurolex but have not been ported to KS.
     orphanTerms = {"nlx_78803":"Burst Firing Pattern", 
                    "nlx_52865":"Modelling",
                    "nlx_152236":"Electron microscopy immunolabeling protocol"}

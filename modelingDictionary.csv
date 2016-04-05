@@ -19,8 +19,11 @@
 "BBP-010001";"BBP-010000";"potential_membrane";"Potential of a cell membrane."; {"sao1813327414":"Cell"}
 "BBP-010002";"BBP-010000";"resting_membrane_potential";"Potential of a cell membrane, at rest."; {"sao1813327414":"Cell"}
 
-"BBP-011000";"BBP-010000";"eq_potential";"Equilibrium potential of a biochemical process."; {"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-011000";"BBP-010000";"eq_potential";"Equilibrium potential of a biochemical process."; {"sao1813327414":"Cell"}
 "BBP-011001";"BBP-011000";"eq_potential_ion_curr";"Equilibrium potential (a.k.a. reversal potential, voltage) of a channel current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-012000";"BBP-010000";"AP_threshold";"Votage threshold that will cause a cell de fire an action potential."; {"sao1813327414":"Cell"}
+
 
 "BBP-020000";"BBP-000000";"resistivity";"Resistivity.";{}
 "BBP-021000";"BBP-020000";"resist_membrane";"Resistivity in the cell membrane, e.g. in Ohm*cm^2.";{"sao1813327414":"Cell"}
@@ -31,6 +34,9 @@
 "BBP-022001";"BBP-022000";"resist_internal_soma";"Resistance for displacement of ionic current in the soma.";{"sao1813327414":"Cell"}
 "BBP-022002";"BBP-022000";"resist_internal_dend";"Resistance for displacement of ionic current in a(the) dendrite(s).";{"sao1813327414":"Cell"}
 "BBP-022003";"BBP-022000";"resist_internal_axon";"Resistance for displacement of ionic current in the axon.";{"sao1813327414":"Cell"}
+
+"BBP-020001";"BBP-020000";"ohmic_input_resistance_peak";"Peak of the input resistance for the transient response of a cell. Steady-state response should be specified with eFel term ohmic_input_resistance.";{"sao1813327414":"Cell"}
+
 
 "BBP-030000";"BBP-000000";"conductance";"General category for conductances or electrical permeability. Normally specified in Siemens if taken as point measurement or in Siemens per surface units if it is specified as a density. [g]";{}
 "BBP-030001";"BBP-030000";"conductance_ion_curr";"Conductance of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
@@ -88,8 +94,8 @@
 "BBP-131004";"BBP-131000";"layer_thickness";"Thickness of a layer of neurons (in layered structures such as human cortex).";{}
 
 "BBP-140000";"BBP-000000";"rate";"Rate or frequency.";{}
-"BBP-140001";"BBP-140000";"tonic_firing_rate";"Firing rate in tonic mode.";{}
-"BBP-141002";"BBP-140000";"burst_firing_rate";"Firing rate in bursting mode.";{}
+"BBP-140001";"BBP-140000";"tonic_firing_rate";"Firing rate in tonic mode.";{"sao1813327414":"Cell"}
+"BBP-141002";"BBP-140000";"burst_firing_rate";"Firing rate in bursting mode.";{"sao1813327414":"Cell"}
 
 
 "BBP-970000";"BBP-000000";"other_coefficients";"Categorie for various other coefficients that were not fitting in any other categorie.";{}
@@ -98,68 +104,69 @@
 "BBP-980000";"BBP-000000";"functions";"Functions.";{}
 "BBP-980001";"BBP-980000";"func_activ";"Activation function.";{}
 
-"BBP-990000";"BBP-000000";"eFel_param";"Parameter defined in eFEL.";{}
-"BBP-990003";"BBP-990000";"spikecount";"eFEL: The number of peaks during stimulus.";{}
-"BBP-990004";"BBP-990000";"adaptation_index";"eFEL: Normalized average difference of two consecutive ISIs.";{}
-"BBP-990005";"BBP-990000";"burst_mean_freq";"eFEL: The mean frequency during a burst for each burst.";{}
-"BBP-990006";"BBP-990000";"burst_number";"eFEL: ";{}
-"BBP-990007";"BBP-990000";"decay_time_constant_after_stim";"eFEL: ";{}
-"BBP-990008";"BBP-990000";"depolarized_base";"eFEL: ";{}
-"BBP-990009";"BBP-990000";"interburst_voltage";"eFEL: The voltage average in between two bursts.";{}
-"BBP-990010";"BBP-990000";"inv_time_to_first_spike";"eFEL: ";{}
-"BBP-990011";"BBP-990000";"irregularity_index";"eFEL; ";{}
-"BBP-990012";"BBP-990000";"max_amp_difference";"eFEL: Maximum difference of the height of two subsequent peaks.";{}
-"BBP-990013";"BBP-990000";"maximum_voltage";"eFEL: The maximum voltage during a stimulus.";{}
-"BBP-990014";"BBP-990000";"mean_frequency";"eFEL: The mean frequency of the firing rate.";{}
-"BBP-990015";"BBP-990000";"min_voltage_between_spikes";"eFEL: ";{}
-"BBP-990016";"BBP-990000";"minimum_voltage";"eFEL: ";{}
-"BBP-990017";"BBP-990000";"number_initial_spikes";"eFEL: ";{}
-"BBP-990018";"BBP-990000";"ohmic_input_resistance";"eFEL: The ohmic input resistance Rin of the cell.";{}
-"BBP-990019";"BBP-990000";"peak_voltage";"eFEL: The voltages at the maxima of the peaks.";{}
-"BBP-990020";"BBP-990000";"single_burst_ratio";"eFEL: ";{}
-"BBP-990021";"BBP-990000";"spike_half_width";"eFEL: The FWHM of each peak";{}
-"BBP-990022";"BBP-990000";"steady_state_hyper";"eFEL: Steady state voltage during hyperpolarization.";{}
-"BBP-990023";"BBP-990000";"steady_state_voltage";"eFEL: Average voltage after the stimulus.";{}
-"BBP-990024";"BBP-990000";"steady_state_voltage_stimend";"eFEL: ";{}
-"BBP-990026";"BBP-990000";"time_to_first_spike";"eFEL: Time from the start of the stimulus to the maximum of the first peak.";{}
-"BBP-990027";"BBP-990000";"voltage_deflection";"eFEL: The relative steady state voltage in a hyperpolarized state.";{}
+"BBP-990000";"BBP-000000";"eFel_param";"Parameter defined in eFEL.";{"sao1813327414":"Cell"}
+"BBP-990003";"BBP-990000";"spikecount";"eFEL: The number of peaks during stimulus.";{"sao1813327414":"Cell"}
+"BBP-990004";"BBP-990000";"adaptation_index";"eFEL: Normalized average difference of two consecutive ISIs.";{"sao1813327414":"Cell"}
+"BBP-990005";"BBP-990000";"burst_mean_freq";"eFEL: The mean frequency during a burst for each burst.";{"sao1813327414":"Cell"}
+"BBP-990006";"BBP-990000";"burst_number";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990007";"BBP-990000";"decay_time_constant_after_stim";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990008";"BBP-990000";"depolarized_base";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990009";"BBP-990000";"interburst_voltage";"eFEL: The voltage average in between two bursts.";{"sao1813327414":"Cell"}
+"BBP-990010";"BBP-990000";"inv_time_to_first_spike";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990011";"BBP-990000";"irregularity_index";"eFEL; ";{"sao1813327414":"Cell"}
+"BBP-990012";"BBP-990000";"max_amp_difference";"eFEL: Maximum difference of the height of two subsequent peaks.";{"sao1813327414":"Cell"}
+"BBP-990013";"BBP-990000";"maximum_voltage";"eFEL: The maximum voltage during a stimulus.";{"sao1813327414":"Cell"}
+"BBP-990014";"BBP-990000";"mean_frequency";"eFEL: The mean frequency of the firing rate.";{"sao1813327414":"Cell"}
+"BBP-990015";"BBP-990000";"min_voltage_between_spikes";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990016";"BBP-990000";"minimum_voltage";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990017";"BBP-990000";"number_initial_spikes";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990018";"BBP-990000";"ohmic_input_resistance";"eFEL: The ohmic input resistance Rin of the cell. This should be a steady-state value. Peak of transient response can be specified using the term ohmic_input_resistance_peak.";{"sao1813327414":"Cell"}
 
-"BBP-990100";"BBP-990000";"after_hyperpolarisation";"";{}
-"BBP-990101";"BBP-990100";"AHP_depth_from_peak";"eFEL: ";{}
-"BBP-990102";"BBP-990100";"AHP_depth";"eFEL: Relative voltage values at the after-hyperpolarization.";{}
-"BBP-990103";"BBP-990100";"AHP_depth_abs";"eFEL: Voltage values at the after-hyperpolarization.";{}
-"BBP-990104";"BBP-990100";"AHP_depth_abs_slow";"eFEL: Voltage values at the "slow" after-hyperpolarization.";{}
-"BBP-990105";"BBP-990100";"fast_AHP";"eFEL: Voltage value of the action potential onset relative to the subsequent AHP.";{}
-"BBP-990106";"BBP-990100";"fast_AHP_change";"eFEL: Difference of the fast AHP of the second and the first action potential divided by the fast AHP of the first action potential.";{}
-"BBP-990107";"BBP-990100";"min_AHP";"eFEL: ";{}
+"BBP-990019";"BBP-990000";"peak_voltage";"eFEL: The voltages at the maxima of the peaks.";{"sao1813327414":"Cell"}
+"BBP-990020";"BBP-990000";"single_burst_ratio";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990021";"BBP-990000";"spike_half_width";"eFEL: The FWHM of each peak";{"sao1813327414":"Cell"}
+"BBP-990022";"BBP-990000";"steady_state_hyper";"eFEL: Steady state voltage during hyperpolarization.";{"sao1813327414":"Cell"}
+"BBP-990023";"BBP-990000";"steady_state_voltage";"eFEL: Average voltage after the stimulus.";{"sao1813327414":"Cell"}
+"BBP-990024";"BBP-990000";"steady_state_voltage_stimend";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990026";"BBP-990000";"time_to_first_spike";"eFEL: Time from the start of the stimulus to the maximum of the first peak.";{"sao1813327414":"Cell"}
+"BBP-990027";"BBP-990000";"voltage_deflection";"eFEL: The relative steady state voltage in a hyperpolarized state.";{"sao1813327414":"Cell"}
 
-"BBP-990200";"BBP-990000";"action_porential";"";{}
-"BBP-990201";"BBP-990200";"AP_begin_voltage";"eFEL: Voltage values at the onset of each action potential.";{}
-"BBP-990202";"BBP-990200";"AP_begin_width";"eFEL: ";{}
-"BBP-990203";"BBP-990200";"AP_peak";"eFEL: ";{}
-"BBP-990204";"BBP-990200";"AP_width";"eFEL: Width of each peak at the value of Threshold.";{}
-"BBP-990205";"BBP-990200";"AP_amplitude";"eFEL: The relative height of the action potential.";{}
-"BBP-990206";"BBP-990200";"AP_amplitude_change";"eFEL: Difference of the amplitudes of the second and the first action potential divided by the amplitude of the first action potential.";{}
-"BBP-990207";"BBP-990200";"AP_amplitude_diff";"eFEL: ";{}
-"BBP-990208";"BBP-990200";"AP_amplitude_from_voltagebase";"eFEL: The height of the action potential measured from voltage base.";{}
-"BBP-990209";"BBP-990200";"AP_duration";"eFEL: Duration of an action potential from onset to offset.";{}
-"BBP-990210";"BBP-990200";"AP_duration_change";"eFEL: Difference of the durations of the second and the first action potential divided by the duration of the first action potential.";{}
-"BBP-990211";"BBP-990200";"AP_duration_half_width";"eFEL: FWHM of each action potential.";{}
-"BBP-990212";"BBP-990200";"AP_duration_half_width_change";"eFEL: Difference of the FWHM of the second and the first action potential divided by the FWHM of the first action potential.";{}
-"BBP-990213";"BBP-990200";"AP_fall_rate";"eFEL: Voltage change rate during the falling phase of the action potential.";{}
-"BBP-990214";"BBP-990200";"AP_fall_rate_change";"eFEL: Difference of the fall rates of the second and the first action potential divided by the fall rate of the first action potential.";{}
-"BBP-990215";"BBP-990200";"AP_fall_time";"eFEL: Time from action potential maximum to the offset.";{}
-"BBP-990216";"BBP-990200";"AP_height";"eFEL: The voltages at the maxima of the peaks.";{}
-"BBP-990217";"BBP-990200";"AP_phaseslope";"eFEL: ";{}
-"BBP-990218";"BBP-990200";"AP_phaseslope_AIS";"eFEL: ";{}
-"BBP-990219";"BBP-990200";"AP_rise_rate";"eFEL: Voltage change rate during the rising phase of the action potential.";{}
-"BBP-990220";"BBP-990200";"AP_rise_rate_change";"eFEL: Difference of the rise rates of the second and the first action potential divided by the rise rate of the first action potential.";{}
-"BBP-990221";"BBP-990200";"AP_rise_time";"eFEL: Time from action potential onset to the maximum.";{}
+"BBP-990100";"BBP-990000";"after_hyperpolarisation";"";{"sao1813327414":"Cell"}
+"BBP-990101";"BBP-990100";"AHP_depth_from_peak";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990102";"BBP-990100";"AHP_depth";"eFEL: Relative voltage values at the after-hyperpolarization.";{"sao1813327414":"Cell"}
+"BBP-990103";"BBP-990100";"AHP_depth_abs";"eFEL: Voltage values at the after-hyperpolarization.";{"sao1813327414":"Cell"}
+"BBP-990104";"BBP-990100";"AHP_depth_abs_slow";"eFEL: Voltage values at the "slow" after-hyperpolarization.";{"sao1813327414":"Cell"}
+"BBP-990105";"BBP-990100";"fast_AHP";"eFEL: Voltage value of the action potential onset relative to the subsequent AHP.";{"sao1813327414":"Cell"}
+"BBP-990106";"BBP-990100";"fast_AHP_change";"eFEL: Difference of the fast AHP of the second and the first action potential divided by the fast AHP of the first action potential.";{"sao1813327414":"Cell"}
+"BBP-990107";"BBP-990100";"min_AHP";"eFEL: ";{"sao1813327414":"Cell"}
 
-"BBP-990300";"BBP-990000";"inter_spike_interval";"";{}
-"BBP-990301";"BBP-990300";"ISI_CV";"eFEL: The coefficient of variation of the ISIs";{}
-"BBP-990302";"BBP-990300";"ISI_log_slope";"eFEL: ";{}
-"BBP-990303";"BBP-990300";"ISI_semilog_slope";"eFEL: ";{}
-"BBP-990304";"BBP-990300";"ISI_values";"eFEL: The interspike intervals (i.e. time intervals) between adjacent peaks, starting at the second peak.";{}
-"BBP-990305";"BBP-990300";"doublet_ISI";"eFEL: The time interval between the first too peaks.";{}
+"BBP-990200";"BBP-990000";"action_potential";"";{"sao1813327414":"Cell"}
+"BBP-990201";"BBP-990200";"AP_begin_voltage";"eFEL: Voltage values at the onset of each action potential.";{"sao1813327414":"Cell"}
+"BBP-990202";"BBP-990200";"AP_begin_width";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990203";"BBP-990200";"AP_peak";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990204";"BBP-990200";"AP_width";"eFEL: Width of each peak at the value of Threshold.";{"sao1813327414":"Cell"}
+"BBP-990205";"BBP-990200";"AP_amplitude";"eFEL: The relative height of the action potential.";{"sao1813327414":"Cell"}
+"BBP-990206";"BBP-990200";"AP_amplitude_change";"eFEL: Difference of the amplitudes of the second and the first action potential divided by the amplitude of the first action potential.";{"sao1813327414":"Cell"}
+"BBP-990207";"BBP-990200";"AP_amplitude_diff";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990208";"BBP-990200";"AP_amplitude_from_voltagebase";"eFEL: The height of the action potential measured from voltage base.";{"sao1813327414":"Cell"}
+"BBP-990209";"BBP-990200";"AP_duration";"eFEL: Duration of an action potential from onset to offset.";{"sao1813327414":"Cell"}
+"BBP-990210";"BBP-990200";"AP_duration_change";"eFEL: Difference of the durations of the second and the first action potential divided by the duration of the first action potential.";{"sao1813327414":"Cell"}
+"BBP-990211";"BBP-990200";"AP_duration_half_width";"eFEL: FWHM of each action potential.";{"sao1813327414":"Cell"}
+"BBP-990212";"BBP-990200";"AP_duration_half_width_change";"eFEL: Difference of the FWHM of the second and the first action potential divided by the FWHM of the first action potential.";{"sao1813327414":"Cell"}
+"BBP-990213";"BBP-990200";"AP_fall_rate";"eFEL: Voltage change rate during the falling phase of the action potential.";{"sao1813327414":"Cell"}
+"BBP-990214";"BBP-990200";"AP_fall_rate_change";"eFEL: Difference of the fall rates of the second and the first action potential divided by the fall rate of the first action potential.";{"sao1813327414":"Cell"}
+"BBP-990215";"BBP-990200";"AP_fall_time";"eFEL: Time from action potential maximum to the offset.";{"sao1813327414":"Cell"}
+"BBP-990216";"BBP-990200";"AP_height";"eFEL: The voltages at the maxima of the peaks.";{"sao1813327414":"Cell"}
+"BBP-990217";"BBP-990200";"AP_phaseslope";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990218";"BBP-990200";"AP_phaseslope_AIS";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990219";"BBP-990200";"AP_rise_rate";"eFEL: Voltage change rate during the rising phase of the action potential.";{"sao1813327414":"Cell"}
+"BBP-990220";"BBP-990200";"AP_rise_rate_change";"eFEL: Difference of the rise rates of the second and the first action potential divided by the rise rate of the first action potential.";{"sao1813327414":"Cell"}
+"BBP-990221";"BBP-990200";"AP_rise_time";"eFEL: Time from action potential onset to the maximum.";{"sao1813327414":"Cell"}
+
+"BBP-990300";"BBP-990000";"inter_spike_interval";"";{"sao1813327414":"Cell"}
+"BBP-990301";"BBP-990300";"ISI_CV";"eFEL: The coefficient of variation of the ISIs";{"sao1813327414":"Cell"}
+"BBP-990302";"BBP-990300";"ISI_log_slope";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990303";"BBP-990300";"ISI_semilog_slope";"eFEL: ";{"sao1813327414":"Cell"}
+"BBP-990304";"BBP-990300";"ISI_values";"eFEL: The interspike intervals (i.e. time intervals) between adjacent peaks, starting at the second peak.";{"sao1813327414":"Cell"}
+"BBP-990305";"BBP-990300";"doublet_ISI";"eFEL: The time interval between the first too peaks.";{"sao1813327414":"Cell"}
 

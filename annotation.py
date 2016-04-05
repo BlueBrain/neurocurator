@@ -304,6 +304,15 @@ class Annotation:
         self.tags = []
 
 
+    def getSpecies(self):
+        #TODO
+        return None
+        
+    def getBrainRegion(self):
+        #TODO
+        return None
+        
+        
 
     @property
     def authors(self):
