@@ -10,6 +10,9 @@ from abc import abstractmethod
 from modelingParameter import ParameterInstance, ParamRef# ExperimentProperty
 from tag import Tag
 
+import utils
+from os.path import join
+
 class Localizer:
     @staticmethod    
     @abstractmethod
@@ -268,6 +271,22 @@ class Annotation:
             self.localizer.text = text.encode("ascii", 'backslashreplace').decode("ascii").replace("\n", "\\n")
         else:
             raise AttributeError
+
+
+    def getContext(self, contextLength=100, dbPath="./curator_DB"):
+        try:
+            txtFileName = join(dbPath, utils.Id2FileName(self.pubId)) + ".txt"
+            with open(txtFileName, 'r', encoding="utf-8", errors='ignore') as f :
+                fileText = f.read()
+                
+                if isinstance(self.localizer, TextLocalizer):
+                    contextStart = max(0, self.localizer.start - contextLength)
+                    contextEnd = self.localizer.start + len(self.localizer.text) + contextLength
+                    return fileText[contextStart:contextEnd]
+                else:
+                    return ""
+        except FileNotFoundError:
+            return ""
 
 
 

@@ -15,7 +15,8 @@ annotationKeys         = ["Annotation type", "Publication ID", "Has parameter", 
 annotationResultFields = ["Annotation type", "Publication ID", "Nb. parameters", "Tag name", "Comment", "Authors", "Localizer"]
 
 parameterKeys          = ["Parameter name", "Result type", "Unit", "Required tag name", "Annotation ID", "Publication ID", "Tag name"]
-parameterResultFields  = ["Required tag names", "Result type", "Values", "Parameter name", "Parameter type ID", "Parameter instance ID", "Unit"] 
+parameterResultFields  = ["Required tag names", "Result type", "Values", "Parameter name", 
+                          "Parameter type ID", "Parameter instance ID", "Unit", "Text", "Context"] 
 
 
 class Condition:
@@ -310,13 +311,20 @@ class ParameterSearch(Search):
 
     def formatOutput(self, parameters):
 
-        results = {"obj_parameter":list(parameters.keys()), "obj_annotation":list(parameters.values())} 
+        results = {"obj_parameter":list(parameters.keys()), "obj_annotation":list(parameters.values())}
+        annotations = list(parameters.values())
         
         
         for field in self.resultFields:
             
             if field == "Parameter name":
                 results[field] = [getParameterTypeNameFromID(param.description.depVar.typeId) for param in parameters]                
+            
+            elif field == "Text":
+                results[field] = [annot.text for annot in annotations]                
+            
+            elif field == "Context":
+                results[field] = [annot.getContext() for annot in annotations]                
 
             elif field == "Result type":
                 results[field] = [param.description.type for param in parameters]               

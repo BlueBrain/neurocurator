@@ -11,7 +11,7 @@ from modelingParameter import getParameterTypes, ParameterInstance, \
 from itemDelegates import CheckBoxDelegate
 from utils import getParametersForPub
 from variableTableWgt import VariableTableView, VariableListModel
-
+from utils import Id2FileName
 
 parameterTypeTree     = ParameterTypeTree.load()
 parameterTypes        = getParameterTypes()
@@ -151,7 +151,7 @@ class ParamFunctionWgt(QtGui.QWidget):
 
 
     def fillingEquationParameterList(self, currentParameter = None):
-        parameters = getParametersForPub(self.parent.dbPath, self.parent.Id2FileName(self.parent.currentAnnotation.pubId))
+        parameters = getParametersForPub(self.parent.dbPath, Id2FileName(self.parent.currentAnnotation.pubId))
         parameters = [param for param in parameters if param.isExperimentProperty == False]
         if currentParameter is None:
             selectedParams = []

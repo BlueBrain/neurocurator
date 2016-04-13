@@ -18,12 +18,13 @@ from PySide import QtGui, QtCore
 import numpy as np
 
 # Local imports
+from utils import Id2FileName #, fileName2Id
 from annotation import Annotation, AnnotationListModel
 from tagWidget import TagWidget, Tag
 from autocomplete import AutoCompleteEdit
 from suggestedTagMng import TagSuggester
 from gitManager import GitManager
-from qtNeurolexTree import TreeData, TreeModel, TreeView, loadTreeData
+from qtNeurolexTree import TreeModel, TreeView, loadTreeData
 from zoteroWrap import ZoteroTableModel
 from id import checkID
 from uiUtilities import errorMessage, disableTextWidget
@@ -34,11 +35,6 @@ from experimentalPropertyWgt import ExpPropWgt
 from searchInterface import SearchWgt
 
 
-# Records associated with publications are saved with a file name using the ID
-# However, ID (e.g., DOI) may contain the forward slash ("/") character which is not allowed
-# in file names. It is therefore replaced by the character hereby specified 
-# everytime the ID has to be used for naming files.
-forwardSlashEncoder = "%2F"
 
 # Should PDF be included in the GIT database?
 gitPDF = True
@@ -732,7 +728,7 @@ class Window(QtGui.QMainWindow):
         
                 # If there is already other annotations associated with this 
                 # paper, ask if the persistence should also be applied to them.
-                fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
+                fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
                 with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
                     try:
                         annotations = Annotation.readIn(f)
@@ -808,7 +804,7 @@ class Window(QtGui.QMainWindow):
 
 
     def openPDF(self):
-        pdfFileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pdf"
+        pdfFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pdf"
     
         if not os.path.isfile(pdfFileName):
             msgBox = QtGui.QMessageBox(self)
@@ -819,7 +815,7 @@ class Window(QtGui.QMainWindow):
             if msgBox.exec_() == QtGui.QMessageBox.Yes:
                 fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
                 if fileName != '':
-                    saveFileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text()))
+                    saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
                     copyfile(fileName, saveFileName + ".pdf")
                     if gitPDF:
                         self.gitMng.addFiles([saveFileName + ".pdf"])
@@ -938,7 +934,7 @@ class Window(QtGui.QMainWindow):
         # Suggested tag list
         self.suggestedTagsWidget.clear()
         if not self.currentAnnotation is None:
-            annotationFileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
+            annotationFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
             tagIds = self.tagSuggester.suggestions(annotationFileName, [tag.id for tag in self.getSelectedTags()])
 
             unusedPersistedSuggestedTags = []
@@ -971,7 +967,7 @@ class Window(QtGui.QMainWindow):
 
         fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
         if fileName != '':
-            saveFileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text()))
+            saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
             if os.path.isfile(saveFileName + ".txt"):
                 errorMessage(self, "Error", "This PDF has already been imported to the database.")
 
@@ -1018,7 +1014,7 @@ class Window(QtGui.QMainWindow):
 
     def getCurrentContext(self):
         try:
-            txtFileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".txt"
+            txtFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".txt"
             with open(txtFileName, 'r', encoding="utf-8", errors='ignore') as f :
                 fileText = f.read()
                 contextStart = self.currentAnnotation.start - self.contextLength
@@ -1033,7 +1029,7 @@ class Window(QtGui.QMainWindow):
         self.annotTableModel.annotationList.remove(self.currentAnnotation)
         self.currentAnnotation = None
 
-        fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
+        fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
         with open(fileName, "w", encoding="utf-8", errors='ignore') as f:
             Annotation.dump(f, self.annotTableModel.annotationList)
 
@@ -1050,7 +1046,7 @@ class Window(QtGui.QMainWindow):
     def saveAnnotation(self):
 
         self.editAnnotSubWgt.updateCurrentAnnotation()
-        fileName = join(self.dbPath, self.Id2FileName(self.IdTxt.text())) + ".pcr"
+        fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
 
         with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
             try:
@@ -1114,10 +1110,10 @@ class Window(QtGui.QMainWindow):
 
 
     def checkIdInDB(self, ID):
-        papers = glob(join(self.dbPath, self.Id2FileName(ID) + ".pcr")) # paper curation record
+        papers = glob(join(self.dbPath, Id2FileName(ID) + ".pcr")) # paper curation record
         return len(papers) == 1
 
-
+    """
     def Id2FileName(self, ID):
         assert(not forwardSlashEncoder in ID)
         return ID.replace("/", forwardSlashEncoder)
@@ -1125,7 +1121,7 @@ class Window(QtGui.QMainWindow):
     def fileName2Id(self, fileName):
         assert(not "/" in fileName)
         return fileName.replace(forwardSlashEncoder, "/")
-
+    """
 
     def clearAddAnnotation(self):
         self.expPropWgt.fillingExpPropList(checkAll=True)
@@ -1140,7 +1136,7 @@ class Window(QtGui.QMainWindow):
 
         self.annotTableModel.annotationList = []
         try :
-            with open(join(self.dbPath, self.Id2FileName(self.IdTxt.text()) + ".pcr"), 'r', encoding="utf-8", errors='ignore') as f:        
+            with open(join(self.dbPath, Id2FileName(self.IdTxt.text()) + ".pcr"), 'r', encoding="utf-8", errors='ignore') as f:        
                 self.annotTableModel.annotationList = Annotation.readIn(f)    
 
             if not row is None:

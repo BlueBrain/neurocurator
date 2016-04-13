@@ -29,6 +29,11 @@ class SearchWgt(QtGui.QWidget):
         self.outputFormat   = OutputFormatWgt(searchType, self)
         
         self.view = QtGui.QTableView()
+        self.view.setWordWrap(True)
+        self.view.setTextElideMode(QtCore.Qt.ElideMiddle)
+        self.view.resizeRowsToContents()
+        self.view.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        
         self.model = PandasModel()
         self.view.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.view.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)

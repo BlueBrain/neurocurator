@@ -38,10 +38,14 @@
 "BBP-020001";"BBP-020000";"ohmic_input_resistance_peak";"Peak of the input resistance for the transient response of a cell. Steady-state response should be specified with eFel term ohmic_input_resistance.";{"sao1813327414":"Cell"}
 
 
-"BBP-030000";"BBP-000000";"conductance";"General category for conductances or electrical permeability. Normally specified in Siemens if taken as point measurement or in Siemens per surface units if it is specified as a density. [g]";{}
+"BBP-030000";"BBP-000000";"conductance";"General category for conductances. Normally specified in Siemens if taken as point measurement or in Siemens per surface units if it is specified as a density. [g]";{}
 "BBP-030001";"BBP-030000";"conductance_ion_curr";"Conductance of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 "BBP-030002";"BBP-030000";"conductance_synap";"Conductance for synapses.";{"GO:0045202":"Synapse", "sao1813327414":"Cell"}
 "BBP-030003";"BBP-030000";"conductance_ion_curr_max";"Maximal conductance of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-035000";"BBP-000000";"permeability";"General category for permeability.";{}
+"BBP-035001";"BBP-035000";"permeability_ion_curr";"Permeability of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-035003";"BBP-035000";"permeability_ion_curr_max";"Maximal permeability of a ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 
 "BBP-040000";"BBP-000000";"capacitance";"Capacitance.";{}
 "BBP-040001";"BBP-040000";"capacitance_membrane";"Capacitance of the cell membrane.";{"sao1813327414":"Cell"}
