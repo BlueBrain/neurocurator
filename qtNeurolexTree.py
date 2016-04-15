@@ -369,7 +369,12 @@ class TreeData():
  when loading from pickle since pickle need to know the definition of the 
  class, which can be not loaded yet.
 """
-def loadTreeData(fileNamePattern="onto/onto*"):
+def loadTreeData(fileNamePattern=None):
+
+    if fileNamePattern is None:
+        fileNamePattern = os.path.join(os.path.dirname(__file__), "onto/onto*")    
+    
+    
     from tag import nlx2ks 
     import collections
     # From http://stackoverflow.com/a/3387975/1825043
@@ -463,7 +468,9 @@ def addSuppTerms(dic):
 def appendAdditions(treeData, dicData ):
     #inv_dicData = {v: k for k, v in dicData.items()}
 
-    df = pd.read_csv("additionsToNeurolex.csv", skip_blank_lines=True, comment="#", 
+    csvFileName = os.path.join(os.path.dirname(__file__), './additionsToNeurolex.csv')
+
+    df = pd.read_csv(csvFileName, skip_blank_lines=True, comment="#", 
                      delimiter=";", names=["id", "label", "definition", "superCategory", "synonyms"])
 
     for index, row in df.iterrows():

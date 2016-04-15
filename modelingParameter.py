@@ -2,6 +2,7 @@
 
 __author__ = "Christian O'Reilly"
 
+import os
 from PySide import QtGui, QtCore
 import quantities as pq
 import csv
@@ -82,7 +83,10 @@ class ParameterTypeTree:
 
 
     @staticmethod
-    def load(fileName = "modelingDictionary.csv", root = "BBP-000000"):
+    def load(fileName = None, root = "BBP-000000"):
+
+        if fileName is None:
+            fileName = os.path.join(os.path.dirname(__file__), "modelingDictionary.csv")
 
         def addChildren(tree, df):
             children = df[df["parentId"] == tree.value.ID]
@@ -108,7 +112,11 @@ class ParameterTypeTree:
 
 
 
-def getParameterTypes(fileName = "modelingDictionary.csv"):
+def getParameterTypes(fileName = None):
+
+    if fileName is None:
+        fileName = os.path.join(os.path.dirname(__file__), "modelingDictionary.csv")
+
     with open(fileName, 'r') as f:
         lines = f.readlines()
     return [ParameterType.readIn(line) for line in lines if line.strip() != "" and line[0] != "#"]

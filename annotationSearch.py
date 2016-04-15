@@ -4,6 +4,7 @@ __author__ = 'oreilly'
 __email__  = 'christian.oreilly@epfl.ch'
 
 
+import sys, os
 from glob import glob
 from annotation import Annotation
 from modelingParameter import NumericalVariable, getParameterTypeNameFromID, Variable
@@ -204,7 +205,10 @@ class ConditionNOT(Condition):
 
 class Search:
     
-    def __init__(self, pathDB='./curator_DB'):
+    def __init__(self, pathDB=None):
+        if pathDB is None:
+            pathDB = os.path.join(os.path.dirname(__file__), './curator_DB')
+
         self.treeData, self.dicData    = loadTreeData()
         self.conditions = Condition()    
         
@@ -243,7 +247,7 @@ class Search:
 
 class AnnotationSearch(Search):
     
-    def __init__(self, pathDB='./curator_DB'):
+    def __init__(self, pathDB=None):
         super(AnnotationSearch, self).__init__(pathDB)
         self.resultFields = annotationResultFields
 
@@ -295,7 +299,7 @@ class AnnotationSearch(Search):
 
 class ParameterSearch(Search):
     
-    def __init__(self, pathDB='./curator_DB'):
+    def __init__(self, pathDB=None):
         super(ParameterSearch, self).__init__(pathDB)
         self.resultFields = parameterResultFields
         self.getAllParameters()
