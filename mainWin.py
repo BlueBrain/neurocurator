@@ -34,8 +34,6 @@ from modParamWidgets import ParamModWgt
 from experimentalPropertyWgt import ExpPropWgt
 from searchInterface import SearchWgt
 
-
-
 # Should PDF be included in the GIT database?
 gitPDF = True
 
@@ -887,9 +885,13 @@ class Window(QtGui.QMainWindow):
             retCode = msgBox.exec_() 
 
             if retCode == 0:
-                if not self.importPDF():
-                    self.invalidPaperChoice()
-                    return
+                try:
+                    if not self.importPDF():
+                        self.invalidPaperChoice()
+                        return
+                except UnicodeEncodeError:
+                    errorMessage(self, "Unicode error", "Please check that the path of the file you are trying to upload does not contain non ASCII characters. Complete support of unicode encoding for file names and paths are not provided.")
+                    
             elif retCode == 1 and DOI != "":
                 url = "http://dx.doi.org/" + self.IdTxt.text()
                 webbrowser.open(url)
@@ -971,7 +973,7 @@ class Window(QtGui.QMainWindow):
             if os.path.isfile(saveFileName + ".txt"):
                 errorMessage(self, "Error", "This PDF has already been imported to the database.")
 
-            check_call(['pdftotext', '-enc', 'UTF-8', fileName, saveFileName + ".txt"]) #'-layout',
+            check_call(['pdftotext', '-enc', 'UTF-8', fileName.encode("utf-8").decode("utf-8"), saveFileName + ".txt"])
             copyfile(fileName, saveFileName + ".pdf")
 
             open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore')

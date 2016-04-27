@@ -178,11 +178,12 @@ class EditAnnotWgt(QtGui.QWidget):
 
 
     def updateCurrentAnnotation(self):
-        self.currentAnnotation.comment = self.commentEdt.toPlainText()
-        if not self.parent.username in self.currentAnnotation.users:
-            self.currentAnnotation.users.append(self.parent.username)
-        self.editAnnotWgt[self.annotationTypesCbo.currentText()].updateCurrentAnnotation()
-
+        if not self.currentAnnotation is None:
+            self.currentAnnotation.comment = self.commentEdt.toPlainText()
+            if not self.parent.username in self.currentAnnotation.users:
+                self.currentAnnotation.users.append(self.parent.username)
+            self.editAnnotWgt[self.annotationTypesCbo.currentText()].updateCurrentAnnotation()
+    
 
 
 

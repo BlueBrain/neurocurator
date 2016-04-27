@@ -18,12 +18,15 @@
 "BBP-010000";"BBP-000000";"potential";"Potential."; {}
 "BBP-010001";"BBP-010000";"potential_membrane";"Potential of a cell membrane."; {"sao1813327414":"Cell"}
 "BBP-010002";"BBP-010000";"resting_membrane_potential";"Potential of a cell membrane, at rest."; {"sao1813327414":"Cell"}
-
 "BBP-011000";"BBP-010000";"eq_potential";"Equilibrium potential of a biochemical process."; {"sao1813327414":"Cell"}
 "BBP-011001";"BBP-011000";"eq_potential_ion_curr";"Equilibrium potential (a.k.a. reversal potential, voltage) of a channel current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
-
 "BBP-012000";"BBP-010000";"AP_threshold";"Votage threshold that will cause a cell de fire an action potential."; {"sao1813327414":"Cell"}
 
+"BBP-013000";"BBP-010000";"peak_potential";"Peak potential of a transient biochemical process."; {"sao1813327414":"Cell"}
+"BBP-013001";"BBP-013000";"peak_potential_ion_curr";"Peak potential of an ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-014000";"BBP-010000";"thresh_potential";"Threshold potential for initiating a biochemical process."; {"sao1813327414":"Cell"}
+"BBP-014001";"BBP-014000";"thresh_potential_activ_ion_curr";"Threshold potential for the activation of an ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 
 "BBP-020000";"BBP-000000";"resistivity";"Resistivity.";{}
 "BBP-021000";"BBP-020000";"resist_membrane";"Resistivity in the cell membrane, e.g. in Ohm*cm^2.";{"sao1813327414":"Cell"}
@@ -59,7 +62,10 @@
 "BBP-060001";"BBP-060000";"gain_synap";"Synaptic gain. Generally associated with modeling of populations rather than channels.";{"sao1813327414":"Cell"}
 
 "BBP-070000";"BBP-000000";"current";"";{}
-"BBP-070001";"BBP-070000";"current_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+"BBP-070001";"BBP-070000";"current_ion_curr";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
+
+"BBP-071000";"BBP-070000";"peak_current";"Peak current of a transient biochemical process."; {"sao1813327414":"Cell"}
+"BBP-071001";"BBP-071000";"peak_curr_ion_curr";"Peak current of an ionic current.";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
 
 "BBP-080000";"BBP-000000";"time_const";"Time constants are generally entered in exponential equations and represent the time at which the amplitude of the process as decayed by about 63% (i.e., 1-1/e).";{}
 "BBP-080001";"BBP-080000";"time_const_activ_ion";"";{"nifext_8054":"Transmembrane ionic current", "sao1813327414":"Cell"}
@@ -92,9 +98,9 @@
 
 "BBP-130000";"BBP-000000";"structure";"";{}
 "BBP-131000";"BBP-130000";"structure_brain_region";"";{}
-"BBP-131001";"BBP-131000";"neuron_density";"Density of a specific kind of neurons in a specific region.";{}
-"BBP-131002";"BBP-131000";"neuron_number";"Total number of neurons (of a specific class if a type of neuron has been tagged) in a defined region.";{}
-"BBP-131003";"BBP-131000";"neuron_type_proportion";"Proportion of a given type of neurons in a specific structure.";{}
+"BBP-131001";"BBP-131000";"neuron_density";"Density of a specific kind of neurons in a specific region.";{"sao1813327414":"Cell"}
+"BBP-131002";"BBP-131000";"neuron_number";"Total number of neurons (of a specific class if a type of neuron has been tagged) in a defined region.";{"sao1813327414":"Cell"}
+"BBP-131003";"BBP-131000";"neuron_type_proportion";"Proportion of a given type of neurons in a specific structure.";{"sao1813327414":"Cell"}
 "BBP-131004";"BBP-131000";"layer_thickness";"Thickness of a layer of neurons (in layered structures such as human cortex).";{}
 
 "BBP-140000";"BBP-000000";"rate";"Rate or frequency.";{}

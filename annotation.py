@@ -238,15 +238,19 @@ class Annotation:
         jsonAnnots = []
         for annot in annots:
             # Build and append the annotation...
-            jsonAnnots.append({"pubId":annot.pubId, "annotId": annot.ID, "version": "1", 
-                           "tags":[tag.toJSON() for tag in annot.tags], "comment":annot.comment, 
-                           "authors":annot.users, "parameters":[param.toJSON() for param in annot.parameters], 
-                           "localizer":annot.localizer.toJSON(),
-                           "experimentProperties":[prop.toJSON() for prop in annot.experimentProperties]})
+            jsonAnnots.append(annot.toJSON())
 
 
 
         json.dump(jsonAnnots, fileObject, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+    def toJSON(self):
+        return {"pubId":self.pubId, "annotId": self.ID, "version": "1", 
+               "tags":[tag.toJSON() for tag in self.tags], "comment":self.comment, 
+               "authors":self.users, "parameters":[param.toJSON() for param in self.parameters], 
+               "localizer":self.localizer.toJSON(),
+               "experimentProperties":[prop.toJSON() for prop in self.experimentProperties]}
 
 
 
@@ -286,6 +290,7 @@ class Annotation:
                 else:
                     return ""
         except FileNotFoundError:
+            print("File not found.")
             return ""
 
 

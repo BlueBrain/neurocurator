@@ -11,7 +11,7 @@ import urllib
 from glob import glob
 import pandas as pd
 from scigraph_client import Vocabulary, Graph
-from tag import nlx2ks
+from tagUtilities import nlx2ks
 
 
 
@@ -375,7 +375,6 @@ def loadTreeData(fileNamePattern=None):
         fileNamePattern = os.path.join(os.path.dirname(__file__), "onto/onto*")    
     
     
-    from tag import nlx2ks 
     import collections
     # From http://stackoverflow.com/a/3387975/1825043
     class TransformedDict(collections.MutableMapping):
@@ -465,7 +464,7 @@ def addSuppTerms(dic):
     
 
 
-def appendAdditions(treeData, dicData ):
+def appendAdditions(treeData, dicData):
     #inv_dicData = {v: k for k, v in dicData.items()}
 
     csvFileName = os.path.join(os.path.dirname(__file__), './additionsToNeurolex.csv')

@@ -367,13 +367,13 @@ class ImageWidget(QtGui.QLabel):
 		x1 = pixX1/width 
 		x1 = x1 if x1 >= 0.0 else 0.0
 		x1 = x1 if x1 <= 1.0 else 1.0
-		y1 = pixY1/width 
+		y1 = pixY1/height 
 		y1 = y1 if y1 >= 0.0 else 0.0
 		y1 = y1 if y1 <= 1.0 else 1.0
 		x2 = pixX2/width 
 		x2 = x2 if x2 >= 0.0 else 0.0
 		x2 = x2 if x2 <= 1.0 else 1.0
-		y2 = pixY2/width 
+		y2 = pixY2/height 
 		y2 = y2 if y2 >= 0.0 else 0.0
 		y2 = y2 if y2 <= 1.0 else 1.0
 

@@ -279,7 +279,7 @@ class ParamModWgt(QtGui.QWidget):
         self.requireTagGB = QtGui.QGroupBox("Required tag categories", self)
 
         self.requiredTagsListTblWdg      = RequiredTagsTableView() 
-        self.requiredTagsListModel         = RequiredTagsListModel(self)
+        self.requiredTagsListModel       = RequiredTagsListModel(self)
         self.requiredTagsListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.requiredTagsListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.requiredTagsListTblWdg.setModel(self.requiredTagsListModel)
@@ -404,14 +404,21 @@ class ParamModWgt(QtGui.QWidget):
          It update the interface with the values associated with this specific parameter.
         """
 
-        if selectedRow is None:
-            selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
-        
-        if selectedRow < 0 or selectedRow >= len(self.parent.currentAnnotation.parameters) :
+        def clear():
             self.requiredTagsListModel.clear()
             self.paramModStack.currentWidget().loadRow(None)
             self.relationWgt.clear()        
             self.paramListTblWdg.clearSelection()
+
+        if selectedRow is None:
+            selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
+        
+        if self.parent.currentAnnotation is None:        
+            clear()
+            return
+        
+        if selectedRow < 0 or selectedRow >= len(self.parent.currentAnnotation.parameters) :
+            clear()
             return
             
         currentParameter = self.parent.currentAnnotation.parameters[selectedRow]
