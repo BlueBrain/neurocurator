@@ -22,12 +22,6 @@ class Tag:
     invDicData['Thalamus reticular nucleus cell'] = 'NIFCELL:nifext_45'
     invDicData['Afferent'] = "NIFGA:nlx_anat_1010"
     invDicData['Morphology'] = 'PATO:0000051'
-    
-    'Morphology'
-    'NIFCELL:nifext_45',
-    
-    
-
     ##    
     
     def __init__(self, id, name):
@@ -75,10 +69,19 @@ class Tag:
 
 class RequiredTag(Tag):
     def __init__(self, id, name, rootId):
+
         super(RequiredTag, self).__init__(id, name)
 
         if not isinstance(rootId, str):
             raise TypeError
+
+        if "||" in rootId:
+            self.modifier, rootId = rootId.split("||")
+            self.optional = "OPTIONAL" in self.modifier
+        else:
+            self.modifier = ""
+
+
 
         self.rootId = rootId
 
@@ -89,9 +92,15 @@ class RequiredTag(Tag):
         return str(self.toJSON())
 
     def toJSON(self):
-        return {"id":self.id, "name":self.name, "rootId":self.rootId}
+        if self.modifier == "":
+            rootId = self.rootId
+        else:
+            rootId = self.modifier + "||" + self.rootId
+        return {"id":self.id, "name":self.name, "rootId":rootId}
 
     @staticmethod
     def fromJSON(jsonString):
         return RequiredTag(jsonString["id"], jsonString["name"], jsonString["rootId"])
+
+
 

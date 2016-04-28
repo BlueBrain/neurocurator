@@ -31,16 +31,10 @@ class RequiredTagsTableView(QtGui.QTableView):
     def setReqTags(self, tagName):
 
         tagId = list(self.dicData.keys())[list(self.dicData.values()).index(tagName)]
-        #hipId = list(self.dicData.keys())[list(self.dicData.values()).index('Hippocampus CA1 basket cell')]
         
         for tree in self.treeData:
-            #print(tree.isInTree(hipId), tree.isInTree(tagId))
             subTree = tree.getSubTree(tagId)
             if not subTree is None:
-                #print(subTree.isInTree(hipId))
-                #subTree.printTree()
-                #'Hippocampus CA1 basket cell'
-                #pass
                 break
         if subTree is None:
             print(tagId, tagName)
@@ -60,9 +54,9 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
 
         self.colHeader             = colHeader
         self.nbCol                 = len(colHeader)
-        self.requiredTagsIds     = []
+        self.requiredTagsIds       = []
         self.requiredTagsNames     = []
-        self.selectedTagsIds     = []
+        self.selectedTagsIds       = []
         self.selectedTagsNames     = []
         self.treeData, self.dicData    = loadTreeData()
 
@@ -267,8 +261,8 @@ class ParamModWgt(QtGui.QWidget):
 
         paramType  = getParameterTypeFromName(paramName)
 
-        for id, name in paramType.requiredTags.items():
-            self.requiredTagsListModel.addTag(id, name, id, name)
+        for reqTag in paramType.requiredTags:
+            self.requiredTagsListModel.addTag(reqTag.id, reqTag.name, reqTag.id, reqTag.name)
 
         self.requiredTagsListModel.refresh()
 

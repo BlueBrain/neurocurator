@@ -12,7 +12,7 @@ from glob import glob
 import pandas as pd
 from scigraph_client import Vocabulary, Graph
 from tagUtilities import nlx2ks
-
+import numpy as np
 
 
 
@@ -186,10 +186,14 @@ class TreeData():
 
 
 
-    def printTree(self, level = 0):
-        print("="*level + " " + self.txt)
+    def printTree(self, level = 0, printID=False):
+        if printID:
+            print("="*level + " " + self.id + ":" + self.txt)
+        else:
+            print("="*level + " " + self.txt)
+            
         for child in self.children:
-            child.printTree(level+1)
+            child.printTree(level+1, printID=printID)
 
 
 
@@ -468,7 +472,7 @@ def appendAdditions(treeData, dicData):
     #inv_dicData = {v: k for k, v in dicData.items()}
 
     csvFileName = os.path.join(os.path.dirname(__file__), './additionsToNeurolex.csv')
-
+    print(csvFileName)
     df = pd.read_csv(csvFileName, skip_blank_lines=True, comment="#", 
                      delimiter=";", names=["id", "label", "definition", "superCategory", "synonyms"])
 
@@ -477,15 +481,20 @@ def appendAdditions(treeData, dicData):
             continue
 
         dicData[row["id"]] = row["label"]
-        subTree = None
-        for tree in treeData:
-            subTree = tree.getSubTree(row["superCategory"])    
-            if not subTree is None:
-                break
-        if subTree is None:
-            raise ValueError
-        child = TreeData(row["label"], row["id"], parent=subTree.id)
-        subTree.children.append(child)
+        if isinstance(row["superCategory"], str): 
+            # Check that superCategory is a str because when no superCategory
+            # has been specified, the pd.read_csv put a nan value which is 
+            # a float type. In this case, we don't want to try to attach the
+            # term to a tree.
+            subTree = None
+            for tree in treeData:
+                subTree = tree.getSubTree(row["superCategory"])    
+                if not subTree is None:
+                    break
+            if subTree is None:
+                raise ValueError
+            child = TreeData(row["label"], row["id"], parent=subTree.id)
+            subTree.children.append(child)
 
 
     #with open("onto.tree", 'wb') as f:

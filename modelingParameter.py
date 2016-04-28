@@ -230,8 +230,15 @@ class ParameterType:
         parameter = ParameterType()
         reader = csv.reader(StringIO(paramStr) , delimiter=';') 
         try:
-            parameter.ID, parameter.parent, parameter.name, parameter.description, parameter.requiredTags = [item.strip() for item in list(reader)[0]]
-            parameter.requiredTags = eval(parameter.requiredTags)
+            parameter.ID, parameter.parent, parameter.name, parameter.description, requiredTags = [item.strip() for item in list(reader)[0]]
+            
+            parameter.requiredTags = []
+            for rootId, value in eval(requiredTags).items():
+                if "||" in rootId:
+                    _, id = rootId.split("||")
+                else:
+                    id = rootId
+                parameter.requiredTags.append(RequiredTag(id, value, rootId))
         except ValueError:
             print("Problematic recording: ", paramStr)
             raise
