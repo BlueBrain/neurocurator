@@ -145,8 +145,10 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
                 if ref["date"] == "":
                     return ""
                 else:
-                    return str(parse(ref["date"]).year)
-
+                    try:
+                        return str(parse(ref["date"]).year)
+                    except ValueError:
+                        return re.search(r'[12]\d{3}', ref["date"]).group(0)
 
             ####################### PUBLICATIONTITLE
             elif self.fields[ind] == "publicationTitle":

@@ -472,7 +472,7 @@ def appendAdditions(treeData, dicData):
     #inv_dicData = {v: k for k, v in dicData.items()}
 
     csvFileName = os.path.join(os.path.dirname(__file__), './additionsToNeurolex.csv')
-    print(csvFileName)
+
     df = pd.read_csv(csvFileName, skip_blank_lines=True, comment="#", 
                      delimiter=";", names=["id", "label", "definition", "superCategory", "synonyms"])
 
