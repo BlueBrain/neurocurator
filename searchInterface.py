@@ -23,7 +23,8 @@ class SearchWgt(QtGui.QWidget):
     
     def __init__(self, searchType="Parameter", parent=None):
         super(SearchWgt, self).__init__(parent)
-        
+
+        self.parent         = parent
         self.searchType     = searchType
         self.queryDef       = QueryDefinitionWgt(searchType, self)
         self.outputFormat   = OutputFormatWgt(searchType, self)
@@ -80,10 +81,17 @@ class SearchWgt(QtGui.QWidget):
         
     def search(self):        
 
+        if self.parent is None:
+            dbPath = None
+        elif not hasattr(self.parent, "dbPath"):
+            dbPath = None
+        else:
+            dbPath = self.parent.dbPath
+
         if self.searchType == "Parameter":
-            searcher = ParameterSearch()
+            searcher = ParameterSearch(dbPath)
         elif self.searchType == "Annotation":
-            searcher = AnnotationSearch()
+            searcher = AnnotationSearch(dbPath)
         else:
             raise ValueError
 
