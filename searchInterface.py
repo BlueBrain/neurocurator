@@ -292,12 +292,6 @@ class QueryRowWgt(QtGui.QWidget):
         
 
 
-
-
-
-
-
-
     def getQuery(self):
         if self.valueType.currentText() == "":
             return None

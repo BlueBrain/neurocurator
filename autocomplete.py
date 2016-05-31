@@ -1,5 +1,6 @@
 from PySide import QtCore, QtGui
 from copy import deepcopy
+from sys import platform as _platform
 
 class CustomQCompleter(QtGui.QCompleter):
 	"""
@@ -63,7 +64,12 @@ class AutoCompleteEdit(QtGui.QComboBox):
 		self.comp.setModel(strList)
 
 	def focusInEvent(self, event):
-		self.clearEditText()
+		if _platform == "linux" or _platform == "linux2":
+  			# This behavior is the original one, which is fine in linux. On MacOS,
+			# selecting an item change the value of the combobox and then set the focus on it
+			# which was making this line erase the selected text.
+   			self.clearEditText()
+
 		super(AutoCompleteEdit, self).focusInEvent(event)
 
 	def keyPressEvent(self, event):
