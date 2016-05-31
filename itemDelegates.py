@@ -52,8 +52,6 @@ class ButtonDelegate(QtGui.QItemDelegate):
             self.parent().setIndexWidget(index, button)
 
 
-
-
 class CheckBoxDelegate(QtGui.QItemDelegate):
     """
     A delegate that places a fully functioning QPushButton in every
@@ -78,7 +76,7 @@ class CheckBoxDelegate(QtGui.QItemDelegate):
             self.parent().setIndexWidget(index, checkBox)
         else:
             checkBox = self.parent().indexWidget(index)
-        
+
         checkBox.setChecked(self.parent().model().data(index))
 
 

@@ -461,13 +461,13 @@ class FieldTableView(QtGui.QTableView):
 
     @QtCore.Slot(object) #, str
     def checkBoxClicked(self):
-        self.model().selectParameter(self.sender().row, not self.sender().isChecked())
+        self.model().toggleParameter(self.sender().row)
         self.tableCheckBoxClicked.emit(self.sender().row)
 
 
 class FieldListModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent, colHeader = ['', 'Field to include'], *args): #'Type', 
+    def __init__(self, parent, colHeader = ['', 'Fields to include'], *args): #'Type',
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         #self.parameterList = parameterList
         self.colHeader = colHeader
@@ -525,8 +525,10 @@ class FieldListModel(QtCore.QAbstractTableModel):
 
         
     def selectParameter(self, row, selected):
-        self.selected[row] = selected     
+        self.selected[row] = selected
 
+    def toggleParameter(self, row):
+        self.selected[row] = not self.selected[row]
 
     def refresh(self):
         self.emit(QtCore.SIGNAL("layoutChanged()"))
