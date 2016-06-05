@@ -6,7 +6,8 @@ Created on Sun Jun  5 13:08:43 2016
 """
 
 import requests   
-
+import json
+import os
 
 """
             if os.path.isfile(saveFileName + ".txt"):
@@ -49,9 +50,21 @@ class RESTClient:
         # return true/false
         
     def importPDF(self, localPDF, paperId):
-        pass
-        # return txtFile, pdfFile
+        files = {"file": (os.path.basename(localPDF), open(localPDF, 'rb'), 'application/octet-stream'),
+		 "json": (None, json.dumps({"paperId": paperId}), 'application/json')}
+ 
+	response = requests.post(#"http://httpbin.org/post", 
+                                 self.serverURL + "import_pdf", 
+                                 files=files)
+        print("REPONSE OK")
+	print(response.content)
+	#print(response["files"])
+        return "TEMP RETURN" #txtFile, pdfFile
         
     def getServerPDF(self, paperId):
         pass
         # return pdfFile
+
+if __name__ == "__main__":
+    client = RESTClient("http://bbpca063.epfl.ch:5000/neurocurator/api/v1.0/")
+    client.importPDF("test.txt", "some paper Id")

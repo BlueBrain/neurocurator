@@ -8,6 +8,7 @@ Created on Sun Jun  5 14:50:40 2016
 
 
 from flask import Flask, jsonify, abort, make_response, request
+import json
 
 app = Flask(__name__)
 
@@ -65,16 +66,20 @@ def getContext():
 
 @app.route('/neurocurator/api/v1.0/import_pdf', methods=['POST'])
 def importPDF():
-    if (not request.json         or
-        not 'id' in request.json or
-        not 'annotStr' in request.json):
+    if (not request.files       or
+        not request.form        or
+        not "file" in request.files or
+        not "json" in request.form  or
+        not 'paperId' in request.form["json"]):
         abort(400)
 
-    id       = request.json['id']
-    annotStr = request.json['annotStr']
 
-    return jsonify({'test': "import_pdf"})
+    paperId       = json.loads(request.form["json"])["paperId"]
+    pdf           = request.files["file"].read()
 
+    print(type(pdf))
+    return jsonify({'paperId': paperId, "pdf":pdf})
+    #return None
 
 @app.route('/neurocurator/api/v1.0/get_pdf', methods=['POST'])
 def getServerPDF():
