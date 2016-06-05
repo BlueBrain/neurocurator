@@ -29,7 +29,6 @@ def find_packages(path, base="" ):
     return packages
 
 packages=find_packages("..")
-print(packages)
 
 setup(
     name=NAME,
