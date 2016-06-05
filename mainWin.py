@@ -33,10 +33,7 @@ from annotWidgets import EditAnnotWgt
 from modParamWidgets import ParamModWgt
 from experimentalPropertyWgt import ExpPropWgt
 from searchInterface import SearchWgt
-
-# Should PDF be included in the GIT database?
-gitPDF = True
-
+from restClient import RESTClient
 
 class ZoteroUpdateThread(QtCore.QThread):
     def __init__(self, window):
@@ -810,18 +807,30 @@ class Window(QtGui.QMainWindow):
             msgBox.setText("The PDF file seem to be missing. Do you want to attach one?")
             msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
             msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            if msgBox.exec_() == QtGui.QMessageBox.Yes:
-                fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
-                if fileName != '':
-                    saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
-                    copyfile(fileName, saveFileName + ".pdf")
-                    if gitPDF:
-                        self.gitMng.addFiles([saveFileName + ".pdf"])
-                        self.needPush = True
-                else:
-                    return
-            else:
+            if msgBox.exec_() == QtGui.QMessageBox.No:
                 return
+                
+            restClient = RESTClient(self.restServerURL)
+            if not restClient.gotConnectivity():
+                errorMessage(self, "No connectivity to the RESTful server.",
+                            "The RESTful server seems to be unavailable. "           +
+                            "Attaching PDF requires connectivity to this server "    +
+                            "because we must fecth the server version of the PDF "   +
+                            "submitted by the user so that the application uses the "+ 
+                            "same PDF versions for all users. Requesting the user "  +
+                            "to submit his local version of the PDF is just for "    +
+                            "ensuring that the used has access to this publication " +
+                            "(to avoid infringing upon copyrights).")
+                return 
+            
+            fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
+            if fileName == '':
+                return 
+                
+            pdfFile = restClient.getServerPDF(Id2FileName(self.IdTxt.text()))          
+            # TODO:
+            save pdfFile... pdfFileName
+
                                 
         if sys.platform.startswith('darwin'):
             call(('open', pdfFileName))
@@ -829,6 +838,11 @@ class Window(QtGui.QMainWindow):
             os.startfile(pdfFileName)
         elif os.name == 'posix':
             call(('xdg-open', pdfFileName))
+        else:
+            errorMessage(self, "Unrecognized operating system.", 
+                         "The application could not recognize your operating " +
+                         "system so it was unable to find the appropriate "    +
+                         "command to open a PDF file.")
 
 
     def checkSavingAnnot(self):
@@ -954,11 +968,11 @@ class Window(QtGui.QMainWindow):
 
 
     def clearPaper(self):
-        #self.refEdt.setText("")
         self.IdTxt.setText("")
         
 
 
+    #TODO:
     def importPDF(self):
         # Import a PDF
 
@@ -966,22 +980,40 @@ class Window(QtGui.QMainWindow):
             errorMessage(self, "Error", "This ID seem to be invalid.")
             return    
 
+        saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
 
+        restClient = RESTClient(self.restServerURL)
+        if not restClient.gotConnectivity():
+            errorMessage(self, "No connectivity to the RESTful server.",
+                        "The RESTful server seems to be unavailable. "           +
+                        "Importing PDF requires connectivity to this server "    +
+                        "because we must ensure that the text scapping of "      +
+                        "publication PDFs used for localizing annotations "      +
+                        "are the same accross users so that annotation corpora " +
+                        "are shareable with reliable in-text localization.")
+            return False 
+
+        if os.path.isfile(saveFileName + ".txt"):
+            errorMessage(self, "Error", "This PDF has already been imported to the database.")
+            return False
+            
         fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
         if fileName != '':
-            saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
-            if os.path.isfile(saveFileName + ".txt"):
-                errorMessage(self, "Error", "This PDF has already been imported to the database.")
 
-            check_call(['pdftotext', '-enc', 'UTF-8', fileName.encode("utf-8").decode("utf-8"), saveFileName + ".txt"])
-            copyfile(fileName, saveFileName + ".pdf")
+            # Get and save text and PDF files...
+            txtFile, pdfFile = restClient.importPDF(fileName, Id2FileName(self.IdTxt.text()))
+            #TODO:
+            save txtFile... saveFileName + .txt
+            save pdfFile... saveFileName + .pdf
+            #copyfile(fileName, saveFileName + ".pdf")
+
+            # We locally save the server version of the PDF of the paper
+            # rather than use the user's version to make sure that the PDF
+            # used by the application is identical for all users.
 
             open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore')
-            self.gitMng.addFiles([saveFileName + ".pcr", saveFileName + ".txt"])
-
-            if gitPDF:
-                self.gitMng.addFiles([saveFileName + ".pdf"])
-                self.needPush = True
+            self.gitMng.addFiles([saveFileName + ".pcr"])
+            self.needPush = True
 
             return True
         return False
@@ -991,11 +1023,11 @@ class Window(QtGui.QMainWindow):
     def pushToServer(self):
         info = self.gitMng.push()
         if info is None:
-                        msgBox = QtGui.QMessageBox(self)
-                        msgBox.setWindowTitle("Push error")
-                        msgBox.setText("The push operation has not been performed because you are in offline mode.")
-                        msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
-                        msgBox.exec_()
+            msgBox = QtGui.QMessageBox(self)
+            msgBox.setWindowTitle("Push error")
+            msgBox.setText("The push operation has not been performed because you are in offline mode.")
+            msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgBox.exec_()
 
         elif info.flags & info.ERROR :
             msgBox = QtGui.QMessageBox(self)
@@ -1015,17 +1047,9 @@ class Window(QtGui.QMainWindow):
 
 
     def getCurrentContext(self):
-        try:
-            txtFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".txt"
-            with open(txtFileName, 'r', encoding="utf-8", errors='ignore') as f :
-                fileText = f.read()
-                contextStart = self.currentAnnotation.start - self.contextLength
-                contextEnd = self.currentAnnotation.start + len(self.currentAnnotation.text) + self.contextLength
-                return fileText[contextStart:contextEnd]
-        except FileNotFoundError:
-            return ""
-
-
+        return self.currentAnnotation.getContext(self.contextLength, 
+                                                 self.dbPath, 
+                                                 self.restServerURL)
 
     def deleteAnnotation(self):
         self.annotTableModel.annotationList.remove(self.currentAnnotation)
