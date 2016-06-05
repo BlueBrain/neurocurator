@@ -16,6 +16,7 @@ from difflib import SequenceMatcher
 from approximateMatchDlg import MatchDlg
 from uiUtilities import errorMessage
 from utils import Id2FileName
+from annotTextLocalizer import AnnotTextLocalizer
 
 class EditAnnotWgt(QtGui.QWidget):
 
@@ -584,6 +585,10 @@ class EditAnnotTextWgt(QtGui.QWidget):
         self.localizeBtn.setDisabled(True)
         self.correctBtn.setDisabled(True)
 
+        self.annotTextLocalizer = AnnotTextLocalizer(dbPath=self.container.parent.dbPath, 
+                                                     contextLength=50,
+                                                     restServer=self.container.parent.restServer)
+
     def correctText(self):
         enableTextWidget(self.textToAnnotateTxt)
         self.localizeBtn.setDisabled(True)
@@ -593,6 +598,54 @@ class EditAnnotTextWgt(QtGui.QWidget):
 
 
     def localizeText(self):
+
+        if len(self.textToAnnotateTxt.text()) < 3:
+            errorMessage(self, "Error", "The text to localized should be at least 3-character long.")
+            return            
+
+        paperId = Id2FileName(self.container.parent.IdTxt.text())
+        textToAnnotate = self.textToAnnotateTxt.text()
+            
+        blocks = self.annotTextLocalizer.localizeTextAnnot(paperId, textToAnnotate)
+
+        if len(blocks) == 1 :
+            start   = blocks[0]["start"]
+            context = blocks[0]["context"] 
+        else:
+            matchDlg = MatchDlg(blocks, textToAnnotate, self)
+            if matchDlg.exec_() == QtGui.QDialog.Accepted:
+                start   = matchDlg.chosenBlock["start"]
+                context = matchDlg.chosenBlock["context"]
+            else:
+                return
+
+        self.contextTxt.setText(context)
+        
+        localizer = TextLocalizer(textToAnnotate, start)
+        self.currentAnnotation = Annotation(self.container.commentEdt.toPlainText(), 
+                                            [self.container.parent.username], 
+                                            self.container.parent.IdTxt.text(), localizer)
+
+        self.startTxt.setText(str(start))
+        ID = self.container.parent.IdTxt.text()
+        if ID in self.container.parent.selectedTagPersist:
+            for tagId in self.container.parent.selectedTagPersist[ID]:
+                self.container.currentAnnotation.addTag(tagId, self.container.parent.dicData[tagId])
+
+        self.localizeBtn.setDisabled(True)
+        self.correctBtn.setDisabled(False)
+        disableTextWidget(self.textToAnnotateTxt)
+        enableTextWidget(self.container.commentEdt)
+        self.container.parent.tagAnnotGroupBox.setDisabled(False)
+        self.container.parent.refreshTagList()        
+        self.container.newAnnotationBtn.setEnabled(True)
+        self.container.commentEdt.setFocus()
+        self.container.parent.detectAnnotChange = True
+        self.container.parent.needSaving = True
+
+
+
+        """
         def recursiveSearch(queryString, text, a=0, level=0, maxLevel=5):
 
             starts = [(a, m.start(), len(queryString)) for m in re.finditer(re.escape(queryString), text)]
@@ -740,7 +793,7 @@ class EditAnnotTextWgt(QtGui.QWidget):
         self.container.commentEdt.setFocus()
         self.container.parent.detectAnnotChange = True
         self.container.parent.needSaving = True
-
+        """
 
 
     @QtCore.Slot(object)

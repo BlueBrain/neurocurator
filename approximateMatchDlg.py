@@ -45,30 +45,23 @@ class TextEdit(QtGui.QTextEdit):
 
 class MatchDlg(QtGui.QDialog):
 
-	def __init__(self, blocks, text, fileText, parent=None):
+	def __init__(self, blocks, text, parent=None):
 		super(MatchDlg, self).__init__(parent)
 		self.setWindowTitle("Approximate matches")
 		self.setGeometry(100, 300, 1000, 200)
-
-		NContext = 30
 
 		self.listWidget = QtGui.QListWidget(self)
 
 		for row, block in enumerate(blocks):
 			item = QtGui.QListWidgetItem()
 
-			before = fileText[block["start"]-NContext:block["start"]]
-			after = fileText[block["end"]:block["end"]+NContext]
-
 			item.setSizeHint(QtCore.QSize(1000, 50))
 			textEdit = TextEdit(row, self)
-			textEdit.insertHtml('{}<b>{}</b>{}'.format(before, block["candidate"], after))
+			textEdit.insertHtml('{}<b>{}</b>{}'.format(block["contextBefore"], block["candidate"], block["contextAfter"]))
 			self.listWidget.addItem(item)
 			self.listWidget.setItemWidget(item, textEdit)
 
-
 			textEdit.clicked.connect(self.selectText)
-
 
 		self.listWidget.showMaximized()
 
