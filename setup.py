@@ -1,6 +1,5 @@
 from distutils.core import setup, Extension
 import os
-import numpy
 
 PACKAGE = "neurocurator"
 NAME = "neurocurator"
@@ -45,7 +44,7 @@ setup(
     maintainer=AUTHOR,
     maintainer_email=AUTHOR_EMAIL,  
     license='LICENSE.txt',
-    requires=[],
+    requires=['numpy'],
     classifiers=["Development Status :: 3 - Alpha",
 			"Environment :: MacOS X", #"Environment :: Win32 (MS Windows)",
 			"Environment :: X11 Applications",
