@@ -53,18 +53,52 @@ class RESTClient:
         files = {"file": (os.path.basename(localPDF), open(localPDF, 'rb'), 'application/octet-stream'),
 		 "json": (None, json.dumps({"paperId": paperId}), 'application/json')}
  
-	response = requests.post(#"http://httpbin.org/post", 
+        response = requests.post(#"http://httpbin.org/post", 
                                  self.serverURL + "import_pdf", 
                                  files=files)
-        print("REPONSE OK")
-	print(response.content)
-	#print(response["files"])
-        return "TEMP RETURN" #txtFile, pdfFile
+        return response.content
+
+
+
+    def checkSimilarity(self, localPDF, paperId):
+        files = {"file": (os.path.basename(localPDF), open(localPDF, 'rb'), 'application/octet-stream'),
+                 "json": (None, json.dumps({"paperId": paperId}), 'application/json')}
+ 
+        response = requests.post(#"http://httpbin.org/post",
+                                 self.serverURL + "check_similarity",
+                                 files=files)
+        return response.content
+
+
+
         
     def getServerPDF(self, paperId):
         pass
         # return pdfFile
 
-if __name__ == "__main__":
+
+
+from glob import glob
+def checkSimilarities():
     client = RESTClient("http://bbpca063.epfl.ch:5000/neurocurator/api/v1.0/")
-    client.importPDF("test.txt", "some paper Id")
+
+    intra = []
+    inter = []
+    for f1 in glob("/mnt/curator_DB/*.pdf")[:6]:
+        for f2 in glob("/mnt/curator_DB/*.pdf")[:6]:
+            try:
+                print(f1, f2)
+                response = client.checkSimilarity(f1, os.path.basename(f2)[:-4])
+                if f1 == f2:
+                    intra.append(float(response))
+                else:
+                    inter.append(float(response))
+            except ValueError:
+                pass
+
+    return intra, inter
+
+
+
+if __name__ == "__main__":
+    checkSimilarities()
