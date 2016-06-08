@@ -4,14 +4,21 @@ Created on Wed Mar 16 12:12:13 2016
 
 @author: oreilly
 """
+
+from qtNeurolexTree import TreeData
 from os.path import join
 import annotation 
+
+# See http://www.w3schools.com/tags/ref_urlencode.asp for list of encoders
 
 # Records associated with publications are saved with a file name using the ID
 # However, ID (e.g., DOI) may contain the forward slash ("/") character which is not allowed
 # in file names. It is therefore replaced by the character hereby specified 
 # everytime the ID has to be used for naming files.
-forwardSlashEncoder = "%2F"
+encoders                 = {} 
+encoders["forwardSlash"] = ("/", "%2F")
+encoders["colon"]        = (":", "%3A")
+
 
 
 
@@ -32,9 +39,33 @@ def getParametersForPub(dbPath, pubId):
 
 
 def Id2FileName(ID):
-    assert(not forwardSlashEncoder in ID)
-    return ID.replace("/", forwardSlashEncoder)
+    for key, (symbol, replacement) in encoders:
+        assert(not replacement in ID)
+        ID = ID.replace(symbol, replacement)
+    return ID
 
 def fileName2Id(fileName):
-    assert(not "/" in fileName)
-    return fileName.replace(forwardSlashEncoder, "/")
+    for key, (symbol, replacement) in encoders:
+        assert(not symbol in fileName)
+        fileName = fileName.replace(replacement, symbol)
+    return fileName
+    
+
+
+from glob import glob 
+from copy import copy
+from os.path import basename
+import os 
+for f in glob("/home/oreilly/curator_DB/*"):
+    
+    f_in  = basename(f)
+    f_out = copy(f_in) 
+    for key, (symbol, replacement) in encoders.items():
+        f_out = f_out.replace(symbol, replacement)
+    if f_in != f_out:
+        print(f_in, " ===> ", f_out)
+        os.rename("/home/oreilly/curator_DB/" + f_in, 
+                  "/home/oreilly/curator_DB/" + f_out)
+    
+    
+    
