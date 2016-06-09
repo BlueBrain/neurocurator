@@ -79,13 +79,13 @@ class RESTClient:
 
 
 from glob import glob
-def checkSimilarities():
+def checkSimilarities(dbPath):
     client = RESTClient("http://bbpca063.epfl.ch:5000/neurocurator/api/v1.0/")
 
     intra = []
     inter = []
-    for f1 in glob("/mnt/curator_DB/*.pdf")[:6]:
-        for f2 in glob("/mnt/curator_DB/*.pdf")[:6]:
+    for f1 in glob(os.path.join(dbPath, "*.pdf")):
+        for f2 in glob(os.path.join(dbPath, "*.pdf")):
             try:
                 print(f1, f2)
                 response = client.checkSimilarity(f1, os.path.basename(f2)[:-4])
@@ -101,4 +101,4 @@ def checkSimilarities():
 
 
 if __name__ == "__main__":
-    checkSimilarities()
+    checkSimilarities("/mnt/curator_DB/")
