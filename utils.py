@@ -39,33 +39,34 @@ def getParametersForPub(dbPath, pubId):
 
 
 def Id2FileName(ID):
-    for key, (symbol, replacement) in encoders:
+    for key, (symbol, replacement) in encoders.items():
         assert(not replacement in ID)
         ID = ID.replace(symbol, replacement)
     return ID
 
 def fileName2Id(fileName):
-    for key, (symbol, replacement) in encoders:
+    for key, (symbol, replacement) in encoders.items():
         assert(not symbol in fileName)
         fileName = fileName.replace(replacement, symbol)
     return fileName
     
 
+if __name__ == "__main__":
 
-from glob import glob 
-from copy import copy
-from os.path import basename
-import os 
-for f in glob("/home/oreilly/curator_DB/*"):
-    
-    f_in  = basename(f)
-    f_out = copy(f_in) 
-    for key, (symbol, replacement) in encoders.items():
-        f_out = f_out.replace(symbol, replacement)
-    if f_in != f_out:
-        print(f_in, " ===> ", f_out)
-        os.rename("/home/oreilly/curator_DB/" + f_in, 
-                  "/home/oreilly/curator_DB/" + f_out)
-    
-    
-    
+    from glob import glob 
+    from copy import copy
+    from os.path import basename
+    import os 
+    for f in glob("/home/oreilly/curator_DB/*"):
+        
+        f_in  = basename(f)
+        f_out = copy(f_in) 
+        for key, (symbol, replacement) in encoders.items():
+            f_out = f_out.replace(symbol, replacement)
+        if f_in != f_out:
+            print(f_in, " ===> ", f_out)
+            os.rename("/home/oreilly/curator_DB/" + f_in, 
+                      "/home/oreilly/curator_DB/" + f_out)
+        
+        
+        

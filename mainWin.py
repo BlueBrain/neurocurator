@@ -1001,12 +1001,15 @@ class Window(QtGui.QMainWindow):
         if fileName != '':
 
             # Get and save text and PDF files...
-            txtFile, pdfFile = restClient.importPDF(fileName, Id2FileName(self.IdTxt.text()))
-            #TODO:
-            save txtFile... saveFileName + .txt
-            save pdfFile... saveFileName + .pdf
-            #copyfile(fileName, saveFileName + ".pdf")
-
+            response = restClient.importPDF(fileName, Id2FileName(self.IdTxt.text()))
+            
+            if response["status"] == "success":
+                with open(saveFileName + ".txt", "w", encoding="utf8") as f:
+                    f.write(response["textFile"])
+                    copyfile(fileName, saveFileName + ".pdf")
+            else:
+                raise ValueError(response["message"])        
+                        
             # We locally save the server version of the PDF of the paper
             # rather than use the user's version to make sure that the PDF
             # used by the application is identical for all users.
