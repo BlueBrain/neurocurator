@@ -5,8 +5,7 @@ __author__ = "Christian O'Reilly"
 
 import sys
 from PySide import QtGui
-from qtNeurolexTree import TreeData
-from mainWin import Window
+from neurocurator.mainWin import Window
 
 if __name__ == '__main__':
 	app = QtGui.QApplication(sys.argv)
