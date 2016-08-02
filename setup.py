@@ -3,10 +3,10 @@ import os
 
 PACKAGE = "neurocurator"
 NAME = "neurocurator"
-DESCRIPTION = "GUI-based application and API to perform systematic and collaborative scientific literature curation."
+DESCRIPTION = "GUI-based application and API to perform systematic and collaborative scientific literature curation. This is a front-end for the NeuroAnnotation Toolbox (NAT)."
 AUTHOR = "Christian O'Reilly"
 AUTHOR_EMAIL = "christian.oreilly@epfl.ch"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 def is_package(path):
     return (
@@ -43,7 +43,8 @@ setup(
     maintainer=AUTHOR,
     maintainer_email=AUTHOR_EMAIL,  
     license='LICENSE.txt',
-    requires=['numpy'],
+    install_requires=["nat"],
+    requires=['nat'],
     classifiers=["Development Status :: 3 - Alpha",
 			"Environment :: MacOS X", #"Environment :: Win32 (MS Windows)",
 			"Environment :: X11 Applications",
