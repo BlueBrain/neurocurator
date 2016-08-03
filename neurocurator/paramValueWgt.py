@@ -245,14 +245,14 @@ class ValueListModel(QtCore.QAbstractTableModel):
     def getValuesObject(self):
         """
          Return a ValuesSimple object if only one row has been filed, else
-         return a ValuesCompounded object containing all rows.
+         return a ValuesCompound object containing all rows.
         """
 
         if self.rowCount() == 2:
             # Only one row is filed. An empty row is always appended to filed rows.
             return self.values[0]
         else:
-            return ValuesCompounded(self.values)
+            return ValuesCompound(self.values)
             
             
     def deleteRow(self, row):
@@ -268,7 +268,7 @@ class ValueListModel(QtCore.QAbstractTableModel):
             valuesObject = parameter.description.depVar.values
             if isinstance(valuesObject, ValuesSimple):
                 self.values = [valuesObject]
-            elif isinstance(valuesObject, ValuesCompounded):
+            elif isinstance(valuesObject, ValuesCompound):
                 self.values = valuesObject.valueLst
             else:
                 raise TypeError
