@@ -75,8 +75,16 @@ class OntoOnlineSearch(QtGui.QWidget):
         #self.addTagToAnnotation(id)
         #self.tagEdit.erase = True
         #self.tagEdit.clearEditText()
-        term = self.termTableModel.getTerm(selection.indexes()[0])
-        self.tagSelected.emit(term[0], term[1])
+        if len(selection.indexes()):
+            term = self.termTableModel.getTerm(selection.indexes()[0])
+            self.tagSelected.emit(term[0], term[1])
+    
+            # Unselect selected item in the table view.
+            #self.termListTblWdg.setCurrentCell(-1,-1)
+            self.termListTblWdg.clearSelection()
+            self.termTableModel.refresh()
+
+
 
 
     @QtCore.Slot(object, dict)

@@ -8,10 +8,9 @@ import os
 import webbrowser
 import pickle
 import getpass
-from shutil import copyfile
 from glob import glob
 from os.path import join
-from subprocess import check_call, call
+from subprocess import call
 
 # Contributed libraries imports
 from PySide import QtGui, QtCore
@@ -495,23 +494,7 @@ class Window(QtGui.QMainWindow):
         self.tagEdit = AutoCompleteEdit(self)
         self.tagEdit.setMinimumWidth(10)
 
-        # Sort list of suggestions so that more often used tags 
-        # are on the top of the autocompletion list
-        ids = list(self.tagSuggester.usedTag.keys())
-        usage = list(self.tagSuggester.usedTag.values())
-        ids.sort(key=dict(zip(ids, usage)).get, reverse=True)
-
-
-        #usedNames = [self.dicData[id] for id in ids]
-        usedNames = [self.dicData[id] for id in ids if id in self.dicData] 
-
-
-        allNames  = np.array(list(self.dicData.values()))
-  
-        # Putting used tag at the top of the list. 
-        allNames = np.concatenate([usedNames, allNames[np.logical_not(np.in1d(allNames, usedNames))]])
-        
-        self.tagEdit.setModel(allNames)
+        self.updateAutoCompleteTagList()
 
         # List tags that have been selected by the user
         self.selectedTagsWidget = QtGui.QListWidget(self)
@@ -550,6 +533,25 @@ class Window(QtGui.QMainWindow):
         gridTagAnnotations.setColumnStretch(0, 1)
         gridTagAnnotations.setColumnStretch(1, 1)
 
+
+
+
+    def updateAutoCompleteTagList(self):
+        # Sort list of suggestions so that more often used tags 
+        # are on the top of the autocompletion list
+        ids = list(self.tagSuggester.usedTag.keys())
+        usage = list(self.tagSuggester.usedTag.values())
+        ids.sort(key=dict(zip(ids, usage)).get, reverse=True)
+
+        usedNames = [self.dicData[id] for id in ids if id in self.dicData] 
+
+        allNames  = np.array(list(self.dicData.values()))
+  
+        # Putting used tag at the top of the list. 
+        allNames = np.concatenate([usedNames, allNames[np.logical_not(np.in1d(allNames, usedNames))]])
+        
+        self.tagEdit.setModel(allNames)
+    
 
 
 
@@ -731,6 +733,7 @@ class Window(QtGui.QMainWindow):
                 if not tagName in self.dicData:
                     self.dicData[tagId] = tagName
                     self.ontoMng.savePickle()
+                    self.updateAutoCompleteTagList()
 
             self.currentAnnotation.addTag(tagId, tagName)
             self.needSaving = True
