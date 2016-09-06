@@ -51,7 +51,11 @@ class SettingsDlg(QtGui.QDialog):
         self.settings = settings
 
         # Creating widgets with initial values
+        self.gitProtocol = QtGui.QComboBox(self)
+        protocols = ["http", "ssh"]
+        self.gitProtocol.addItems(protocols)
         if self.settings is None:
+            self.gitProtocol.setCurrentIndex(0)
             self.gitRemoteTxt     = QtGui.QLineEdit('github.com:christian-oreilly/corpus-thalamus.git', self)
             self.gitLocalTxt      = QtGui.QLineEdit('curator_DB', self)
             self.gitUserTxt       = QtGui.QLineEdit("git", self) #getpass.getuser(), self)
@@ -63,6 +67,11 @@ class SettingsDlg(QtGui.QDialog):
             self.restServerURLTxt = QtGui.QLineEdit("http://bbpca063.epfl.ch:5000/neurocurator/api/v1.0/", self) 
     
         else:
+            if "protocol" in self.settings.config['GIT']:
+                self.gitProtocol.setCurrentIndex(protocols.index(self.settings.config['GIT']['protocol']))
+            else:
+                self.gitProtocol.setCurrentIndex(0)
+                
             self.gitRemoteTxt     = QtGui.QLineEdit(self.settings.config['GIT']['remote'], self)
             self.gitLocalTxt      = QtGui.QLineEdit(self.settings.config['GIT']['local'], self)
             self.gitUserTxt       = QtGui.QLineEdit(self.settings.config['GIT']['user'], self)
@@ -95,12 +104,13 @@ class SettingsDlg(QtGui.QDialog):
         self.gitGroupBox = QtGui.QGroupBox("GIT")
         gridGIT = QtGui.QGridLayout(self.gitGroupBox)
         gridGIT.addWidget(QtGui.QLabel('Remove repository', self), 0, 0)
-        gridGIT.addWidget(QtGui.QLabel('ssh://', self), 0, 1)
-        gridGIT.addWidget(self.gitUserTxt, 0, 2)
-        gridGIT.addWidget(QtGui.QLabel('@', self), 0, 3)
-        gridGIT.addWidget(self.gitRemoteTxt, 0, 4)
+        gridGIT.addWidget(self.gitProtocol, 0, 1)
+        gridGIT.addWidget(QtGui.QLabel('://', self), 0, 2)
+        gridGIT.addWidget(self.gitUserTxt, 0, 3)
+        gridGIT.addWidget(QtGui.QLabel('@', self), 0, 4)
+        gridGIT.addWidget(self.gitRemoteTxt, 0, 5)
         gridGIT.addWidget(QtGui.QLabel('Local repository', self), 1, 0)
-        gridGIT.addWidget(self.gitLocalTxt, 1, 1, 1, 4)
+        gridGIT.addWidget(self.gitLocalTxt, 1, 1, 1, 5)
 
         # Zotero
         self.zoteroGroupBox = QtGui.QGroupBox("Zotero")
@@ -145,7 +155,8 @@ class SettingsDlg(QtGui.QDialog):
 
         config['DEFAULT'] = {}
 
-        config['GIT'] = {'remote'          : self.gitRemoteTxt.text(),
+        config['GIT'] = {'protocol'        : self.gitProtocol.currentText(),
+                         'remote'          : self.gitRemoteTxt.text(),
                          'local'           : self.gitLocalTxt.text(),
                          'user'            : self.gitUserTxt.text()}
 
