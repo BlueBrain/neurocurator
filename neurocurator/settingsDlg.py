@@ -138,6 +138,14 @@ class SettingsDlg(QtGui.QDialog):
 
         self.setLayout(layout)
 
+
+        # Detect changes in git repository URL
+        #self.gitProtocol.currentIndexChanged.connect(self.gitURLChanged)
+
+
+
+
+
     def updateZoteroLibraryIDInstructions(self):
         if self.zoteroLibraryTypeCB.currentText() == "group":
             self.zoteroLibraryIDInstructions.setText('The ID can be found by opening the group’s page: ' +

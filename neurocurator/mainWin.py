@@ -29,12 +29,11 @@ from nat.restClient import RESTClient
 # Local imports
 from .autocomplete import AutoCompleteEdit
 from .suggestedTagMng import TagSuggester
-#from .qtOntoTrees import TreeModel, TreeView
 from .zoteroWrap import ZoteroTableModel
 from .uiUtilities import errorMessage, disableTextWidget
 from .settingsDlg import getSettings, SettingsDlg
 from .annotWidgets import EditAnnotWgt
-from .jsonDlg import JSONDlg
+#from .jsonDlg import JSONDlg
 from .modParamWidgets import ParamModWgt
 from .experimentalPropertyWgt import ExpPropWgt
 from .searchInterface import SearchWgt
@@ -78,7 +77,13 @@ class Window(QtGui.QMainWindow):
             self.close()
             self.deleteLater()
             return
-
+        else:
+            # Refresh the git manage to ensure that it is representative of
+            # the actual settings.
+            try:
+                self.gitMng = GitManager(self.settings.config["GIT"])
+            except KeyError:
+                self.popUpSettingsDlg()
 
     def __init__(self):
         super(Window, self).__init__()
