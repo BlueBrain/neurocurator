@@ -9,7 +9,7 @@ import pandas as pd
 from nat.annotationSearch import ConditionAtom, ConditionAND, ConditionOR, \
     ConditionNOT, parameterKeys, annotationKeys, ParameterSearch, \
     AnnotationSearch, parameterResultFields, annotationResultFields
-from nat.treeData import OntoManager
+from nat.ontoManager import OntoManager
 
 from .itemDelegates import ParamTypeCbo, CheckBoxDelegate
 from .autocomplete import AutoCompleteEdit

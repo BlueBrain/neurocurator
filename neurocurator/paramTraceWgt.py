@@ -10,26 +10,31 @@ from nat.modelingParameter import getParameterTypes, ParameterInstance,  ParamDe
 from .variableTableWgt import VariableTableView, VariableListModel
 
 
+
 class ParamTraceWgt(QtGui.QWidget):
 
     paramTypeSelected = QtCore.Signal(str)
     
     def __init__(self, parent):
-        super(ParamTraceWgt, self).__init__()
         self.parent = parent
+        super(ParamTraceWgt, self).__init__(parent)
         self.parameterTypes = getParameterTypes()
 
         # Widgets        
-        self.varListTblWdg  = VariableTableView() 
-        self.varListModel     = VariableListModel(self)
+        self.varListTblWdg  = VariableTableView(self) 
+        self.varListModel   = VariableListModel(self)
         self.varListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.varListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
         self.varListTblWdg.setModel(self.varListModel)
 
-        self.addIndepVarBtn        = QtGui.QPushButton("Add variable")
-        self.deleteIndepVarBtn    = QtGui.QPushButton("Delete variable")
-        self.addSample            = QtGui.QPushButton("Add sample")
-        self.deleteSample        = QtGui.QPushButton("Delete sample")
-        self.loadCSV            = QtGui.QPushButton("Load CSV")
+        selection = self.varListTblWdg.selectionModel()
+        selection.selectionChanged.connect(self.varSelectionChanged)
+        
+        self.addIndepVarBtn    = QtGui.QPushButton("Add variable")
+        self.deleteIndepVarBtn = QtGui.QPushButton("Delete variable")
+        self.addSample         = QtGui.QPushButton("Add sample")
+        self.deleteSample      = QtGui.QPushButton("Delete sample")
+        self.loadCSV           = QtGui.QPushButton("Load CSV")
 
         # Signals
         self.addIndepVarBtn.clicked.connect(self.varListModel.addVariable)
@@ -39,13 +44,27 @@ class ParamTraceWgt(QtGui.QWidget):
         self.varListTblWdg.depTypeSelected.connect(self.depVarSelected)
 
         # Layout
-        grid     = QtGui.QGridLayout(self)
+        grid = QtGui.QGridLayout(self)
         grid.addWidget(self.varListTblWdg, 0, 0, 6, 1)
         grid.addWidget(self.addIndepVarBtn, 0, 1)
         grid.addWidget(self.deleteIndepVarBtn, 1, 1)
         grid.addWidget(self.addSample, 2, 1)
         grid.addWidget(self.deleteSample, 3, 1)
         grid.addWidget(self.loadCSV, 4, 1)
+
+        self.varListTblWdg.clicked.connect(self.tableClicked)
+
+
+    def tableClicked(self, index):
+        self.varSelectionChanged(index, None)
+
+
+
+    def varSelectionChanged(self, selected, deselected):
+        col = self.varListTblWdg.selectionModel().currentIndex().column()
+        paramType = self.varListModel.getType(col)
+        if not paramType is None:
+            self.paramTypeSelected.emit(paramType)
 
 
     @QtCore.Slot(object, str)
@@ -59,11 +78,15 @@ class ParamTraceWgt(QtGui.QWidget):
         depVar        = self.varListModel.getDepVar(varType="NumericalVariable")
         indepVars     = self.varListModel.getIndepVars(varType="NumericalVariable")
         description     = ParamDescTrace(depVar, indepVars)
-        return ParameterInstance(paramId, description, [], [], relationship)
+        return ParameterInstance(paramId, description, [], relationship)
+
 
     def loadRow(self, currentParameter):
-        self.varListModel.setFromParam(currentParameter)
-        self.varListModel.refresh()
+        if currentParameter is None:
+            self.varListModel.clear()            
+        else:
+            self.varListModel.setFromParam(currentParameter)
+            self.varListModel.refresh()
 
     def loadModelingParameter(self, row = None):
         pass

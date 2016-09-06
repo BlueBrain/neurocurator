@@ -21,7 +21,7 @@ class VariableTableView(QtGui.QTableView):
     depTypeSelected = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
-        QtGui.QTableView.__init__(self, *args, **kwargs)
+        super(VariableTableView, self).__init__(*args, **kwargs)
 
         self.setItemDelegate(DoubleDelegate(self))
         typeDelegate = ParamTypeDelegate(self)
@@ -34,7 +34,6 @@ class VariableTableView(QtGui.QTableView):
 
     @QtCore.Slot(object, str)
     def typeSelected(self, paramType):
-        print("typeSelected")
         if self.selectionModel().currentIndex().column() == 0:
             self.depTypeSelected.emit(paramType)
 
@@ -43,8 +42,6 @@ class VariableTableView(QtGui.QTableView):
 
     def deleteSample(self):
         self.model().deleteSample(self.selectionModel().currentIndex().row())
-
-
 
 
 
@@ -175,6 +172,67 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
 
 
+
+    """
+
+        if varType == "Variable":
+            return [Variable(getParameterTypeIDFromName(self.__data[('Type',      'Independant ' + str(no))]), 
+                             self.__data[('Unit',      'Independant ' + str(no))], 
+                             self.__data[('Statistic', 'Independant ' + str(no))])
+                        for no in range(1, self.columnCount())]
+
+        elif varType == "NumericalVariable":
+            indepVars = []
+
+            # Generally, one ValuesSimple object is created by independant variable.
+            # However, when two independant variables are asstributed to a same 
+            # parameter, this is interpreted as different statistics that 
+            # should be combined in a given ValuesCompound object.
+            typeDic = {}
+            for no in range(1, self.columnCount()):
+                varLabel    = 'Independant ' + str(no)   
+                itemType    = self.__data[('Type', varLabel)]
+                if itemType in typeDic:                    
+                    typeDic[itemType].append((no, varLabel))
+                else:
+                    typeDic[itemType] = [(no, varLabel)]
+            
+            ## loop dic items, create ValuesSimple for list of 1 element, 
+            ## create ValuesCompound for lists of more than one element...            
+            for itemType, noLst in typeDic.items():
+                varLst = []
+                for no, varLabel in noLst:
+                    
+                    floatValues = []
+                    for row in self.rowHeader[3:]:
+                        try:
+                            floatValues.append(float(self.__data[(row, varLabel)]))
+                        except ValueError:
+                            floatValues.append(float('nan'))
+    
+                    varLst.append(ValuesSimple(floatValues, self.__data[('Unit',      varLabel)], 
+                                                        self.__data[('Statistic', varLabel)]))
+    
+                typeId = getParameterTypeIDFromName(self.__data[('Type', varLabel)])
+                if len(varLst) == 1:
+                    indepVars.append(NumericalVariable(typeId, varLst[0]))
+                else:
+                    indepVars.append(NumericalVariable(typeId, ValuesCompound(varLst)))
+            
+            return indepVars
+
+        else:
+            raise ValueError    
+    
+    """
+
+
+
+
+
+
+
+
     def rowCount(self, parent=None):
         return len(self.rowHeader)
 
@@ -267,11 +325,10 @@ class VariableListModel(QtCore.QAbstractTableModel):
         if value is None:
             value = ""
         self.__data[(self.rowHeader[index.row()], self.colHeader[index.column()])] = value
-
+        return True
 
     def flags(self, index):
         return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
-
 
 
     def headerData(self, section, orientation, role):
@@ -286,13 +343,8 @@ class VariableListModel(QtCore.QAbstractTableModel):
         self.emit(QtCore.SIGNAL("layoutChanged()"))
 
 
-
     def load(self, param):
         #param.description.
         ### TODO: LOAD FROM PARAM
         self.refresh()
-        
-
-
-
 

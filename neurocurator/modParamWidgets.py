@@ -5,8 +5,9 @@ __author__ = "Christian O'Reilly"
 # Contributed libraries imports
 from PySide import QtGui, QtCore
 
-from nat.modelingParameter import getParameterTypeFromName
-from nat.treeData import OntoManager        
+from nat.modelingParameter import getParameterTypeFromName, \
+    getParameterTypeNameFromID
+from nat.ontoManager import OntoManager  
 from nat.tag import RequiredTag
 
 from .itemDelegates import ReqTagDelegate
@@ -37,7 +38,6 @@ class RequiredTagsTableView(QtGui.QTableView):
         if not tagId in self.treeData:
             raise ValueError("The term id " + tagId + " was not specified as an ontological root.")
 
-        print(list(self.treeData[tagId].values()))
         self.reqTagDelegate.addItems(list(self.treeData[tagId].values()))
 
 
@@ -85,18 +85,24 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
 
         if index.column() == 0:
             self.requiredTagsNames[index.row()] = value
+            tagId = list(self.dicData.keys())[list(self.dicData.values()).index(value)]            
+            self.requiredTagsIds[index.row()]   = tagId
+            
         elif index.column() == 1:
             if self.checkTagValidity(index.row(), value):
                 self.selectedTagsNames[index.row()] = value
-
+                tagId = list(self.dicData.keys())[list(self.dicData.values()).index(value)]    
+                self.selectedTagsIds[index.row()]   = tagId
 
     def checkTagValidity(self, row, tagName):
 
         tagId = self.requiredTagsIds[row]
 
-        print(list(self.treeData.keys()))
-        if not tagId is self.treeData:
-            raise ValueError("Tag " + tagId + ":" + tagName + " is invalid.")
+        if not tagId in self.treeData: 
+
+            #print(self.requiredTagsIds[row], self.requiredTagsNames[row], self.selectedTagsIds[row], self.selectedTagsNames[row]) 
+            #print(self.treeData[self.requiredTagsIds[row]])     
+            raise ValueError("Tag '" + tagId + "' is not a treeData root. TreeData roots are the following:" + str(list(self.treeData.keys())))
 
         return tagName in list(self.treeData[tagId].values())
 
@@ -124,6 +130,7 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
         self.selectedTagsNames.append(selectedTagName)
         self.selectedTagsIds.append(selectedTagId)
         self.refresh()
+        print(requiredTagId, requiredTagName, selectedTagId, selectedTagName)
 
     def clear(self):
         self.requiredTagsNames  = []
@@ -253,6 +260,8 @@ class ParamModWgt(QtGui.QWidget):
         self.requiredTagsListModel.refresh()
 
         paramType  = getParameterTypeFromName(paramName)
+        if paramType is None:
+            raise ValueError("Parameter type with name '" + paramName + "' was not found.")
 
         for reqTag in paramType.requiredTags:
             self.requiredTagsListModel.addTag(reqTag.id, reqTag.name, reqTag.id, reqTag.name)
@@ -300,7 +309,6 @@ class ParamModWgt(QtGui.QWidget):
 
         relationship = self.relationWgt.getRelationship()
         
-
         # Get the ID of the modified parameter if we are modifying an existing
         # parameters        
         if len(self.paramListTblWdg.selectionModel().selectedRows()) != 0:
@@ -313,6 +321,7 @@ class ParamModWgt(QtGui.QWidget):
 
         if not param is None:
             param.requiredTags             = self.requiredTagsListModel.getRequiredTags()
+            print(param.requiredTags) 
             param.isExperimentProperty     = self.isExpProp.isChecked()
 
             selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
@@ -464,7 +473,7 @@ class ParamModWgt(QtGui.QWidget):
 
 class ParameterListModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent, parameterList = [], header = ['Type', 'Description'], *args):
+    def __init__(self, parent, parameterList = [], header = ['ID', 'Type', 'Description'], *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.parameterList = parameterList
         self.header = header
@@ -494,8 +503,10 @@ class ParameterListModel(QtCore.QAbstractTableModel):
 
     def getByIndex(self, param, ind):
         if ind == 0:
-            return param.typeDesc
+            return param.id
         elif ind == 1:
+            return param.typeDesc
+        elif ind == 2:
             if param.typeDesc == "pointValue":
                 return param.name + " = " + param.description.depVar.values.text(True)
             elif param.typeDesc == "function":

@@ -22,7 +22,7 @@ from nat.annotation import Annotation
 from nat.gitManager import GitManager
 from nat.id import checkID
 from nat.tag import Tag
-from nat.treeData import OntoManager
+from nat.ontoManager import OntoManager
 from nat.restClient import RESTClient
     
 
@@ -34,6 +34,7 @@ from .zoteroWrap import ZoteroTableModel
 from .uiUtilities import errorMessage, disableTextWidget
 from .settingsDlg import getSettings, SettingsDlg
 from .annotWidgets import EditAnnotWgt
+from .jsonDlg import JSONDlg
 from .modParamWidgets import ParamModWgt
 from .experimentalPropertyWgt import ExpPropWgt
 from .searchInterface import SearchWgt

@@ -18,6 +18,7 @@ from .uiUtilities import disableTextWidget, enableTextWidget
 from .areaSelector import PDFAreaSelector, loadImage
 from .approximateMatchDlg import MatchDlg
 from .uiUtilities import errorMessage
+from .jsonDlg import JSONDlg
 
 class EditAnnotWgt(QtGui.QWidget):
 
@@ -27,11 +28,12 @@ class EditAnnotWgt(QtGui.QWidget):
         super(EditAnnotWgt, self).__init__()
 
         # Widgets
-        self.annotationTypesCbo        = QtGui.QComboBox(self)
-        self.newAnnotationBtn        = QtGui.QPushButton('New', self)
+        self.annotationTypesCbo     = QtGui.QComboBox(self)
+        self.newAnnotationBtn       = QtGui.QPushButton('New', self)
         self.deleteAnnotationBtn    = QtGui.QPushButton('Delete', self)
-        self.saveAnnotationBtn        = QtGui.QPushButton('Save', self)
-        self.commentEdt                = QtGui.QTextEdit('', self)
+        self.viewJSONBtn            = QtGui.QPushButton('View JSON', self)
+        self.saveAnnotationBtn      = QtGui.QPushButton('Save', self)
+        self.commentEdt             = QtGui.QTextEdit('', self)
     
 
         self.editAnnotWgt = {"text"    : EditAnnotTextWgt(self), 
@@ -61,11 +63,12 @@ class EditAnnotWgt(QtGui.QWidget):
         gridAddAnnotations.addWidget(self.saveAnnotationBtn, 2, 2)
         gridAddAnnotations.addWidget(self.deleteAnnotationBtn, 2, 3)
         gridAddAnnotations.addWidget(self.newAnnotationBtn, 2, 4)
+        gridAddAnnotations.addWidget(self.viewJSONBtn, 2, 5)
 
-        gridAddAnnotations.addWidget(self.editAnnotStack, 3, 0, 1, 5)
+        gridAddAnnotations.addWidget(self.editAnnotStack, 3, 0, 1, 6)
 
         gridAddAnnotations.addWidget(QtGui.QLabel('Comment', self), 4, 0)
-        gridAddAnnotations.addWidget(self.commentEdt, 4, 1, 1, 4)
+        gridAddAnnotations.addWidget(self.commentEdt, 4, 1, 1, 5)
         self.setLayout(gridAddAnnotations)
 
 
@@ -73,9 +76,11 @@ class EditAnnotWgt(QtGui.QWidget):
         # Signals
         self.saveAnnotationBtn.clicked.connect(self.saveAnnotation)
         self.newAnnotationBtn.clicked.connect(self.newAnnotation)
+        self.viewJSONBtn.clicked.connect(self.viewJSON)
         self.deleteAnnotationBtn.clicked.connect(self.parent.deleteAnnotation)
         self.commentEdt.textChanged.connect(self.annotationChanged)
         self.annotationTypesCbo.currentIndexChanged.connect(self.setCurrentStack)
+        
 
         self.parent.selectedAnnotationChangedConfirmed.connect(self.annotationSelectionChanged)
         for wgt in self.editAnnotWgt.values():
@@ -86,11 +91,19 @@ class EditAnnotWgt(QtGui.QWidget):
 
         # Initial behavior
         self.deleteAnnotationBtn.setDisabled(True)
+        self.viewJSONBtn.setDisabled(True)
         self.annotationTypesCbo.setCurrentIndex(0)
         self.setCurrentStack(0)
         self.annotationTypesCbo.setDisabled(True)
 
 
+
+    def viewJSON(self):
+        
+        form = JSONDlg()
+        form.setJSON(self.currentAnnotation)
+        if form.exec_() == QtGui.QDialog.Accepted:
+            return 
 
     def saveAnnotation(self):
         self.parent.saveAnnotation()
@@ -158,11 +171,13 @@ class EditAnnotWgt(QtGui.QWidget):
             disableTextWidget(self.commentEdt)            
         
         self.deleteAnnotationBtn.setDisabled(self.currentAnnotation is None)
+        self.viewJSONBtn.setDisabled(self.currentAnnotation is None)
 
     def newAnnotation(self):
         if self.parent.newAnnotation() :
             self.newAnnotationBtn.setEnabled(False)
             self.deleteAnnotationBtn.setEnabled(False)
+            self.viewJSONBtn.setDisabled(False)
             self.annotationTypesCbo.setEnabled(True)
             self.clearAddAnnotation()
             for widget in self.editAnnotWgt.values():
