@@ -52,11 +52,11 @@ class SettingsDlg(QtGui.QDialog):
 
         # Creating widgets with initial values
         self.gitProtocol = QtGui.QComboBox(self)
-        protocols = ["http", "ssh"]
+        protocols = ["http", "git+ssh"]
         self.gitProtocol.addItems(protocols)
         if self.settings is None:
             self.gitProtocol.setCurrentIndex(0)
-            self.gitRemoteTxt     = QtGui.QLineEdit('github.com:christian-oreilly/corpus-thalamus.git', self)
+            self.gitRemoteTxt     = QtGui.QLineEdit('github.com/christian-oreilly/corpus-thalamus.git', self)
             self.gitLocalTxt      = QtGui.QLineEdit('curator_DB', self)
             self.gitUserTxt       = QtGui.QLineEdit("git", self) #getpass.getuser(), self)
 
