@@ -8,7 +8,7 @@ from PySide import QtGui, QtCore
 
 from nat.modelingParameter import getParameterTypes, getParameterTypeIDFromName, \
     getParameterTypeFromID, ParameterTypeTree, Variable, ParamDescFunction, \
-     ValuesSimple, NumericalVariable, ParamDescTrace
+     ValuesSimple, ValuesCompound, NumericalVariable, ParamDescTrace
 
 from .itemDelegates import DoubleDelegate, ParamTypeDelegate, UnitDelegate, StatisticsDelegate
 
@@ -18,7 +18,8 @@ parameterTypes         = getParameterTypes()
 
 class VariableTableView(QtGui.QTableView):
 
-    depTypeSelected = QtCore.Signal(str)
+    depTypeSelected  = QtCore.Signal(str)
+    #selectionChanged = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
         super(VariableTableView, self).__init__(*args, **kwargs)
@@ -30,6 +31,7 @@ class VariableTableView(QtGui.QTableView):
         self.setItemDelegateForRow(2, StatisticsDelegate(self))
 
         typeDelegate.typeSelected.connect(self.typeSelected)
+
 
 
     @QtCore.Slot(object, str)
@@ -50,13 +52,15 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
     def __init__(self, parent, colHeader = ['Dependant', 'Independant 1'], rowHeader = ['Type', 'Unit', 'Statistic'], *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
-        #self.parameterList = parameterList
         self.clear(colHeader, rowHeader)
+
 
     def clear(self, colHeader = ['Dependant', 'Independant 1'], rowHeader = ['Type', 'Unit', 'Statistic']):
         self.colHeader = colHeader
         self.rowHeader = rowHeader
         self.nbSample  = 0
+        self.nbDep     = 1
+        self.nbIndep   = 1
         self.__data       = {} 
         for col in colHeader:        
             for row in rowHeader:
@@ -69,13 +73,13 @@ class VariableListModel(QtCore.QAbstractTableModel):
         self.refresh()
 
 
-    def setFromParam(self, param):
 
+    def setFromParam(self, param):
         if isinstance(param.description, ParamDescFunction):
             self.__data = {}
             self.__data[('Type',       'Dependant')] = getParameterTypeFromID(param.description.depVar.typeId).name
             self.__data[('Unit',       'Dependant')] = param.description.depVar.unit
-            self.__data[('Statistic', 'Dependant')] = param.description.depVar.statistic
+            self.__data[('Statistic',  'Dependant')] = param.description.depVar.statistic
             self.colHeader = ['Dependant']
 
             for colInd in range(1, len(param.description.indepVars)+1):
@@ -86,30 +90,56 @@ class VariableListModel(QtCore.QAbstractTableModel):
                 self.__data[('Statistic', colName)] = param.description.indepVars[colInd-1].statistic
 
         elif isinstance(param.description, ParamDescTrace):
-            self.__data = {}
-            self.__data[('Type',       'Dependant')] = getParameterTypeFromID(param.description.depVar.typeId).name
-            self.__data[('Unit',       'Dependant')] = param.description.depVar.values.unit
-            self.__data[('Statistic', 'Dependant')] = param.description.depVar.values.statistic
-            self.colHeader = ['Dependant']
-
+            self.__data = {}      
+            valuesObject = param.description.depVar.values
+            self.__data[('Type', 'Dependant')] = getParameterTypeFromID(param.description.depVar.typeId).name    
+            
+            #### Add the appropriate number of samples
             self.nbSample = 0
             self.rowHeader = self.rowHeader[:3]
             for noSample in range(len(param.description.indepVars[0].values.values)):
-                self.addSample(refresh=False)
+                self.addSample(refresh=False)            
+            
+            #### ValuesCompound as dependant variable
+            if isinstance(valuesObject, ValuesCompound):
+                self.nbDep = len(valuesObject.valueLst)
+                for ind, val in enumerate(valuesObject.valueLst):
+                    if ind == 0:                       
+                        varName = "Dependant"                    
+                        self.colHeader = ['Dependant']
+                    else:
+                        varName = "Dependant comp. " + str(ind+1)   
+                        self.colHeader.append(varName)
+                        self.__data[('Type', varName)] = self.__data[('Type', 'Dependant')]  
+                        
+                    self.__data[('Unit',       varName)] = val.unit
+                    self.__data[('Statistic',  varName)] = val.statistic
 
+                    for noSample, sample in enumerate(val.values):
+                        self.__data[(str(noSample+1), varName)] = sample
 
+            #### ValuesSimple as dependant variable  
+            elif isinstance(valuesObject, ValuesSimple):
 
-            for noSample, sample in enumerate(param.description.depVar.values.values):
-                self.__data[(str(noSample+1), 'Dependant')] = sample
+                self.__data[('Unit',       'Dependant')] = valuesObject.unit
+                self.__data[('Statistic',  'Dependant')] = valuesObject.statistic
+                self.colHeader = ['Dependant']
+    
+                self.nbDep = 1
+                for noSample, sample in enumerate(valuesObject.values):
+                    self.__data[(str(noSample+1), 'Dependant')] = sample
 
-            for colInd in range(1, len(param.description.indepVars)+1):
+            #### Independant variables
+
+            self.nbIndep = len(param.description.indepVars)
+            for colInd in range(self.nbDep, self.nbIndep+self.nbDep):
                 colName = 'Independant ' + str(colInd)        
                 self.colHeader.append(colName)
-                self.__data[('Type',       colName)] = getParameterTypeFromID(param.description.indepVars[colInd-1].typeId).name
-                self.__data[('Unit',       colName)] = param.description.indepVars[colInd-1].values.unit
-                self.__data[('Statistic', colName)] = param.description.indepVars[colInd-1].values.statistic
+                self.__data[('Type',       colName)] = getParameterTypeFromID(param.description.indepVars[colInd-self.nbDep].typeId).name
+                self.__data[('Unit',       colName)] = param.description.indepVars[colInd-self.nbDep].values.unit
+                self.__data[('Statistic', colName)] = param.description.indepVars[colInd-self.nbDep].values.statistic
 
-                for noSample, sample in enumerate(param.description.indepVars[colInd-1].values.values):
+                for noSample, sample in enumerate(param.description.indepVars[colInd-self.nbDep].values.values):
                     self.__data[(str(noSample+1), colName)] = sample
         else:
             raise TypeError
@@ -118,15 +148,16 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
     def getIndepVars(self, varType="Variable"):
         if varType == "Variable":
-            return [Variable(getParameterTypeIDFromName(self.__data[('Type',      'Independant ' + str(no))]), 
-                             self.__data[('Unit',      'Independant ' + str(no))], 
-                             self.__data[('Statistic', 'Independant ' + str(no))])
-                        for no in range(1, self.columnCount())]
+            return [Variable(getParameterTypeIDFromName(self.__data[('Type',      varLabel)]), 
+                                                        self.__data[('Unit',      varLabel)], 
+                                                        self.__data[('Statistic', varLabel)])
+                        for varLabel in self.colHeader if "Independant" in varLabel]
 
         elif varType == "NumericalVariable":
             indepVars = []
-            for no in range(1, self.columnCount()):
-                varLabel    = 'Independant ' + str(no)
+            for varLabel in self.colHeader:
+                if not "Independant" in varLabel:
+                    continue
                 floatValues = []
                 for row in self.rowHeader[3:]:
                     try:
@@ -147,89 +178,43 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
 
     def getDepVar(self, varType="Variable"):
+        
         if varType == "Variable":
             typeId = getParameterTypeIDFromName(self.__data[('Type', 'Dependant')])
             return Variable(typeId, 
                             self.__data[('Unit',      'Dependant')], 
                             self.__data[('Statistic', 'Dependant')])
+                            
         elif varType == "NumericalVariable":
-            floatValues = []
-            for row in self.rowHeader[3:]:
-                try:
-                    floatValues.append(float(self.__data[(row,'Dependant')]))
-                except ValueError:
-                    floatValues.append(float('nan'))
-
-            values = ValuesSimple(floatValues, self.__data[('Unit',      'Dependant')], 
-                                                self.__data[('Statistic', 'Dependant')])
-
-            typeId = getParameterTypeIDFromName(self.__data[('Type', 'Dependant')])
-            return NumericalVariable(typeId, values)
-
+            depVarValues = []
+            
+            for varLabel in self.colHeader:
+                if not "Dependant" in varLabel:
+                    continue            
+                if varLabel == "Dependant" :
+                    typeId  = getParameterTypeIDFromName(self.__data[('Type', varLabel)])
+                
+                floatValues = []
+                for row in self.rowHeader[3:]:
+                    try:
+                        floatValues.append(float(self.__data[(row, varLabel)]))
+                    except ValueError:
+                        floatValues.append(float('nan'))
+    
+                values = ValuesSimple(floatValues, self.__data[('Unit',      varLabel)], 
+                                                   self.__data[('Statistic', varLabel)])
+    
+                if self.nbDep == 1 :
+                    return NumericalVariable(typeId, values)   
+                else:
+                    depVarValues.append(values)
+            
+            values = ValuesCompound(depVarValues)
+            
+            return NumericalVariable(typeId, values)   
+                
         else:
             raise ValueError
-
-
-
-
-
-    """
-
-        if varType == "Variable":
-            return [Variable(getParameterTypeIDFromName(self.__data[('Type',      'Independant ' + str(no))]), 
-                             self.__data[('Unit',      'Independant ' + str(no))], 
-                             self.__data[('Statistic', 'Independant ' + str(no))])
-                        for no in range(1, self.columnCount())]
-
-        elif varType == "NumericalVariable":
-            indepVars = []
-
-            # Generally, one ValuesSimple object is created by independant variable.
-            # However, when two independant variables are asstributed to a same 
-            # parameter, this is interpreted as different statistics that 
-            # should be combined in a given ValuesCompound object.
-            typeDic = {}
-            for no in range(1, self.columnCount()):
-                varLabel    = 'Independant ' + str(no)   
-                itemType    = self.__data[('Type', varLabel)]
-                if itemType in typeDic:                    
-                    typeDic[itemType].append((no, varLabel))
-                else:
-                    typeDic[itemType] = [(no, varLabel)]
-            
-            ## loop dic items, create ValuesSimple for list of 1 element, 
-            ## create ValuesCompound for lists of more than one element...            
-            for itemType, noLst in typeDic.items():
-                varLst = []
-                for no, varLabel in noLst:
-                    
-                    floatValues = []
-                    for row in self.rowHeader[3:]:
-                        try:
-                            floatValues.append(float(self.__data[(row, varLabel)]))
-                        except ValueError:
-                            floatValues.append(float('nan'))
-    
-                    varLst.append(ValuesSimple(floatValues, self.__data[('Unit',      varLabel)], 
-                                                        self.__data[('Statistic', varLabel)]))
-    
-                typeId = getParameterTypeIDFromName(self.__data[('Type', varLabel)])
-                if len(varLst) == 1:
-                    indepVars.append(NumericalVariable(typeId, varLst[0]))
-                else:
-                    indepVars.append(NumericalVariable(typeId, ValuesCompound(varLst)))
-            
-            return indepVars
-
-        else:
-            raise ValueError    
-    
-    """
-
-
-
-
-
 
 
 
@@ -250,8 +235,13 @@ class VariableListModel(QtCore.QAbstractTableModel):
         return self.__data["Statistic", self.colHeader[col]]
 
 
-    def addVariable(self):
-        col = 'Independant ' + str(self.columnCount())
+    def addVariable(self):      
+        inc = 1
+        col = 'Independant ' + str(self.nbIndep+inc)
+        while col in self.colHeader:
+            inc += 1
+            col = 'Independant ' + str(self.nbIndep+inc)
+            
         self.colHeader.append(col)
         for row in self.rowHeader:
             if row == "Statistic":
@@ -261,7 +251,31 @@ class VariableListModel(QtCore.QAbstractTableModel):
             else:
                 self.__data[(row, col)] = None
 
+        self.nbIndep += 1  
         self.refresh()
+
+
+    def addDepCompnent(self):
+        inc = 1
+        col = 'Dependant comp. ' + str(self.nbDep+inc)
+        while col in self.colHeader:
+            inc += 1
+            col = 'Dependant comp. ' + str(self.nbDep+inc)
+                    
+        self.colHeader.insert(self.nbDep, col)
+        for row in self.rowHeader:
+            if row == "Statistic":
+                self.__data[(row, col)] = "raw"
+            elif row == "Unit":
+                self.__data[(row, col)] = "dimensionless"     
+            elif row == "Type":
+                self.__data[(row, col)] = self.__data[(row, 'Dependant')]                
+            else:
+                self.__data[(row, col)] = None
+
+        self.nbDep += 1
+        self.refresh()
+
 
 
 
@@ -287,10 +301,16 @@ class VariableListModel(QtCore.QAbstractTableModel):
         if msgBox.exec_() == QtGui.QMessageBox.Yes:
             for rowName in self.rowHeader:
                 del self.__data[(rowName, self.colHeader[col])]
+                
+            if "Independant" in self.colHeader[col]:
+                self.nbIndep -= 1
+            else:
+                self.nbDep -= 1 
+                
             del self.colHeader[col]
         self.refresh()
-
-
+        
+        
 
     def deleteSample(self, noRow):
 
@@ -303,9 +323,6 @@ class VariableListModel(QtCore.QAbstractTableModel):
             for colName in self.colHeader:
                 del self.__data[(self.rowHeader[noRow], colName)]
             del self.rowHeader[noRow]
-
-        #for noRow in range(3, len(self.rowHeader)):
-        #    self.rowHeader[noRow] = str(noRow -2)
 
         self.refresh()
 
@@ -324,11 +341,22 @@ class VariableListModel(QtCore.QAbstractTableModel):
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
         if value is None:
             value = ""
+            
+        if self.colHeader[index.column()] == "Dependant" and self.rowHeader[index.row()] == "Type":
+            for colName in self.rowHeader:
+                if 'Dependant comp. ' in colName:
+                    self.__data[(self.rowHeader[index.row()], colName)] = value
+                        
         self.__data[(self.rowHeader[index.row()], self.colHeader[index.column()])] = value
         return True
 
+
     def flags(self, index):
-        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+        if "comp." in self.colHeader[index.column()] and self.rowHeader[index.row()] == "Type":
+            return QtCore.Qt.NoItemFlags
+            
+        else:
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
 
 
     def headerData(self, section, orientation, role):

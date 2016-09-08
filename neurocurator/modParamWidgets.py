@@ -130,7 +130,7 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
         self.selectedTagsNames.append(selectedTagName)
         self.selectedTagsIds.append(selectedTagId)
         self.refresh()
-        print(requiredTagId, requiredTagName, selectedTagId, selectedTagName)
+        #print(requiredTagId, requiredTagName, selectedTagId, selectedTagName)
 
     def clear(self):
         self.requiredTagsNames  = []
@@ -256,6 +256,7 @@ class ParamModWgt(QtGui.QWidget):
 
     @QtCore.Slot(object, str)
     def newParamTypeSelected(self, paramName):
+        print("newParamTypeSelected")
         self.requiredTagsListModel.clear()
         self.requiredTagsListModel.refresh()
 
@@ -321,7 +322,7 @@ class ParamModWgt(QtGui.QWidget):
 
         if not param is None:
             param.requiredTags             = self.requiredTagsListModel.getRequiredTags()
-            print(param.requiredTags) 
+            #print(param.requiredTags) 
             param.isExperimentProperty     = self.isExpProp.isChecked()
 
             selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
