@@ -5,6 +5,7 @@ __author__ = "Christian O'Reilly"
 # Import PySide classes
 from PySide import QtGui
 import configparser
+import os
 #import getpass
 
 def getSettings(popDialog = False):
@@ -26,14 +27,15 @@ def getSettings(popDialog = False):
         
 
 class Settings:
+    fileName = os.path.join(os.path.dirname(__file__), 'settings.ini')
     def __init__(self):
         self.config = configparser.ConfigParser()
-        with open('settings.ini') as configfile: # Raise an exception if file does not exist
-            self.config.read('settings.ini')
+        with open(Settings.fileName) as configfile: # Raise an exception if file does not exist
+            self.config.read(Settings.fileName)
             #self.config.read(configfile)
 
     def save(self):
-        with open('settings.ini', 'w') as configfile:
+        with open(Settings.fileName, 'w') as configfile:
           self.config.write(configfile)
 
 
@@ -57,7 +59,7 @@ class SettingsDlg(QtGui.QDialog):
         if self.settings is None:
             self.gitProtocol.setCurrentIndex(0)
             self.gitRemoteTxt     = QtGui.QLineEdit('github.com/christian-oreilly/corpus-thalamus.git', self)
-            self.gitLocalTxt      = QtGui.QLineEdit('curator_DB', self)
+            self.gitLocalTxt      = QtGui.QLineEdit(os.path.expanduser('~/curator_DB/'), self)
             self.gitUserTxt       = QtGui.QLineEdit("git", self) #getpass.getuser(), self)
 
             self.zoteroLibIDTxt   = QtGui.QLineEdit('427244', self)
@@ -181,7 +183,7 @@ class SettingsDlg(QtGui.QDialog):
         else:
             config['WINDOW'] = {}
 
-        with open('settings.ini', 'w') as configfile:
+        with open(os.path.join(os.path.dirname(__file__), 'settings.ini'), 'w') as configfile:
           config.write(configfile)
 
         self.accept() 
