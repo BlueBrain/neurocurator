@@ -8,6 +8,7 @@ Created on Tue Jul 26 10:23:39 2016
 # Import PySide classes
 from PySide import QtGui, QtCore
 from sys import platform as _platform
+
 from nat import ontoServ
 
 class OntoAutoComplete(QtGui.QLineEdit):
