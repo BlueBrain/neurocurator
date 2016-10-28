@@ -7,32 +7,6 @@ from PySide import QtGui, QtCore
 
 
 
-"""
-class MyDelegate(QtGui.QStyledItemDelegate):
-	def __init__(self, parent=None):
-		super(MyDelegate, self).__init__(parent)
-
-
-	def paint(self, painter, option, index):
-		if option.state & QtGui.QStyle.State_Selected :
-			painter.fillRect(option.rect, option.palette.color(QtGui.QPalette.Highlight))
-
-		title = index.data(QtCore.Qt.DisplayRole)
-		description = index.data(QtCore.Qt.UserRole + 1)
-
-		r = option.rect.adjusted(50, 0, 0, -50)
-		painter.drawText(r, QtCore.Qt.AlignBottom | QtCore.Qt.AlignLeft | QtCore.Qt.TextWordWrap, title)
-
-		r = option.rect.adjusted(50, 50, 0, 0)
-		painter.drawText(r, QtCore.Qt.AlignLeft | QtCore.Qt.TextWordWrap, description)
-
-
-	def sizeHint(self, option, index):
-		return QtCore.QSize(200, 100)
-
-"""
-
-
 class TextEdit(QtGui.QTextEdit):
 	
 	def __init__(self, no, *args, **kwargs):

@@ -5,6 +5,8 @@ __author__ = "Christian O'Reilly"
 # Contributed libraries imports
 from PySide import QtGui, QtCore
 import pandas as pd
+import numpy as np
+
 
 from nat.annotationSearch import ConditionAtom, ConditionAND, ConditionOR, \
     ConditionNOT, parameterKeys, annotationKeys, ParameterSearch, \
@@ -13,7 +15,7 @@ from nat.ontoManager import OntoManager
 
 from .itemDelegates import ParamTypeCbo, CheckBoxDelegate
 from .autocomplete import AutoCompleteEdit
-import numpy as np
+
 
 class SearchWgt(QtGui.QWidget):
 

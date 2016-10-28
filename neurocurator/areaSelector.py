@@ -6,7 +6,6 @@ __author__ = "Christian O'Reilly"
 import pickle
 from PySide import QtGui, QtCore
 from wand.image import Image
-from time import sleep
 import numpy as np
 import os.path
 from warnings import warn
