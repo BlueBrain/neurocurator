@@ -1,0 +1,9 @@
+*.pickle
+*.pkl
+*.bin
+MANIFEST
+*~
+neurocurator/__pycache__/*
+dist/*
+build/*
+settings.ini

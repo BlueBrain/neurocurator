@@ -1,4 +1,4 @@
-from distutils.core import setup, Extension
+from distutils.core import setup
 import os
 
 PACKAGE = "neurocurator"
@@ -6,7 +6,9 @@ NAME = "neurocurator"
 DESCRIPTION = "GUI-based application and API to perform systematic and collaborative scientific literature curation. This is a front-end for the NeuroAnnotation Toolbox (NAT)."
 AUTHOR = "Christian O'Reilly"
 AUTHOR_EMAIL = "christian.oreilly@epfl.ch"
-VERSION = "0.2.0"
+VERSION = "0.3.2"
+REQUIRED = ["nat", "PySide", "numpy", "parse", "metapub", "pyzotero", "GitPython",
+            "biopython", "beautifulsoup4", "quantities", "wand", "scipy", "pandas"]
 
 def is_package(path):
     return (
@@ -14,7 +16,7 @@ def is_package(path):
         os.path.isfile(os.path.join(path, '__init__.py'))
         )
 
-def find_packages(path, base="" ):
+def find_packages(path, base=""):
     """ Find all packages in path """
     packages = {}
     for item in os.listdir(path):
@@ -28,13 +30,12 @@ def find_packages(path, base="" ):
             packages.update(find_packages(dir, module_name))
     return packages
 
-packages=find_packages("..")
+packages=find_packages(".")
 
 setup(
     name=NAME,
     packages=packages.keys(),
     package_dir=packages,
-    package_data={NAME: ["additionsToOntologies.csv", "modelingDictionary.csv"]},
     version=VERSION, 
     description=DESCRIPTION,
     long_description=DESCRIPTION, #open("README.txt").read(),
@@ -43,8 +44,9 @@ setup(
     maintainer=AUTHOR,
     maintainer_email=AUTHOR_EMAIL,  
     license='LICENSE.txt',
-    install_requires=["nat"],
-    requires=['nat'],
+    requires=REQUIRED,
+    install_requires=REQUIRED,
+    url="https://github.com/christian-oreilly/neurocurator",
     classifiers=["Development Status :: 3 - Alpha",
 			"Environment :: MacOS X", #"Environment :: Win32 (MS Windows)",
 			"Environment :: X11 Applications",
