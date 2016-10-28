@@ -8,6 +8,9 @@ import re
 import pickle
 from dateutil.parser import parse
 from pyzotero import zotero
+import os
+
+from nat.zoteroWrap import ZoteroWrap
 
 class ZoteroTableModel(QtCore.QAbstractTableModel):
 
@@ -15,94 +18,43 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
 
         self.header = header
-        self.nbCol = len(header)
         self.fields = {0:"ID", 1:"title", 2:"creators", 3:"Year", 4:"publicationTitle"}
         self.checkIdFct = checkIdFct
-        self.refList = []
         self.sortCol   = 0 
         self.sortOrder = QtCore.Qt.AscendingOrder
-
-    #@property
-    #def zotLib(self):
-    #    return self.__zotLib
-    #
-    #@zotLib.setter
-    #def zotLib(self, zotLib):
-    #    self.__zotLib = zotLib
-    #    self.refList = [i['data'] for i in zotLib.everything(zotLib.top())]
+        self.zotWrap   = ZoteroWrap() 
 
 
     def loadCachedDB(self, libraryId, libraryrType, apiKey):
-        try:
-            with open(libraryId + "-" + libraryrType + "-" + apiKey + ".pkl", 'rb') as f:
-                self.refList = pickle.load(f)
-        except:
-            self.refreshDB(libraryId, libraryrType, apiKey)
-
+        self.zotWrap.loadCachedDB(libraryId, libraryrType, apiKey)
 
     def refreshDB(self, libraryId, libraryrType, apiKey):
-        zotLib = zotero.Zotero(libraryId, libraryrType, apiKey)
-        self.refList = [i['data'] for i in zotLib.everything(zotLib.top())]
+        self.zotWrap.refreshDB(libraryId, libraryrType, apiKey)
 
-        with open(libraryId + "-" + libraryrType + "-" + apiKey + ".pkl", 'wb') as f:
-            pickle.dump(self.refList, f)
+    def getID(self, row):
+        return self.zotWrap.getID(row)
+
+    def getID_fromRef(self, ref):
+        return self.zotWrap.getID_fromRef(ref)
+
+    def getDOI(self, row):
+        return self.zotWrap.getDOI(row)
+
+    def getDOI_fromRef(self, ref):
+        return self.zotWrap.getDOI_fromRef(ref)
+
+    def getPMID(self, row):
+        return self.zotWrap.getPMID(row)        
+
+    def getPMID_fromRef(self, ref):
+        return self.zotWrap.getPMID_fromRef(ref)      
 
 
     def rowCount(self, parent = None):
-        return len(self.refList)
+        return len(self.zotWrap.refList)
 
     def columnCount(self, parent = None):
-        return self.nbCol 
-
-
-    def getID(self, row):
-        return self.getID_fromRef(self.refList[row])
-
-
-    def getID_fromRef(self, ref):
-        DOI = self.getDOI_fromRef(ref)
-        PMID = self.getPMID_fromRef(ref)
-        if DOI != "":
-            return DOI
-        elif PMID != "":
-            return "PMID_" + PMID
-        else:
-            return ""    
-
-
-    def getDOI(self, row):
-        return self.getDOI_fromRef(self.refList[row])
-
-    def getDOI_fromRef(self, ref):
-
-        # Standard way
-        if "DOI" in ref:
-            if ref["DOI"] != "":
-                return ref["DOI"]
-
-        # Some book chapter as a DOI but Zotero does not have DOI field
-        # for book chapter type of publication. In these case, the DOI
-        # can be added to the extra field as done for the PMID in pubmed.
-        if "extra" in ref:
-            for line in ref["extra"].split("\n"):
-                if "DOI" in line:
-                    return line.split("DOI:")[1].strip()
-
-        return ""
-
-
-    def getPMID(self, row):
-        return self.getPMID_fromRef(self.refList[row])
-
-    def getPMID_fromRef(self, ref):
-        try:
-            for line in ref["extra"].split("\n"):
-                if "PMID" in line:
-                    return line.split("PMID:")[1].strip()
-            return ""
-        except KeyError:
-            return ""
-
+        return len(self.header)
 
 
     def getByIndex(self, ref, ind):
@@ -170,7 +122,7 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
 
         if role == QtCore.Qt.DisplayRole:
             try:
-                return self.getByIndex(self.refList[index.row()], index.column())
+                return self.getByIndex(self.zotWrap.refList[index.row()], index.column())
             except KeyError:
                 return ""
             
@@ -193,7 +145,7 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
         """sort table by given column number col"""
         self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
         reverse = (order == QtCore.Qt.DescendingOrder)
-        self.refList = sorted(self.refList, key=lambda x: self.getByIndex(x, col), reverse = reverse)
+        self.zotWrap.refList = sorted(self.zotWrap.refList, key=lambda x: self.getByIndex(x, col), reverse = reverse)
         self.emit(QtCore.SIGNAL("layoutChanged()"))
 
 
