@@ -33,7 +33,6 @@ from .zoteroWrap import ZoteroTableModel
 from .uiUtilities import errorMessage, disableTextWidget
 from .settingsDlg import getSettings, SettingsDlg
 from .annotWidgets import EditAnnotWgt
-#from .jsonDlg import JSONDlg
 from .modParamWidgets import ParamModWgt
 from .experimentalPropertyWgt import ExpPropWgt
 from .searchInterface import SearchWgt
@@ -143,7 +142,7 @@ class Window(QtGui.QMainWindow):
             
 
         # Load from config the path where the GIT database is located.
-        self.dbPath   = os.path.abspath(self.settings.config["GIT"]["local"])
+        self.dbPath   = os.path.abspath(os.path.expanduser(self.settings.config["GIT"]["local"]))
 
         self.setupMenus()
         self.setupWindowsUI()
@@ -163,9 +162,10 @@ class Window(QtGui.QMainWindow):
 
 
     def loadPersistTag(self):
-        if os.path.isfile('persistTag.pkl'):
+        
+        if os.path.isfile(os.path.join(os.path.dirname(__file__), 'persistTag.pkl')):
             try:
-                with open('persistTag.pkl', 'rb') as f:
+                with open(os.path.join(os.path.dirname(__file__), 'persistTag.pkl'), 'rb') as f:
                     self.selectedTagPersist, self.suggestTagPersist  = pickle.load(f)
             except:
                 self.selectedTagPersist = {}
@@ -175,7 +175,7 @@ class Window(QtGui.QMainWindow):
             self.suggestTagPersist  = []
 
     def savePersistTag(self):
-        with open('persistTag.pkl', 'wb') as f:
+        with open(os.path.join(os.path.dirname(__file__), 'persistTag.pkl'), 'wb') as f:
             pickle.dump((self.selectedTagPersist, self.suggestTagPersist), f)
 
 
@@ -551,8 +551,20 @@ class Window(QtGui.QMainWindow):
 
         usedNames = [self.dicData[id] for id in ids if id in self.dicData] 
 
+        #for key, value in self.dicData.items():
+        #    if value is None:
+        #        print(key)
+
+
+
         allNames  = np.array(list(self.dicData.values()))
-  
+ 
+        # TODO: LINE ADDED TEMPORALLY. TO REMOVE. THERE SHOULD BE NO NONE VALUES
+        #       HERE. ASSERTS HAS BEEN ADDED TO AVOID THIS TO HAPPEN AGAIN.
+        allNames = np.array([name for name in allNames if not name is None])
+
+        assert(not np.any([name is None for name in allNames]))
+
         # Putting used tag at the top of the list. 
         allNames = np.concatenate([usedNames, allNames[np.logical_not(np.in1d(allNames, usedNames))]])
         
@@ -610,7 +622,7 @@ class Window(QtGui.QMainWindow):
             self.settings = getSettings()
 
             self.gitMng = GitManager(self.settings.config["GIT"])
-            self.dbPath   = os.path.abspath(self.settings.config["GIT"]["local"])
+            self.dbPath   = os.path.abspath(os.path.expanduser(self.settings.config["GIT"]["local"]))
 
     def setNeedSaving(self):
         if not self.needSavingDisabled:
@@ -933,7 +945,12 @@ class Window(QtGui.QMainWindow):
                         self.invalidPaperChoice()
                         return
                 except UnicodeEncodeError:
-                    errorMessage(self, "Unicode error", "Please check that the path of the file you are trying to upload does not contain non ASCII characters. Complete support of unicode encoding for file names and paths are not provided.")
+                    errorMessage(self, "Unicode error", "Please check that " +\
+                                 "the path of the file you are trying to " +\
+                                 "upload does not contain non ASCII " +\
+                                 "characters. Complete support of unicode " +\
+                                 "encoding for file names and paths are " +\
+                                 "not provided.")
                     
             elif retCode == 1 and DOI != "":
                 url = "http://dx.doi.org/" + self.IdTxt.text()
@@ -1163,15 +1180,6 @@ class Window(QtGui.QMainWindow):
             
         return 2 # We have a record, a txt and a pdf.
 
-    """
-    def Id2FileName(self, ID):
-        assert(not forwardSlashEncoder in ID)
-        return ID.replace("/", forwardSlashEncoder)
-
-    def fileName2Id(self, fileName):
-        assert(not "/" in fileName)
-        return fileName.replace(forwardSlashEncoder, "/")
-    """
 
     def clearAddAnnotation(self):
         self.expPropWgt.fillingExpPropList(checkAll=True)
