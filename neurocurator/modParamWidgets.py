@@ -69,7 +69,7 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole:
+        if not role in [QtCore.Qt.DisplayRole, QtCore.Qt.UserRole]:
             return None
 
         if index.column() == 0:
@@ -78,6 +78,7 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
             return self.selectedTagsNames[index.row()]
         else:
             return None
+
 
     def setData(self, index, value, role=QtCore.Qt.DisplayRole):
         if value is None:
@@ -98,10 +99,7 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
 
         tagId = self.requiredTagsIds[row]
 
-        if not tagId in self.treeData: 
-
-            #print(self.requiredTagsIds[row], self.requiredTagsNames[row], self.selectedTagsIds[row], self.selectedTagsNames[row]) 
-            #print(self.treeData[self.requiredTagsIds[row]])     
+        if not tagId in self.treeData:    
             raise ValueError("Tag '" + tagId + "' is not a treeData root. TreeData roots are the following:" + str(list(self.treeData.keys())))
 
         return tagName in list(self.treeData[tagId].values())
@@ -130,7 +128,6 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
         self.selectedTagsNames.append(selectedTagName)
         self.selectedTagsIds.append(selectedTagId)
         self.refresh()
-        #print(requiredTagId, requiredTagName, selectedTagId, selectedTagName)
 
     def clear(self):
         self.requiredTagsNames  = []
@@ -238,8 +235,6 @@ class ParamModWgt(QtGui.QWidget):
         self.newParamsGB.setEnabled(False)
 
 
-
-
     def setRootLayoutSizes(self, sizes):
         self.rootLayout.setSizes(sizes)
 
@@ -256,7 +251,6 @@ class ParamModWgt(QtGui.QWidget):
 
     @QtCore.Slot(object, str)
     def newParamTypeSelected(self, paramName):
-        print("newParamTypeSelected")
         self.requiredTagsListModel.clear()
         self.requiredTagsListModel.refresh()
 
@@ -322,7 +316,6 @@ class ParamModWgt(QtGui.QWidget):
 
         if not param is None:
             param.requiredTags             = self.requiredTagsListModel.getRequiredTags()
-            #print(param.requiredTags) 
             param.isExperimentProperty     = self.isExpProp.isChecked()
 
             selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
