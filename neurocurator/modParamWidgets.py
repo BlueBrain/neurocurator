@@ -6,7 +6,7 @@ __author__ = "Christian O'Reilly"
 from PySide import QtGui, QtCore
 
 from nat.modelingParameter import getParameterTypeFromName, \
-    getParameterTypeNameFromID
+    getParameterTypeNameFromID, getParameterTypeFromID
 from nat.ontoManager import OntoManager  
 from nat.tag import RequiredTag
 
@@ -434,9 +434,18 @@ class ParamModWgt(QtGui.QWidget):
         self.isExpProp.setChecked(currentParameter.isExperimentProperty)
 
         ## UPDATING REQUIRED TAGS
-        self.requiredTagsListModel.clear()
+        self.requiredTagsListModel.clear()       
         for tag in currentParameter.requiredTags:        
             self.requiredTagsListModel.addTag(tag.rootId, self.parent.dicData[tag.rootId], tag.id, tag.name)
+        
+        ## Adding new required tags that may have been specified since the 
+        ## creation of this parameter instance.
+        parameterType = getParameterTypeFromID(currentParameter.typeId)
+        reqTags = {reqTag.rootId:reqTag for reqTag in parameterType.requiredTags}
+        for reqTagRootId, reqTag in reqTags.items():
+            if not reqTagRootId in [tag.rootId for tag in currentParameter.requiredTags]:
+                self.requiredTagsListModel.addTag(reqTag.rootId, self.parent.dicData[reqTag.rootId], reqTag.id, reqTag.name)
+            
         self.requiredTagsListModel.refresh()
 
         self.newParamsGB.setEnabled(True)
