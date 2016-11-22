@@ -551,11 +551,6 @@ class Window(QtGui.QMainWindow):
 
         usedNames = [self.dicData[id] for id in ids if id in self.dicData] 
 
-        #for key, value in self.dicData.items():
-        #    if value is None:
-        #        print(key)
-
-
 
         allNames  = np.array(list(self.dicData.values()))
  

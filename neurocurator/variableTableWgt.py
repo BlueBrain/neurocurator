@@ -100,13 +100,14 @@ class VariableListModel(QtCore.QAbstractTableModel):
             for noSample in range(len(param.description.indepVars[0].values.values)):
                 self.addSample(refresh=False)            
             
+            self.colHeader = ['Dependant']
+            
             #### ValuesCompound as dependant variable
             if isinstance(valuesObject, ValuesCompound):
                 self.nbDep = len(valuesObject.valueLst)
                 for ind, val in enumerate(valuesObject.valueLst):
                     if ind == 0:                       
                         varName = "Dependant"                    
-                        self.colHeader = ['Dependant']
                     else:
                         varName = "Dependant comp. " + str(ind+1)   
                         self.colHeader.append(varName)
@@ -123,7 +124,6 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
                 self.__data[('Unit',       'Dependant')] = valuesObject.unit
                 self.__data[('Statistic',  'Dependant')] = valuesObject.statistic
-                self.colHeader = ['Dependant']
     
                 self.nbDep = 1
                 for noSample, sample in enumerate(valuesObject.values):
@@ -144,7 +144,7 @@ class VariableListModel(QtCore.QAbstractTableModel):
         else:
             raise TypeError
 
-
+        self.refresh()
 
     def getIndepVars(self, varType="Variable"):
         if varType == "Variable":

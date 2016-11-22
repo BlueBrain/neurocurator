@@ -9,6 +9,7 @@ from nat.modelingParameter import getParameterTypeFromName, \
     getParameterTypeNameFromID, getParameterTypeFromID
 from nat.ontoManager import OntoManager  
 from nat.tag import RequiredTag
+from nat.tagUtilities import nlx2ks
 
 from .itemDelegates import ReqTagDelegate
 from .paramFunctionWgt import ParamFunctionWgt
@@ -393,7 +394,12 @@ class ParamModWgt(QtGui.QWidget):
          Called when a row has been selected in the table listing all the modeling parameters.
          It update the interface with the values associated with this specific parameter.
         """
-
+        
+        def nlxCheck(id):
+            if id in nlx2ks:
+                return nlx2ks[id]
+            return id
+            
         def clear():
             self.requiredTagsListModel.clear()
             self.paramModStack.currentWidget().loadRow(None)
@@ -443,7 +449,8 @@ class ParamModWgt(QtGui.QWidget):
         parameterType = getParameterTypeFromID(currentParameter.typeId)
         reqTags = {reqTag.rootId:reqTag for reqTag in parameterType.requiredTags}
         for reqTagRootId, reqTag in reqTags.items():
-            if not reqTagRootId in [tag.rootId for tag in currentParameter.requiredTags]:
+            #print(nlxCheck(reqTagRootId), [nlxCheck(tag.rootId) for tag in currentParameter.requiredTags])
+            if not nlxCheck(reqTagRootId) in [nlxCheck(tag.rootId) for tag in currentParameter.requiredTags]:
                 self.requiredTagsListModel.addTag(reqTag.rootId, self.parent.dicData[reqTag.rootId], reqTag.id, reqTag.name)
             
         self.requiredTagsListModel.refresh()

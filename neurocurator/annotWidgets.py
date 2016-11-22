@@ -156,7 +156,9 @@ class EditAnnotWgt(QtGui.QWidget):
     def currentAnnotation(self):
         return self.parent.currentAnnotation
 
-
+    @currentAnnotation.setter
+    def currentAnnotation(self, annotation):
+        self.parent.currentAnnotation = annotation
 
 
     @QtCore.Slot(object)
@@ -735,9 +737,9 @@ class EditAnnotTextWgt(QtGui.QWidget):
         self.contextTxt.setText(fileText[contextStart:contextEnd])
         
         localizer = TextLocalizer(self.textToAnnotateTxt.text(), starts[0])
-        self.currentAnnotation = Annotation(self.container.commentEdt.toPlainText(), 
-                                            [self.container.parent.username], 
-                                            self.container.parent.IdTxt.text(), localizer)
+        self.container.currentAnnotation = Annotation(self.container.commentEdt.toPlainText(), 
+                                                    [self.container.parent.username], 
+                                                    self.container.parent.IdTxt.text(), localizer)
 
 
         self.startTxt.setText(str(starts[0]))
