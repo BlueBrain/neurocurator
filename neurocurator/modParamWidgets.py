@@ -34,7 +34,14 @@ class RequiredTagsTableView(QtGui.QTableView):
 
     def setReqTags(self, tagName):
 
-        tagId = list(self.dicData.keys())[list(self.dicData.values()).index(tagName)]
+        try:
+            tagId = list(self.dicData.keys())[list(self.dicData.values()).index(tagName)]
+        except ValueError:
+            ontoMng       = OntoManager(recompute=True)      
+            self.treeData = ontoMng.trees 
+            self.dicData  = ontoMng.dics    
+            tagId = list(self.dicData.keys())[list(self.dicData.values()).index(tagName)]
+            
         
         if not tagId in self.treeData:
             raise ValueError("The term id " + tagId + " was not specified as an ontological root.")
@@ -101,7 +108,11 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
         tagId = self.requiredTagsIds[row]
 
         if not tagId in self.treeData:    
-            raise ValueError("Tag '" + tagId + "' is not a treeData root. TreeData roots are the following:" + str(list(self.treeData.keys())))
+            ontoMng       = OntoManager(recompute=True)      
+            self.treeData = ontoMng.trees 
+            self.dicData  = ontoMng.dics            
+            if not tagId in self.treeData:                
+                raise ValueError("Tag '" + tagId + "' is not a treeData root. TreeData roots are the following:" + str(list(self.treeData.keys())))
 
         return tagName in list(self.treeData[tagId].values())
 
