@@ -32,6 +32,9 @@ from .suggestedTagMng import TagSuggester
 from .zoteroWrap import ZoteroTableModel
 from .uiUtilities import errorMessage, disableTextWidget
 from .settingsDlg import getSettings, SettingsDlg
+from .addOntoTermDlg import AddOntoTermDlg
+from .addToZoteroDlg import AddToZoteroDlg
+
 from .annotWidgets import EditAnnotWgt
 from .modParamWidgets import ParamModWgt
 from .experimentalPropertyWgt import ExpPropWgt
@@ -266,37 +269,93 @@ class Window(QtGui.QMainWindow):
 
 
     def setupMenus(self):
-        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(self.close)
 
-        openPreferencesAction = QtGui.QAction(QtGui.QIcon(), '&Preferences', self)
-        openPreferencesAction.setStatusTip('Edit preferences')
-        openPreferencesAction.triggered.connect(self.editPreferences)
-
-
-        refreshZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Refresh Zotero', self)
-        refreshZoteroAction.setStatusTip('Refresh Zotero database')
-        refreshZoteroAction.triggered.connect(self.updateZotLib)
-
-        pushToServerAction = QtGui.QAction(QtGui.QIcon(), '&Push to server', self)
-        pushToServerAction.setStatusTip('Push modifications to the server')
-        pushToServerAction.triggered.connect(self.pushToServer)
 
         self.statusBar()
 
         menubar = self.menuBar()
+        
+        #######################################################################
+        # FILE MENU
+        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.setStatusTip('Exit application')
+        exitAction.triggered.connect(self.close)
+        
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(exitAction)        
+
+        #######################################################################
+        # EDIT MENU
+        openPreferencesAction = QtGui.QAction(QtGui.QIcon(), '&Preferences', self)
+        openPreferencesAction.setStatusTip('Edit preferences')
+        openPreferencesAction.triggered.connect(self.editPreferences)
 
         editMenu = menubar.addMenu('&Edit')
         editMenu.addAction(openPreferencesAction)
 
-        commandMenu = menubar.addMenu('&Command')
-        commandMenu.addAction(refreshZoteroAction)
-        commandMenu.addAction(pushToServerAction)
 
+
+        #######################################################################
+        # COMMAND MENU
+        refreshLocalOntoAction = QtGui.QAction(QtGui.QIcon(), 'Refresh local &ontologies', self)
+        refreshLocalOntoAction.setStatusTip('Refresh local ontologies')
+        refreshLocalOntoAction.triggered.connect(self.refreshLocalOnto)
+
+        pushToServerAction = QtGui.QAction(QtGui.QIcon(), '&Push annotations to server', self)
+        pushToServerAction.setStatusTip('Push modifications to the server')
+        pushToServerAction.triggered.connect(self.pushToServer)
+
+        addToOntologyAction = QtGui.QAction(QtGui.QIcon(), '&Add a term to ontologies', self)
+        addToOntologyAction.setStatusTip('Add a new ontological term')
+        addToOntologyAction.triggered.connect(self.addToOntology)
+
+        addModParamTypeAction = QtGui.QAction(QtGui.QIcon(), '&Add a modeling parameter type', self)
+        addModParamTypeAction.setStatusTip('Add a new type of modeling parameter')
+        addModParamTypeAction.triggered.connect(self.addModParamType)
+        
+
+        commandMenu = menubar.addMenu('&Command')
+        commandMenu.addAction(pushToServerAction)
+        commandMenu.addAction(refreshLocalOntoAction)
+        commandMenu.addAction(addToOntologyAction)
+        commandMenu.addAction(addModParamTypeAction)
+
+        #######################################################################
+        # COMMAND MENU
+        refreshZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Refresh Zotero', self)
+        refreshZoteroAction.setStatusTip('Refresh Zotero database')
+        refreshZoteroAction.triggered.connect(self.updateZotLib)
+
+        addZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Add reference', self)
+        addZoteroAction.setStatusTip('Add a reference to the Zotero database')
+        addZoteroAction.triggered.connect(self.addToZotLib)
+
+        zoteroMenu = menubar.addMenu('&Zotero')
+        zoteroMenu.addAction(refreshZoteroAction)
+        zoteroMenu.addAction(addZoteroAction)
+
+
+    def addToOntology(self):
+        addToOntoDlg = AddOntoTermDlg(self)
+        if addToOntoDlg.exec_() == QtGui.QDialog.Accepted:
+            pass
+
+
+    def addModParamType(self):
+        pass
+
+
+    def refreshLocalOnto(self):
+        self.builtOntoTrees(recompute=True)
+        #TODO: Need to refresh auto-completion lists if we want it to take
+        # this refreshed ontology into account without restarting the app.
+
+
+    def addToZotLib(self):
+        addToZoteroDlg = AddToZoteroDlg(self.zoteroTableModel, self)
+        if addToZoteroDlg.exec_() == QtGui.QDialog.Accepted:
+            pass        
 
 
 
@@ -619,6 +678,8 @@ class Window(QtGui.QMainWindow):
             self.gitMng = GitManager(self.settings.config["GIT"])
             self.dbPath   = os.path.abspath(os.path.expanduser(self.settings.config["GIT"]["local"]))
 
+
+
     def setNeedSaving(self):
         if not self.needSavingDisabled:
             self.needSaving = True
@@ -681,9 +742,8 @@ class Window(QtGui.QMainWindow):
         self.needSavingDisabled = False 
 
 
-
-    def builtOntoTrees(self):
-        self.ontoMng = OntoManager()
+    def builtOntoTrees(self, recompute=False):
+        self.ontoMng = OntoManager(recompute=recompute)
         self.treeData                  = self.ontoMng.trees 
         self.dicData                   = self.ontoMng.dics
         #self.nlTreeModel               = TreeModel(self.treeData)

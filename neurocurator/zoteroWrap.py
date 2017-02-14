@@ -5,31 +5,49 @@ __author__ = "Christian O'Reilly"
 from PySide import QtGui, QtCore
 
 import re
-import pickle
 from dateutil.parser import parse
-from pyzotero import zotero
-import os
-
+from nat.annotationSearch import AnnotationSearch
 from nat.zoteroWrap import ZoteroWrap
 
 class ZoteroTableModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent, checkIdFct, header = ['ID', 'Title', 'Creator', 'Year', 'Journal'], *args):
+    def __init__(self, parent, checkIdFct, header = ['ID', 'Title', 'Creator', 'Year', 'Journal', 'Annotations'], *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
 
-        self.header = header
-        self.fields = {0:"ID", 1:"title", 2:"creators", 3:"Year", 4:"publicationTitle"}
-        self.checkIdFct = checkIdFct
-        self.sortCol   = 0 
-        self.sortOrder = QtCore.Qt.AscendingOrder
-        self.zotWrap   = ZoteroWrap() 
+        self.header      = header
+        self.fields      = {0:"ID", 1:"title", 2:"creators", 3:"Year", 4:"publicationTitle"}
+        self.checkIdFct  = checkIdFct
+        self.sortCol     = 0 
+        self.sortOrder   = QtCore.Qt.AscendingOrder
+        self.zotWrap     = ZoteroWrap() 
+        self.parent      = parent
+        self.annotSearch = AnnotationSearch(self.parent.dbPath)
+       
+    @property
+    def zotLib(self):
+        return self.zotWrap.zotLib
+        
+    @property
+    def itemTypes(self):
+        return self.zotWrap.itemTypes    
+        
+    @property
+    def itemTemplates(self):
+        return self.zotWrap.itemTemplates
 
 
     def loadCachedDB(self, libraryId, libraryrType, apiKey):
         self.zotWrap.loadCachedDB(libraryId, libraryrType, apiKey)
-
+        self.computeAnnotNumbers()
+        
     def refreshDB(self, libraryId, libraryrType, apiKey):
         self.zotWrap.refreshDB(libraryId, libraryrType, apiKey)
+        self.computeAnnotNumbers()
+        
+    def computeAnnotNumbers(self):
+        searchRes        = self.annotSearch.search()
+        self.annotNumbers = searchRes["Publication ID"].value_counts().to_dict()
+        print(self.annotNumbers)
 
     def getID(self, row):
         return self.zotWrap.getID(row)
@@ -60,46 +78,54 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
     def getByIndex(self, ref, ind):
 
         try:
-            ###################### CREATORS
-            if self.fields[ind] == "creators":
-                authors = []
-                for creator in ref["creators"]:
-                    if creator["creatorType"] == "author":
-                        authors.append(creator["lastName"])
-                
-                # Academic books published as a collection of chapters contributed
-                # by different authors have editors but not authors at the level
-                # of the book (as opposed to the level of a chapter).
-                if len(authors) == 0 and ref['itemType'] == 'book':
+            if self.header[ind] == 'Annotations':
+                id = self.getID_fromRef(ref)
+                if id in self.annotNumbers:
+                    print("ID FOUND", id, self.annotNumbers[id], type(self.annotNumbers[id])) 
+                    return int(self.annotNumbers[id])
+                else:
+                    return 0
+            else:
+                ###################### CREATORS
+                if self.fields[ind] == "creators":
+                    authors = []
                     for creator in ref["creators"]:
-                        if creator["creatorType"] == "editor":
-                            authors.append(creator["lastName"]) 
-                            
-                return ", ".join(authors)
-
-            ####################### ID
-            elif self.fields[ind] == "ID":
-                return self.getID_fromRef(ref)
+                        if creator["creatorType"] == "author":
+                            authors.append(creator["lastName"])
+                    
+                    # Academic books published as a collection of chapters contributed
+                    # by different authors have editors but not authors at the level
+                    # of the book (as opposed to the level of a chapter).
+                    if len(authors) == 0 and ref['itemType'] == 'book':
+                        for creator in ref["creators"]:
+                            if creator["creatorType"] == "editor":
+                                authors.append(creator["lastName"]) 
+                                
+                    return ", ".join(authors)
     
-            ####################### YEAR
-            elif self.fields[ind] == "Year":
-                if ref["date"] == "":
-                    return ""
-                else:
-                    try:
-                        return str(parse(ref["date"]).year)
-                    except ValueError:
-                        return re.search(r'[12]\d{3}', ref["date"]).group(0)
-
-            ####################### PUBLICATIONTITLE
-            elif self.fields[ind] == "publicationTitle":
-                if ref['itemType'] == 'book':
-                    return "book"
-                else:
-                    return ref[self.fields[ind]]
-                
-
-            return ref[self.fields[ind]]
+                ####################### ID
+                elif self.fields[ind] == "ID":
+                    return self.getID_fromRef(ref)
+        
+                ####################### YEAR
+                elif self.fields[ind] == "Year":
+                    if ref["date"] == "":
+                        return ""
+                    else:
+                        try:
+                            return str(parse(ref["date"]).year)
+                        except ValueError:
+                            return re.search(r'[12]\d{3}', ref["date"]).group(0)
+    
+                ####################### PUBLICATIONTITLE
+                elif self.fields[ind] == "publicationTitle":
+                    if ref['itemType'] == 'book':
+                        return "book"
+                    else:
+                        return ref[self.fields[ind]]
+                    
+    
+                return ref[self.fields[ind]]
         except KeyError:
             return ""
 
@@ -152,3 +178,10 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
     def refresh(self):
         self.emit(QtCore.SIGNAL("layoutChanged()"))
 
+    
+    def addItem(self, item):
+        self.zotWrap.refList.append(item)
+        self.sort() 
+        self.zotWrap.savePickle()
+        
+        
