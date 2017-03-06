@@ -50,6 +50,8 @@ class Settings:
 
 class SettingsDlg(QtGui.QDialog):
 
+	restRoot = http://bbpca063.epfl.ch
+
     def __init__(self, settings = None, parent=None):
         super(SettingsDlg, self).__init__(parent)
         self.setWindowTitle("Curator settings")
@@ -63,7 +65,7 @@ class SettingsDlg(QtGui.QDialog):
         self.mainTabs.addTab(self.projectSettings, "Projects")   
 
         if self.settings is None:
-            self.restServerURLTxt = QtGui.QLineEdit("http://bbpca063.epfl.ch:5000/neurocurator/api/v1.0/", self)     
+            self.restServerURLTxt = QtGui.QLineEdit(SettingsDlg.restRoot + ":5000/neurocurator/api/v1.0/", self)     
         else:
             self.restServerURLTxt = QtGui.QLineEdit(self.settings.config["REST"]["serverURL"], self) 
             
@@ -146,7 +148,7 @@ class ProjectSettings(QtGui.QWidget):
             self.zoteroApiKeyTxt  = QtGui.QLineEdit('4D3rDZsAVBd139alqoVZBKOO', self)
             self.zoteroLibraryTypeCB.setCurrentIndex(0)
 
-            self.restServerURLTxt = QtGui.QLineEdit("http://bbpca063.epfl.ch:5000/neurocurator/api/v1.0/", self) 
+            self.restServerURLTxt = QtGui.QLineEdit(SettingsDlg.restRoot + ":5000/neurocurator/api/v1.0/", self) 
             
             self.noRemotechkbox.setCheckState(QtCore.Qt.Unchecked)
     
