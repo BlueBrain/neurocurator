@@ -10,9 +10,9 @@ import numpy as np
 from difflib import SequenceMatcher
 
 from nat.annotation import TextLocalizer, FigureLocalizer, TableLocalizer, \
-    EquationLocalizer, PositionLocalizer, Annotation
+    EquationLocalizer, PositionLocalizer, NullLocalizer, Annotation
 from nat.utils import Id2FileName
-
+from collections import OrderedDict
 
 from .uiUtilities import disableTextWidget, enableTextWidget
 from .areaSelector import PDFAreaSelector, loadImage
@@ -36,15 +36,16 @@ class EditAnnotWgt(QtGui.QWidget):
         self.commentEdt             = QtGui.QTextEdit('', self)
     
 
-        self.editAnnotWgt = {"text"    : EditAnnotTextWgt(self), 
-                             "figure"  : EditAnnotFigureWgt(self), 
-                             "table"   : EditAnnotTableWgt(self), 
-                             "equation": EditAnnotEquationWgt(self), 
-                             "position": EditAnnotPositionWgt(self)}
+        self.editAnnotWgt = OrderedDict([("text",     EditAnnotTextWgt(self)), 
+                                         ("figure",   EditAnnotFigureWgt(self)), 
+                                         ("table",    EditAnnotTableWgt(self)), 
+                                         ("equation", EditAnnotEquationWgt(self)), 
+                                         ("position", EditAnnotPositionWgt(self)),
+                                         ("null",     EditAnnotNullWgt(self))])
 
         # We use the list to as a redundancy of the list of keys in annotTypesDict
         # because we want these to be ordered. 
-        self.annotTypeLst     = ["text", "figure", "table", "equation", "position"]
+        self.annotTypeLst     = list(self.editAnnotWgt.keys())
 
         self.annotationTypesCbo.addItems(self.annotTypeLst)
 
@@ -52,7 +53,6 @@ class EditAnnotWgt(QtGui.QWidget):
 
         for annotType in self.annotTypeLst:
             self.editAnnotStack.addWidget(self.editAnnotWgt[annotType])
-
 
 
         # Layout
@@ -98,8 +98,7 @@ class EditAnnotWgt(QtGui.QWidget):
 
 
 
-    def viewJSON(self):
-        
+    def viewJSON(self):        
         form = JSONDlg()
         form.setJSON(self.currentAnnotation)
         if form.exec_() == QtGui.QDialog.Accepted:
@@ -110,8 +109,6 @@ class EditAnnotWgt(QtGui.QWidget):
         self.annotationTypesCbo.setDisabled(True)
 
         
-
-
     def selectAnnotType(self, annotType):
         
         ind = [no for no, a in enumerate(self.annotTypeLst) if a == annotType]
@@ -184,7 +181,13 @@ class EditAnnotWgt(QtGui.QWidget):
             self.clearAddAnnotation()
             for widget in self.editAnnotWgt.values():
                 widget.newAnnotation()
-            self.annotationTypesCbo.setEnabled(True)
+
+            if "UNPUBLISHED" in self.parent.IdTxt.text(): 
+                self.annotationTypesCbo.setEnabled(False)
+                self.setCurrentStack(self.annotTypeLst.index("null"))
+                self.annotationTypesCbo.setCurrentIndex(self.annotTypeLst.index("null"))
+            else:
+                self.annotationTypesCbo.setEnabled(True)
             enableTextWidget(self.commentEdt)
 
 
@@ -202,13 +205,6 @@ class EditAnnotWgt(QtGui.QWidget):
             if not self.parent.username in self.currentAnnotation.users:
                 self.currentAnnotation.users.append(self.parent.username)
             self.editAnnotWgt[self.annotationTypesCbo.currentText()].updateCurrentAnnotation()
-    
-
-
-
-
-
-
 
 
 
@@ -260,6 +256,31 @@ class EditAnnotFigureWgt(QtGui.QWidget):
     def updateCurrentAnnotation(self):
         self.container.currentAnnotation.localizer = FigureLocalizer(self.noFigure.text())
 
+
+
+
+class EditAnnotNullWgt(QtGui.QWidget):
+
+    def __init__(self, container):
+        self.container = container
+        super(EditAnnotNullWgt, self).__init__()
+
+
+    @QtCore.Slot(object)
+    def annotationSelectionChanged(self):
+        pass
+
+
+    def newAnnotation(self):
+        pass
+
+
+    def clearAnnotation(self):
+        pass
+
+
+    def updateCurrentAnnotation(self):
+        self.container.currentAnnotation.localizer = NullLocalizer()
 
 
 

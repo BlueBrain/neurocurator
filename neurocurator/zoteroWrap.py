@@ -47,7 +47,6 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
     def computeAnnotNumbers(self):
         searchRes        = self.annotSearch.search()
         self.annotNumbers = searchRes["Publication ID"].value_counts().to_dict()
-        print(self.annotNumbers)
 
     def getID(self, row):
         return self.zotWrap.getID(row)
@@ -81,7 +80,7 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
             if self.header[ind] == 'Annotations':
                 id = self.getID_fromRef(ref)
                 if id in self.annotNumbers:
-                    print("ID FOUND", id, self.annotNumbers[id], type(self.annotNumbers[id])) 
+                    #print("ID FOUND", id, self.annotNumbers[id], type(self.annotNumbers[id])) 
                     return int(self.annotNumbers[id])
                 else:
                     return 0

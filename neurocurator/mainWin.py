@@ -354,8 +354,9 @@ class Window(QtGui.QMainWindow):
 
     def addToZotLib(self):
         addToZoteroDlg = AddToZoteroDlg(self.zoteroTableModel, self)
-        if addToZoteroDlg.exec_() == QtGui.QDialog.Accepted:
-            pass        
+        addToZoteroDlg.exec_() 
+        #if addToZoteroDlg.exec_() == QtGui.QDialog.Accepted:
+        #    pass        
 
 
 
@@ -436,8 +437,6 @@ class Window(QtGui.QMainWindow):
 
 
 
-
-
     def setupZoteroGB(self): 
         # Widgets
         self.zoteroTblWdg          = QtGui.QTableView()
@@ -449,10 +448,7 @@ class Window(QtGui.QMainWindow):
                                            self.settings.config['ZOTERO']['libraryType'], 
                                            self.settings.config['ZOTERO']['apiKey'])
 
-
-
         self.zoteroTblWdg.doubleClicked.connect(self.changeTagToAnnotations)
-
 
         # Layout
         self.zoteroGroupBox     = QtGui.QGroupBox("Zotero database content")
@@ -962,59 +958,71 @@ class Window(QtGui.QMainWindow):
             return False
 
         row = self.zoteroTblWdg.selectionModel().currentIndex().row()
-        DOI = self.zoteroTableModel.getDOI(row)
+        ID = self.zoteroTableModel.getID(row)
 
-        # Check if the document as a DOI
-        if DOI != "":
-            ID = DOI
+        if ID == "":
+            errorMessage(self, "Error", "This paper has no ID. Processing of papers without ID is not supported.")
+            self.invalidPaperChoice()
+            return
+        
+        isPMID = False
+        isUNPUBLISHED = False
+        isDOI = False         
+        if "PMID" in ID:
+            isPMID = True
+        elif "UNPUBLISHED" in ID:
+            isUNPUBLISHED = True
         else:
-            PMID = self.zoteroTableModel.getPMID(row)
-            if PMID != "":
-                ID = "PMID_" + PMID
-            else:
-                errorMessage(self, "Error", "This paper has no DOI nor PMID. Processing of papers without DOI nor PMID has not been implemented yet.")
-                self.invalidPaperChoice()
-                return
+            isDOI = True                
                 
         self.IdTxt.setText(ID)
 
         # Check if paper is already in the database
         if not self.checkIdInDB(self.IdTxt.text()):
-            msgBox = QtGui.QMessageBox(self)
-            msgBox.setWindowTitle("Paper not in the database")
-            msgBox.setText("This paper is not already in the curator database.")
-            pdfButton        = QtGui.QPushButton("Select PDF")
-            msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
-            msgBox.addButton(pdfButton, QtGui.QMessageBox.YesRole)
-
-            if DOI != "":
-                websiteButton    = QtGui.QPushButton("Follow DOI to the publication website")
-                msgBox.addButton(websiteButton, QtGui.QMessageBox.ActionRole)
-
-            msgBox.setDefaultButton(pdfButton)
-            retCode = msgBox.exec_() 
-
-            if retCode == 0:
-                try:
-                    if not self.importPDF():
-                        self.invalidPaperChoice()
-                        return
-                except UnicodeEncodeError:
-                    errorMessage(self, "Unicode error", "Please check that " +\
-                                 "the path of the file you are trying to " +\
-                                 "upload does not contain non ASCII " +\
-                                 "characters. Complete support of unicode " +\
-                                 "encoding for file names and paths are " +\
-                                 "not provided.")
+            if isDOI or isPMID:
+                msgBox = QtGui.QMessageBox(self)
+                msgBox.setWindowTitle("Paper not in the database")
+                msgBox.setText("This paper is not already in the curator database.")
+                pdfButton        = QtGui.QPushButton("Select PDF")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
+                msgBox.addButton(pdfButton, QtGui.QMessageBox.YesRole)
+    
+    
+                if isDOI:
+                    websiteButton    = QtGui.QPushButton("Follow DOI to the publication website")
+                    msgBox.addButton(websiteButton, QtGui.QMessageBox.ActionRole)
+    
+                msgBox.setDefaultButton(pdfButton)
+                retCode = msgBox.exec_() 
+    
+                if retCode == 0:
+                    try:
+                        if not self.importPDF():
+                            self.invalidPaperChoice()
+                            return
+                    except UnicodeEncodeError:
+                        errorMessage(self, "Unicode error", "Please check that " +\
+                                     "the path of the file you are trying to " +\
+                                     "upload does not contain non ASCII " +\
+                                     "characters. Complete support of unicode " +\
+                                     "encoding for file names and paths are " +\
+                                     "not provided.")
+                        
+                elif retCode == 1 and isDOI:
+                    url = "http://dx.doi.org/" + self.IdTxt.text()
+                    webbrowser.open(url)
+                    return
+                else:
+                    self.invalidPaperChoice()
+                    return
+    
+            elif isUNPUBLISHED:
+                saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
+                with open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore'): 
+                    self.gitMng.addFiles([saveFileName + ".pcr"])       
                     
-            elif retCode == 1 and DOI != "":
-                url = "http://dx.doi.org/" + self.IdTxt.text()
-                webbrowser.open(url)
-                return
-            else:
-                self.invalidPaperChoice()
-                return
 
+        self.openPDFBtn.setDisabled(isUNPUBLISHED)
         self.refreshListAnnotation(0)
         self.paperGroupBox.setDisabled(False)
         self.listAnnotGroupBox.setDisabled(False)        
