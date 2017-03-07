@@ -12,10 +12,7 @@ __author__ = "Christian O'Reilly"
 # Import PySide classes
 from PySide import QtGui
 from uuid import uuid1
-from nat.zoteroWrap import ZoteroWrap
-
-
-
+from copy import deepcopy
 
 
 class AddToZoteroDlg(QtGui.QDialog):
@@ -86,19 +83,26 @@ class CreatorsWgt(QtGui.QTableWidget):
         if row == self.rowCount()-1:
             self.insertRow(self.rowCount())
 
-
         
     def getCreatorsLst(self):
-        creatorType = self.creatorsLst[0]["creatorType"] 
+        try:
+            creatorType = self.creatorsLst[0]["creatorType"] 
+        except IndexError:
+            print(self.creatorsLst)
+            raise
         
         outList = []
         for i in range(self.rowCount()):
-            if not self.item(i, 0) is None and not self.item(i, 1) is None:
-                if self.item(i, 0).text() != "" or self.item(i, 1).text() != "" :
-                    creatorDict = {'creatorType':creatorType,
-                                   'firstName': self.item(i, 0).text(), 
-                                   'lastName': self.item(i, 1).text()}
-                    outList.append(creatorDict)           
+            names = ["", ""]
+            for j in range(2):
+                if not self.item(i, j)  is None:
+                    names[j] = self.item(i, j).text()
+                    
+            if names[0] != "" or names[1] != "" :
+                creatorDict = {'creatorType':creatorType,
+                               'firstName': names[0], 
+                               'lastName': names[1]}
+                outList.append(creatorDict)           
                 
         return outList
 
@@ -110,27 +114,30 @@ class IdWgt(QtGui.QWidget):
         super(IdWgt, self).__init__()        
         self.idType = QtGui.QComboBox(self)
         self.idType.addItems(["DOI", "PMID", "UNPUBLISHED"])
-        self.stackedWidget =  QtGui.QStackedWidget()      
-        self.idType.activated.connect(self.stackedWidget.setCurrentIndex)
-        layout = QtGui.QHBoxLayout(self)
-        layout.addWidget(self.idType)
-        layout.addWidget(self.stackedWidget)
 
+        self.stackedWidget =  QtGui.QStackedWidget()      
         self.stackedWidget.addWidget(QtGui.QLineEdit())
         self.stackedWidget.addWidget(QtGui.QLineEdit())
         self.stackedWidget.addWidget(QtGui.QLineEdit(str(uuid1())))
 
         self.stackedWidget.widget(2).setDisabled(True)
+        self.idType.activated.connect(self.stackedWidget.setCurrentIndex)
+
+        layout = QtGui.QHBoxLayout(self)
+        layout.addWidget(self.idType)
+        layout.addWidget(self.stackedWidget)
 
     
     def setIdToReference(self, reference):
         
         if self.idType.currentText() == "DOI":
             reference["DOI"] = self.stackedWidget.currentWidget().text()
-        elif self.idType.currentText() == "PMID":
-            reference["extra"] += "/nPMID:" + self.stackedWidget.currentWidget().text()
-        elif self.idType.currentText() == "UNPUBLISHED":
-            reference["extra"] += "/nUNPUBLISHED:" + self.stackedWidget.currentWidget().text()
+        elif self.idType.currentText() == "PMID":         
+            reference["extra"] += "\nPMID:" + self.stackedWidget.currentWidget().text()
+        elif self.idType.currentText() == "UNPUBLISHED":        
+            reference["extra"] += "\nUNPUBLISHED:" + self.stackedWidget.currentWidget().text()
+        else:
+            raise ValueError()
 
         return reference
 
@@ -142,7 +149,7 @@ class DocumentObject:
 
     def __init__(self, docItemType, zotWrap):
         self.zotLib = zotWrap.zotLib
-        self.reference = zotWrap.itemTemplates[docItemType["itemType"]]
+        self.reference = deepcopy(zotWrap.itemTemplates[docItemType["itemType"]])
 
     def getCreatorsWidget(self, creatorsLst):
         return CreatorsWgt(creatorsLst)
@@ -156,15 +163,17 @@ class DocumentObject:
         
         for key, widget in self.widgets.items():
             if key == "Id":
-                self.reference = widget.setIdToReference(self.reference)
-            else:
-                if isinstance(self.reference[key], str):
-                    if key != "DOI":
-                        self.reference[key] = str(widget.text())
-                elif isinstance(self.reference[key], (dict, list)):
-                    if key == "creators":    
-                        self.reference[key] = widget.getCreatorsLst()
+                continue
+            if isinstance(self.reference[key], str):
+                if key != "DOI":
+                    self.reference[key] = str(widget.text())
+            elif isinstance(self.reference[key], (dict, list)):
+                if key == "creators":    
+                    self.reference[key] = widget.getCreatorsLst()
         
+        # At the end because it can also overwritten the extra field.
+        self.reference = self.widgets["Id"].setIdToReference(self.reference)
+
         # check_item is broken: see https://github.com/urschrei/pyzotero/issues/69
         #return self.zotLib.check_items([self.reference])[0]
         return self.reference
@@ -186,7 +195,7 @@ class DocumentObject:
                 self.widgets[key] = QtGui.QLineEdit()  
             elif isinstance(value, (dict, list)):            
                 if key == "creators":
-                    self.widgets[key] = self.getCreatorsWidget(value)
+                    self.widgets[key] = self.getCreatorsWidget(deepcopy(value))
                 else:
                     continue
             else:
