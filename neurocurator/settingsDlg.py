@@ -50,7 +50,7 @@ class Settings:
 
 class SettingsDlg(QtGui.QDialog):
 
-	restRoot = http://bbpca063.epfl.ch
+    restRoot = "http://bbpca063.epfl.ch"
 
     def __init__(self, settings = None, parent=None):
         super(SettingsDlg, self).__init__(parent)
