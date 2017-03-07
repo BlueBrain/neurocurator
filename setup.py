@@ -3,7 +3,7 @@ import os
 
 PACKAGE = "neurocurator"
 NAME = "neurocurator"
-DESCRIPTION = "GUI-based application and API to perform systematic and collaborative scientific literature curation. This is a front-end for the NeuroAnnotation Toolbox (NAT)."
+DESCRIPTION = open(os.path.join(os.path.dirname(__file__), "README.md")).read()
 AUTHOR = "Christian O'Reilly"
 AUTHOR_EMAIL = "christian.oreilly@epfl.ch"
 VERSION = "0.3.2"
