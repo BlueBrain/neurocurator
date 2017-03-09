@@ -30,6 +30,7 @@ class EditAnnotWgt(QtGui.QWidget):
         # Widgets
         self.annotationTypesCbo     = QtGui.QComboBox(self)
         self.newAnnotationBtn       = QtGui.QPushButton('New', self)
+        self.duplicateAnnotationBtn = QtGui.QPushButton('Duplicate', self)
         self.deleteAnnotationBtn    = QtGui.QPushButton('Delete', self)
         self.viewJSONBtn            = QtGui.QPushButton('View JSON', self)
         self.saveAnnotationBtn      = QtGui.QPushButton('Save', self)
@@ -63,12 +64,13 @@ class EditAnnotWgt(QtGui.QWidget):
         gridAddAnnotations.addWidget(self.saveAnnotationBtn, 2, 2)
         gridAddAnnotations.addWidget(self.deleteAnnotationBtn, 2, 3)
         gridAddAnnotations.addWidget(self.newAnnotationBtn, 2, 4)
-        gridAddAnnotations.addWidget(self.viewJSONBtn, 2, 5)
+        gridAddAnnotations.addWidget(self.duplicateAnnotationBtn, 2, 5)
+        gridAddAnnotations.addWidget(self.viewJSONBtn, 2, 6)
 
-        gridAddAnnotations.addWidget(self.editAnnotStack, 3, 0, 1, 6)
+        gridAddAnnotations.addWidget(self.editAnnotStack, 3, 0, 1, 7)
 
         gridAddAnnotations.addWidget(QtGui.QLabel('Comment', self), 4, 0)
-        gridAddAnnotations.addWidget(self.commentEdt, 4, 1, 1, 5)
+        gridAddAnnotations.addWidget(self.commentEdt, 4, 1, 1, 6)
         self.setLayout(gridAddAnnotations)
 
 
@@ -76,6 +78,7 @@ class EditAnnotWgt(QtGui.QWidget):
         # Signals
         self.saveAnnotationBtn.clicked.connect(self.saveAnnotation)
         self.newAnnotationBtn.clicked.connect(self.newAnnotation)
+        self.duplicateAnnotationBtn.clicked.connect(self.duplicateAnnotation)
         self.viewJSONBtn.clicked.connect(self.viewJSON)
         self.deleteAnnotationBtn.clicked.connect(self.parent.deleteAnnotation)
         self.commentEdt.textChanged.connect(self.annotationChanged)
@@ -162,6 +165,7 @@ class EditAnnotWgt(QtGui.QWidget):
     def annotationSelectionChanged(self):
         #self.deleteAnnotationBtn.setEnabled(True)
         self.newAnnotationBtn.setEnabled(True)
+        self.duplicateAnnotationBtn.setEnabled(True)
         if not self.currentAnnotation is None:
             self.commentEdt.setText(self.currentAnnotation.comment)
             enableTextWidget(self.commentEdt)
@@ -175,6 +179,7 @@ class EditAnnotWgt(QtGui.QWidget):
     def newAnnotation(self):
         if self.parent.newAnnotation() :
             self.newAnnotationBtn.setEnabled(False)
+            self.duplicateAnnotationBtn.setEnabled(False)
             self.deleteAnnotationBtn.setEnabled(False)
             self.viewJSONBtn.setDisabled(False)
             self.annotationTypesCbo.setEnabled(True)
@@ -190,12 +195,15 @@ class EditAnnotWgt(QtGui.QWidget):
                 self.annotationTypesCbo.setEnabled(True)
             enableTextWidget(self.commentEdt)
 
+    def duplicateAnnotation(self):
+        self.parent.duplicateAnnotation()
 
 
 
     @QtCore.Slot(object, bool)
     def savingNeeded(self, needSaving):
         self.saveAnnotationBtn.setEnabled(needSaving)
+        self.updateCurrentAnnotation()
 
 
 
@@ -777,6 +785,7 @@ class EditAnnotTextWgt(QtGui.QWidget):
         self.container.parent.tagAnnotGroupBox.setDisabled(False)
         self.container.parent.refreshTagList()        
         self.container.newAnnotationBtn.setEnabled(True)
+        self.container.duplicateAnnotationBtn.setEnabled(True)
         self.container.commentEdt.setFocus()
         self.container.parent.detectAnnotChange = True
         self.container.parent.needSaving = True

@@ -1228,6 +1228,27 @@ class Window(QtGui.QMainWindow):
         self.refreshModelingParam()
         return True
 
+        
+
+    def duplicateAnnotation(self):
+        if self.checkSavingAnnot() == False:
+            return False
+
+        #self.clearAddAnnotation()
+        self.currentAnnotation = self.currentAnnotation.duplicate()
+        #self.annotListTblWdg.setCurrentIndex(QtCore.QModelIndex())
+        self.saveAnnotation()
+        #self.currentAnnotation = self.currentAnnotation.duplicate()
+        #if self.IdTxt.text() in self.selectedTagPersist:
+        #    for id in self.selectedTagPersist[self.IdTxt.text()]:
+        #        self.currentAnnotation.addTag(id, self.dicData[id])
+
+        #self.needSaving = False
+        #self.refreshTagList()
+        #self.taggingTabs.setEnabled(True)    
+        #self.refreshModelingParam()
+        return True
+
 
 
     def checkIdInDB(self, ID):
