@@ -11,6 +11,7 @@ import getpass
 from glob import glob
 from os.path import join
 from subprocess import call
+from requests.exceptions import ConnectionError
 
 # Contributed libraries imports
 from PySide import QtGui, QtCore
@@ -1097,7 +1098,11 @@ class Window(QtGui.QMainWindow):
             if os.path.isfile(saveFileName + ".txt"):
                 errorMessage(self, "Error", "This PDF has already been imported to the database.")
 
-            self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
+            try:
+                self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
+            except ConnectionError as e:
+                errorMessage(self, "Error", "Failed to connect to the REST server. Error message: " + str(e))                                
+                return False
 
             with open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore'): 
                 self.gitMng.addFiles([saveFileName + ".pcr"])
