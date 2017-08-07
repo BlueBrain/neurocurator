@@ -20,7 +20,7 @@ import numpy as np
 # NeuroAnnotation Toolbox imports
 from nat.utils import Id2FileName #, fileName2Id
 from nat.annotation import Annotation
-from nat.gitManager import GitManager
+from nat.gitManager import GitManager, GitMngError
 from nat.id import checkID
 from nat.tag import Tag
 from nat.ontoManager import OntoManager
@@ -133,10 +133,24 @@ class Window(QtGui.QMainWindow):
 
         # Load the object used to transparently interact with GIT to save annotations
         # using versioning.
-        try:
-            self.gitMng = GitManager(self.settings.config["GIT"])
-        except KeyError:
-            self.popUpSettingsDlg()
+        def getGitMng(cleanDirty=False):
+            try:
+                self.gitMng = GitManager(self.settings.config["GIT"], cleanDirty)
+            except KeyError:
+                self.popUpSettingsDlg()
+            except GitMngError as e:
+                msgBox = QtGui.QMessageBox()
+                msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
+                msgBox.setWindowTitle("GIT repository is dirty")
+                msgBox.setText(str(e))
+                button = msgBox.addButton("commit", QtGui.QMessageBox.YesRole)
+                msgBox.setDefaultButton(button)
+                msgBox.exec_()
+                if msgBox.clickedButton() == button:
+                    getGitMng(cleanDirty=True)
+                else:
+                    raise
+        getGitMng()
 
         # Setup the REST client
         try:
