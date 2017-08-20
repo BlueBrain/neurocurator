@@ -8,9 +8,9 @@ import pandas as pd
 import numpy as np
 
 
-from nat.annotationSearch import ConditionAtom, ConditionAND, ConditionOR, \
-    ConditionNOT, parameterKeys, annotationKeys, ParameterSearch, \
+from nat.annotationSearch import parameterKeys, annotationKeys, ParameterSearch, \
     AnnotationSearch, parameterResultFields, annotationResultFields
+from nat.condition import ConditionAtom, ConditionAND, ConditionOR, ConditionNOT
 from nat.ontoManager import OntoManager
 
 from .itemDelegates import ParamTypeCbo, CheckBoxDelegate

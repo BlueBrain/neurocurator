@@ -5,9 +5,10 @@ __author__ = "Christian O'Reilly"
 # Contributed libraries imports
 from PySide import QtGui, QtCore
 
-from nat.modelingParameter import getParameterTypes, ParameterInstance, \
-    ParameterTypeTree, ParamDescFunction, InvalidEquation, \
-    getParameterTypeNameFromID, ParamRef
+from nat.modelingParameter import getParameterTypes, ParameterTypeTree, \
+    getParameterTypeNameFromID 
+from nat.parameterInstance import ParameterInstance
+from nat.paramDesc import ParamDescFunction, InvalidEquation, ParamRef 
 from nat.utils import Id2FileName
 from nat.annotation import getParametersForPub
 

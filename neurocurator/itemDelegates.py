@@ -6,7 +6,8 @@ __author__ = "Christian O'Reilly"
 from PySide import QtGui, QtCore
 
 
-from nat.modelingParameter import unitIsValid, statisticList, getParameterTypes #, expPropertyStrList
+from nat.values import unitIsValid, statisticList
+from nat.modelingParameter import getParameterTypes #, expPropertyStrList
 
 from .autocomplete import AutoCompleteEdit
 

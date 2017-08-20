@@ -7,8 +7,10 @@ from PySide import QtGui, QtCore
 
 
 from nat.modelingParameter import getParameterTypes, getParameterTypeIDFromName, \
-    getParameterTypeFromID, ParameterTypeTree, Variable, ParamDescFunction, \
-     ValuesSimple, ValuesCompound, NumericalVariable, ParamDescTrace
+    getParameterTypeFromID, ParameterTypeTree
+from nat.variable import Variable, NumericalVariable
+from nat.paramDesc import ParamDescFunction, ParamDescTrace
+from nat.values import ValuesSimple, ValuesCompound
 
 from .itemDelegates import DoubleDelegate, ParamTypeDelegate, UnitDelegate, StatisticsDelegate
 

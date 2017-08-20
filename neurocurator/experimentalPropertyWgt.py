@@ -7,7 +7,7 @@ from PySide import QtGui
 
 from nat.annotation import getParametersForPub
 from nat.utils import Id2FileName
-from nat.modelingParameter import ParamRef
+from nat.paramDesc import ParamRef
 
 #from modelingParameter import ExperimentProperty
 #from itemDelegates import ExpPropertiesDelegate

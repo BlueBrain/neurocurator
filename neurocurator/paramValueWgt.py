@@ -6,9 +6,11 @@ __author__ = "Christian O'Reilly"
 from PySide import QtGui, QtCore
 
 
-from nat.modelingParameter import getParameterTypes, ParameterInstance, \
-    getParameterTypeIDFromName, ValuesSimple, ValuesCompound, ParamDescPoint, \
-    NumericalVariable
+from nat.modelingParameter import getParameterTypes, getParameterTypeIDFromName
+from nat.parameterInstance import ParameterInstance
+from nat.values import ValuesSimple, ValuesCompound
+from nat.paramDesc import ParamDescPoint
+from nat.variable import NumericalVariable
 
 from .itemDelegates import ParamTypeCbo, DoubleDelegate, UnitDelegate, \
     StatisticsDelegate, ButtonDelegate

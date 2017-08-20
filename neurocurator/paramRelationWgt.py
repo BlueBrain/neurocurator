@@ -6,7 +6,7 @@ __author__ = "Christian O'Reilly"
 from PySide import QtGui
 
 
-from nat.modelingParameter import Relationship
+from nat.relationship import Relationship
 from nat.tag import Tag
 
 

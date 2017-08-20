@@ -5,7 +5,9 @@ __author__ = "Christian O'Reilly"
 # Contributed libraries imports
 from PySide import QtGui, QtCore
 
-from nat.modelingParameter import getParameterTypes, ParameterInstance,  ParamDescTrace
+from nat.modelingParameter import getParameterTypes
+from nat.parameterInstance import ParameterInstance
+from nat.paramDesc import ParamDescTrace
 
 from .variableTableWgt import VariableTableView, VariableListModel
 
