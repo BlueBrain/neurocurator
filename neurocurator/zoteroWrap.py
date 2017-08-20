@@ -4,10 +4,8 @@ __author__ = "Christian O'Reilly"
 
 from PySide import QtGui, QtCore
 
-import re
-from dateutil.parser import parse
 from nat.annotationSearch import AnnotationSearch
-from nat.zoteroWrap import ZoteroWrap
+from nat.zoteroWrap import ZoteroWrap, getYear
 
 class ZoteroTableModel(QtCore.QAbstractTableModel):
 
@@ -37,8 +35,11 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
 
 
     def loadCachedDB(self, libraryId, libraryrType, apiKey):
-        self.zotWrap.loadCachedDB(libraryId, libraryrType, apiKey)
-        self.computeAnnotNumbers()
+        try:
+            self.zotWrap.loadCachedDB(libraryId, libraryrType, apiKey)
+            self.computeAnnotNumbers()
+        except:
+            self.refreshDB(libraryId, libraryrType, apiKey)
         
     def refreshDB(self, libraryId, libraryrType, apiKey):
         self.zotWrap.refreshDB(libraryId, libraryrType, apiKey)
@@ -88,15 +89,15 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
                 ###################### CREATORS
                 if self.fields[ind] == "creators":
                     authors = []
-                    for creator in ref["creators"]:
+                    for creator in ref["data"]["creators"]:
                         if creator["creatorType"] == "author":
                             authors.append(creator["lastName"])
                     
                     # Academic books published as a collection of chapters contributed
                     # by different authors have editors but not authors at the level
                     # of the book (as opposed to the level of a chapter).
-                    if len(authors) == 0 and ref['itemType'] == 'book':
-                        for creator in ref["creators"]:
+                    if len(authors) == 0 and ref["data"]['itemType'] == 'book':
+                        for creator in ref["data"]["creators"]:
                             if creator["creatorType"] == "editor":
                                 authors.append(creator["lastName"]) 
                                 
@@ -108,23 +109,17 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
         
                 ####################### YEAR
                 elif self.fields[ind] == "Year":
-                    if ref["date"] == "":
-                        return ""
-                    else:
-                        try:
-                            return str(parse(ref["date"]).year)
-                        except ValueError:
-                            return re.search(r'[12]\d{3}', ref["date"]).group(0)
+                    return getYear(ref)
     
                 ####################### PUBLICATIONTITLE
                 elif self.fields[ind] == "publicationTitle":
-                    if ref['itemType'] == 'book':
+                    if ref["data"]['itemType'] == 'book':
                         return "book"
                     else:
-                        return ref[self.fields[ind]]
+                        return ref["data"][self.fields[ind]]
                     
     
-                return ref[self.fields[ind]]
+                return ref["data"][self.fields[ind]]
         except KeyError:
             return ""
 
@@ -176,6 +171,14 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
 
     def refresh(self):
         self.emit(QtCore.SIGNAL("layoutChanged()"))
+
+
+
+    
+    def updateItem(self, item, row):
+        self.zotWrap.refList[row] = item
+        self.sort() 
+        self.zotWrap.savePickle()
 
     
     def addItem(self, item):

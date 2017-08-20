@@ -346,9 +346,14 @@ class Window(QtGui.QMainWindow):
         addZoteroAction.setStatusTip('Add a reference to the Zotero database')
         addZoteroAction.triggered.connect(self.addToZotLib)
 
+        modifZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Modify selected reference', self)
+        modifZoteroAction.setStatusTip('Modify the Zotero item currently selected')
+        modifZoteroAction.triggered.connect(self.modifySelectedZotItem)
+
         zoteroMenu = menubar.addMenu('&Zotero')
         zoteroMenu.addAction(refreshZoteroAction)
         zoteroMenu.addAction(addZoteroAction)
+        zoteroMenu.addAction(modifZoteroAction)
 
 
     def addToOntology(self):
@@ -372,6 +377,21 @@ class Window(QtGui.QMainWindow):
         addToZoteroDlg.exec_() 
         #if addToZoteroDlg.exec_() == QtGui.QDialog.Accepted:
         #    pass        
+
+
+
+
+    def modifySelectedZotItem(self):
+        row = self.zoteroTblWdg.selectionModel().currentIndex().row()
+        addToZoteroDlg = AddToZoteroDlg(self.zoteroTableModel, row, self)
+        addToZoteroDlg.exec_() 
+
+
+
+
+
+
+
 
 
 
@@ -968,6 +988,13 @@ class Window(QtGui.QMainWindow):
 
 
 
+    def managePaperNoID(self, row):
+        #row = self.zoteroTblWdg.selectionModel().currentIndex().row()
+        #ID = self.zoteroTableModel.getID(row)
+        addToZoteroDlg = AddToZoteroDlg(self.zoteroTableModel, row, self)
+        addToZoteroDlg.exec_() 
+
+
     def paperSelectionChanged(self, selected, deselected):
         if self.checkSavingAnnot() == False:
             return False
@@ -976,10 +1003,20 @@ class Window(QtGui.QMainWindow):
         ID = self.zoteroTableModel.getID(row)
 
         if ID == "":
-            errorMessage(self, "Error", "This paper has no ID. Processing of papers without ID is not supported.")
-            self.invalidPaperChoice()
+            msgBox = QtGui.QMessageBox(self)
+            msgBox.setWindowTitle("Warning")
+            msgBox.setText("This paper has currently no ID. It will not be possible " +
+                           "to process this paper until an ID is attributed. Would " +
+                           "you like to set its ID now?")
+            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
+            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
+            if msgBox.exec_() == QtGui.QMessageBox.Yes:
+                self.managePaperNoID(row)
+                self.paperSelectionChanged(selected, deselected)
+            else:
+                self.invalidPaperChoice()
             return
-        
+            
         isPMID = False
         isUNPUBLISHED = False
         isDOI = False         

@@ -10,14 +10,20 @@ Created on Mon Sep  5 11:49:40 2016
 __author__ = "Christian O'Reilly"
 
 # Import PySide classes
-from PySide import QtGui
+from PySide import QtGui, QtCore
 from uuid import uuid1
 from copy import deepcopy
+from warnings import warn
 
 
 class AddToZoteroDlg(QtGui.QDialog):
 
-    def __init__(self, zotWrapTable, parent=None):
+    def __init__(self, zotWrapTable, row=None, parent=None):
+        """
+         If row is None, this methods create a new item in the Zotero colleciton.
+         If row is not None, it loads the item corresponding to this row and
+         apply any modification to this item.
+        """
         super(AddToZoteroDlg, self).__init__(parent)
         
         self.setWindowTitle("Addition of a Zotero reference")
@@ -27,7 +33,7 @@ class AddToZoteroDlg(QtGui.QDialog):
 
         self.docType = QtGui.QComboBox(self)
         self.itemTypes = self.zotWrapTable.itemTypes
-        self.docType.addItems([t["localized"] for t in self.itemTypes])    
+        self.docType.addItems([t["itemType"] for t in self.itemTypes])  # localized  
         self.documentObjects = [DocumentObject(t, self.zotWrapTable) for t in self.itemTypes]
                     
         layout = QtGui.QGridLayout()
@@ -51,16 +57,46 @@ class AddToZoteroDlg(QtGui.QDialog):
 
         self.setLayout(layout)
       
+        if not row is None:
+            self.updateExisting = True
+            self.loadReference(row)            
+        else:
+            self.updateExisting = False
+
+      
+      
+    def loadReference(self, row):
+        item = self.zotWrapTable.zotWrap.refList[row]
+        index = self.docType.findText(item["data"]["itemType"], QtCore.Qt.MatchFixedString)
+        if index >= 0:
+             self.docType.setCurrentIndex(index)
+             self.stackedWidget.setCurrentIndex(index)
+        self.documentObjects[index].loadItem(item)
+        self.selectedRow = row
+         
          
     def addReference(self):
         reference = self.documentObjects[self.docType.currentIndex()].getReference() 
-        resp = self.zotWrapTable.zotLib.create_items([reference])
-        if len(resp["success"]) != 1:
-            raise ValueError("Error while trying to add a Zotero record : " + str(resp))
-
-        self.zotWrapTable.addItem(reference)
+        
+        if self.updateExisting:        
+            self.zotWrapTable.zotLib.update_item(reference)
+            item = self.zotWrapTable.zotLib.item(reference["key"])
+            self.zotWrapTable.updateItem(item, self.selectedRow)            
+        else:
+            resp = self.zotWrapTable.zotLib.create_items([reference])
+        
+            if len(resp["success"]) != 1:
+                raise ValueError("Error while trying to add a Zotero record : " + str(resp))
+    
+            item = self.zotWrapTable.zotLib.item(resp["success"][0])    
+    
+            self.zotWrapTable.addItem(item)
+            
         self.accept()
          
+
+
+
 
 
 
@@ -108,6 +144,17 @@ class CreatorsWgt(QtGui.QTableWidget):
 
 
 
+        
+    def loadCreatorsLst(self, creatorList):
+
+        for rowNo, creator in enumerate(creatorList):
+            if self.rowCount()-1 <= rowNo:
+                self.insertRow(self.rowCount())
+            self.setItem(rowNo , 0, QtGui.QTableWidgetItem(creator['firstName']))
+            self.setItem(rowNo , 1, QtGui.QTableWidgetItem(creator['lastName']))
+
+
+
 class IdWgt(QtGui.QWidget):
     
     def __init__(self):
@@ -141,8 +188,36 @@ class IdWgt(QtGui.QWidget):
 
         return reference
 
+    def loadReference(self, item):
+        if "DOI" in item:
+            if item["DOI"] != "":
+                index = self.idType.findText("DOI", QtCore.Qt.MatchFixedString)
+                if index >= 0:
+                    self.idType.setCurrentIndex(index)
+                    self.stackedWidget.setCurrentIndex(index)     
+                    self.stackedWidget.currentWidget().setText(item["DOI"])
+                return
+        
+        if "PMID" in item["extra"]:
+            index = self.idType.findText("PMID", QtCore.Qt.MatchFixedString)
+            if index >= 0:
+                pmid = item["extra"].split("PMID:")[1].split("\n")[0].strip()
+                self.idType.setCurrentIndex(index)
+                self.stackedWidget.setCurrentIndex(index)     
+                self.stackedWidget.currentWidget().setText(pmid)
+            return
+
+        if "UNPUBLISHED" in item["extra"]:
+            index = self.idType.findText("UNPUBLISHED", QtCore.Qt.MatchFixedString)
+            if index >= 0:
+                unpublishedId = item["extra"].split("UNPUBLISHED:")[1].split("\n")[0].strip()
+                self.idType.setCurrentIndex(index)
+                self.stackedWidget.setCurrentIndex(index)     
+                self.stackedWidget.currentWidget().setText(unpublishedId)
+            return
 
 
+        
 
 
 class DocumentObject:        
@@ -160,7 +235,7 @@ class DocumentObject:
         
 
     def getReference(self):
-        
+    
         for key, widget in self.widgets.items():
             if key == "Id":
                 continue
@@ -210,3 +285,34 @@ class DocumentObject:
         layout.addWidget(self.widgets["Id"] , no, 0, 1, 2)
 
         return group    
+        
+        
+        
+    def loadItem(self, item):
+        
+        # Make sure the item is up-to-date
+        item = self.zotLib.item(item["key"])
+        
+        for key, widget in self.widgets.items():
+            if key == "Id":
+                continue
+            if not key in item["data"]:
+                warn("Skipping item fields " + key + 
+                     " because it is absent from the Zotero template for this item type.")
+                continue
+            
+            if isinstance(item["data"][key], str):
+                if key != "DOI":
+                    widget.setText(item["data"][key])
+            elif isinstance(self.reference[key], (dict, list)):
+                if key == "creators":    
+                    widget.loadCreatorsLst(item["data"][key])
+
+        # At the end because it can also overwritten the extra field.
+        self.widgets["Id"].loadReference(item["data"])
+        
+        self.reference = item["data"]
+
+
+        
+        
