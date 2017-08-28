@@ -336,7 +336,7 @@ class VariableListModel(QtCore.QAbstractTableModel):
         if role != QtCore.Qt.DisplayRole and  role != QtCore.Qt.EditRole:
             return None
 
-        return self.__data[(self.rowHeader[index.row()], self.colHeader[index.column()])]
+        return str(self.__data[(self.rowHeader[index.row()], self.colHeader[index.column()])])
 
 
 
