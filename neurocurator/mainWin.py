@@ -8,6 +8,8 @@ import os
 import webbrowser
 import pickle
 import getpass
+import time
+from threading import Thread
 from glob import glob
 from os.path import join
 from subprocess import call
@@ -24,7 +26,7 @@ from nat.gitManager import GitManager, GitMngError
 from nat.id import checkID
 from nat.tag import Tag
 from nat.ontoManager import OntoManager
-from nat.restClient import RESTClient
+from nat.restClient import RESTClient, RESTImportPDFErr
     
 
 # Local imports
@@ -946,6 +948,7 @@ class Window(QtGui.QMainWindow):
         self.addTagToAnnotation(tag.id)
 
 
+
     def openPDF(self):
         pdfFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pdf"
 
@@ -958,7 +961,8 @@ class Window(QtGui.QMainWindow):
             if msgBox.exec_() == QtGui.QMessageBox.Yes:
                 fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
                 if fileName != '':
-                    self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
+                    self.importPDF()
+                    #self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
                 else:
                     return
             else:
@@ -1134,6 +1138,23 @@ class Window(QtGui.QMainWindow):
         
 
 
+
+    def waitForOCR(self, paperId, notify):
+        
+        while(not self.restClient.checkOCRFinished(paperId, self.dbPath)):
+            self.window.statusLabel.setText("Performing OCR...")
+            time.sleep(5)          
+        
+        self.window.statusLabel.setText("OCR finished.")
+        if notify == QtGui.QMessageBox.Yes:        
+            msgBox = QtGui.QMessageBox()
+            msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
+            msgBox.setWindowTitle("OCR process finished")
+            msgBox.setText("The optical character recognition for the paper " + paperId
+                           + " is finished. You can now start annotating this paper.")
+            msgBox.exec_()
+
+
     def importPDF(self):
         # Import a PDF
 
@@ -1151,8 +1172,21 @@ class Window(QtGui.QMainWindow):
 
             try:
                 self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
+                
             except ConnectionError as e:
                 errorMessage(self, "Error", "Failed to connect to the REST server. Error message: " + str(e))                                
+                return False
+                
+            except RESTImportPDFErr as e:
+                msgBox = QtGui.QMessageBox(self)
+                msgBox.setWindowTitle("This PDF needs OCR")
+                msgBox.setText(str(e) + " Do you want to be notifed when this process is done?")
+                msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
+                msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
+                
+                thread = Thread(target = self.waitForOCR, 
+                                args = (self.IdTxt.text(), msgBox.exec_(), ))
+                thread.start()  
                 return False
 
             with open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore'): 
