@@ -165,7 +165,7 @@ class ZoteroTableModel(QtCore.QAbstractTableModel):
         """sort table by given column number col"""
         self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
         reverse = (order == QtCore.Qt.DescendingOrder)
-        self.zotWrap.refList = sorted(self.zotWrap.refList, key=lambda x: self.getByIndex(x, col), reverse = reverse)
+        self.zotWrap.refList = sorted(self.zotWrap.refList, key=lambda x: self.getByIndex(x, col).lower(), reverse = reverse)
         self.emit(QtCore.SIGNAL("layoutChanged()"))
 
 
