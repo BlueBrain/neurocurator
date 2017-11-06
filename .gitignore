@@ -7,8 +7,6 @@ neurocurator/__pycache__/*
 dist/*
 build/*
 settings.ini
-cloud.key
-cloud.key.pub
 neurocurator.egg-info/*
-notebooks/neurocuratorDB/*
-
+neurocurator/.DS_Store
+.DS_Store
