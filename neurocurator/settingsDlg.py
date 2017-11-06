@@ -6,7 +6,17 @@ __author__ = "Christian O'Reilly"
 from PySide import QtGui, QtCore
 import configparser
 import os
+import sys
 #import getpass
+
+
+def working_directory():
+    """Return the working directory according to it being bundled/frozen."""
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(__file__)
+
 
 def getSettings(popDialog = False):
     
@@ -27,7 +37,7 @@ def getSettings(popDialog = False):
         
 
 class Settings:
-    fileName = os.path.join(os.path.dirname(__file__), 'settings.ini')
+    fileName = os.path.join(working_directory(), 'settings.ini')
     def __init__(self):
         self.config = configparser.ConfigParser()
         with open(Settings.fileName) as configfile: # Raise an exception if file does not exist
@@ -112,7 +122,7 @@ class SettingsDlg(QtGui.QDialog):
 
         config = self.projectSettings.writeConfig(config)
 
-        with open(os.path.join(os.path.dirname(__file__), 'settings.ini'), 'w') as configfile:
+        with open(os.path.join(working_directory(), 'settings.ini'), 'w') as configfile:
           config.write(configfile)
 
         self.accept() 
