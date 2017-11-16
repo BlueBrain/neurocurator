@@ -8,5 +8,4 @@ dist/*
 build/*
 settings.ini
 neurocurator.egg-info/*
-neurocurator/.DS_Store
-.DS_Store
+**/.DS_Store
