@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-__author__ = "Christian O'Reilly"
+__authors__ = ["Christian O'Reilly", "Pierre-Alexandre Fonta"]
+__maintainer__ = "Pierre-Alexandre Fonta"
 
 # Standard imports
 import sys
@@ -17,6 +18,7 @@ from requests.exceptions import ConnectionError
 
 # Contributed libraries imports
 from PySide import QtGui, QtCore
+from PySide.QtCore import Qt, QModelIndex
 import numpy as np
 
 # NeuroAnnotation Toolbox imports
@@ -32,7 +34,6 @@ from nat.restClient import RESTClient, RESTImportPDFErr
 # Local imports
 from .autocomplete import AutoCompleteEdit
 from .suggestedTagMng import TagSuggester
-from .zoteroWrap import ZoteroTableModel
 from .uiUtilities import errorMessage, disableTextWidget
 from .settingsDlg import getSettings, SettingsDlg
 from .addOntoTermDlg import AddOntoTermDlg
@@ -46,24 +47,22 @@ from .tagWidget import TagWidget
 from .annotationListModel import AnnotationListModel
 from .searchOntoWgt  import OntoOnlineSearch
 
+from neurocurator.utils import working_directory
+from neurocurator.zotero_widget import ZoteroTableWidget
+
 
 class ZoteroUpdateThread(QtCore.QThread):
+    # FIXME Delayed refactoring.
+
     def __init__(self, window):
         super(ZoteroUpdateThread, self).__init__()
         self.window = window
 
     def run(self):
-
         self.window.statusLabel.setText("Please wait. Loading Zotero database...")
         #statusBar.showMessage("Loading Zotero database...")
         #self.window.splash.showMessage("Loading Zotero database...")
-        self.window.zoteroTableModel.refreshDB(self.window.settings.config['ZOTERO']['libraryID'], 
-                                                 self.window.settings.config['ZOTERO']['libraryType'], 
-                                                 self.window.settings.config['ZOTERO']['apiKey'])
-
-        self.window.zoteroTableModel.sort(self.window.zoteroTableModel.sortCol , 
-                                          self.window.zoteroTableModel.sortOrder)
-        self.window.zoteroTableModel.refresh()
+        self.window.zotero_widget.view.model().sourceModel().refresh()
         #statusBar.clearMessage()
         self.window.statusLabel.setText("Ready.")
 
@@ -201,20 +200,30 @@ class Window(QtGui.QMainWindow):
 
 
     def closeEvent(self, event):
-        self.settings.config['WINDOW']['mainSplitterPos']  = str(self.mainWidget.sizes())
-        self.settings.config['WINDOW']['leftSplitterPos']  = str(self.leftPanel.sizes())
-        self.settings.config['WINDOW']['rightSplitterPos'] = str(self.rightPanel.sizes())
-        self.settings.config['WINDOW']['paramModWgtSplitterPos'] = str(self.modParamWgt.rootLayout.sizes())
+        # FIXME Refactor settings management with QSettings.
+        window_settings = self.settings.config['WINDOW']
+        window_settings['mainSplitterPos'] = str(self.mainWidget.sizes())
+        window_settings['leftSplitterPos'] = str(self.leftPanel.sizes())
+        window_settings['rightSplitterPos'] = str(self.rightPanel.sizes())
+        window_settings['paramModWgtSplitterPos'] = str(self.modParamWgt.rootLayout.sizes())
 
-        colWidths = str([self.zoteroTblWdg.columnWidth(i) for i in range(self.zoteroTableModel.columnCount())])
-        self.settings.config['WINDOW']['zotTableViewColWidth'] = colWidths
-        self.settings.config['WINDOW']['zotTableSortOrder']      = str(int(self.zoteroTableModel.sortOrder))
-        self.settings.config['WINDOW']['zotTableSortCol']          = str(self.zoteroTableModel.sortCol)
+        zotero_view = self.zotero_widget.view
+
+        zotero_column_count = zotero_view.model().columnCount()
+        colWidths = str([zotero_view.columnWidth(i) for i in range(zotero_column_count)])
+        window_settings['zotTableViewColWidth'] = colWidths
+
+        zotero_table_header = zotero_view.horizontalHeader()
+        # FIXME "If no section has a sort indicator, return value is undefined".
+        zotero_sort_order = zotero_table_header.sortIndicatorOrder()
+        zotero_sort_column = zotero_table_header.sortIndicatorSection()
+        window_settings['zotTableSortOrder'] = str(int(zotero_sort_order))
+        window_settings['zotTableSortCol'] = str(zotero_sort_column)
 
         colWidths = str([self.annotListTblWdg.columnWidth(i) for i in range(self.annotTableModel.columnCount())])
-        self.settings.config['WINDOW']['annotTableViewColWidth'] = colWidths
-        self.settings.config['WINDOW']['annotTableSortOrder']      = str(int(self.annotTableModel.sortOrder))
-        self.settings.config['WINDOW']['annotTableSortCol']      = str(self.annotTableModel.sortCol)
+        window_settings['annotTableViewColWidth'] = colWidths
+        window_settings['annotTableSortOrder']      = str(int(self.annotTableModel.sortOrder))
+        window_settings['annotTableSortCol']      = str(self.annotTableModel.sortCol)
 
         self.settings.save()
 
@@ -241,6 +250,7 @@ class Window(QtGui.QMainWindow):
 
 
     def showEvent(self, event):
+        # FIXME Save/Restore also the main window size.
         if self.firstShow:
             if 'mainSplitterPos' in self.settings.config['WINDOW']:
                 self.mainWidget.setSizes(eval(self.settings.config['WINDOW']['mainSplitterPos']))
@@ -253,25 +263,27 @@ class Window(QtGui.QMainWindow):
 
             if 'zotTableViewColWidth' in self.settings.config['WINDOW']:            
                 for i, width in enumerate(eval(self.settings.config['WINDOW']['zotTableViewColWidth'])):
-                    self.zoteroTblWdg.setColumnWidth(i, width)
+                    # TODO Try QTableView.resizeColumnsToContents() slot.
+                    self.zotero_widget.view.setColumnWidth(i, width)
             if 'annotTableViewColWidth' in self.settings.config['WINDOW']:            
                 for i, width in enumerate(eval(self.settings.config['WINDOW']['annotTableViewColWidth'])):
                     self.annotListTblWdg.setColumnWidth(i, width)
-
-            if 'zotTableSortOrder' in self.settings.config['WINDOW']:
-                self.zoteroTableModel.sortOrder = QtCore.Qt.SortOrder(int(self.settings.config['WINDOW']['zotTableSortOrder']))
-
-            if 'zotTableSortCol' in self.settings.config['WINDOW']:
-                self.zoteroTableModel.sortCol = int(self.settings.config['WINDOW']['zotTableSortCol'])
 
             if 'annotTableSortOrder' in self.settings.config['WINDOW']:
                 self.annotTableModel.sortOrder = QtCore.Qt.SortOrder(int(self.settings.config['WINDOW']['annotTableSortOrder']))
 
             if 'annotTableSortCol' in self.settings.config['WINDOW']:
                 self.annotTableModel.sortCol = int(self.settings.config['WINDOW']['annotTableSortCol'])
-            
-            self.zoteroTblWdg.sortByColumn(self.zoteroTableModel.sortCol, 
-                                        self.zoteroTableModel.sortOrder)
+
+            # FIXME Refactor settings management with QSettings.
+            window_settings = self.settings.config['WINDOW']
+            is_zotero_sort_order_set = 'zotTableSortOrder' in window_settings
+            is_zotero_sort_column_set = 'zotTableSortCol' in window_settings
+            if is_zotero_sort_order_set and is_zotero_sort_column_set:
+                zotero_sort_column = int(window_settings['zotTableSortCol'])
+                zotero_sort_order = Qt.SortOrder(int(window_settings['zotTableSortOrder']))
+                # Triggers a sorting.
+                self.zotero_widget.view.horizontalHeader().setSortIndicator(zotero_sort_column, zotero_sort_order)
 
             self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, 
                                            self.annotTableModel.sortOrder)
@@ -375,8 +387,10 @@ class Window(QtGui.QMainWindow):
 
 
     def addToZotLib(self):
-        addToZoteroDlg = AddToZoteroDlg(self.zoteroTableModel, self)
-        addToZoteroDlg.exec_() 
+        # FIXME Delayed refactoring. Already unreachable before because of a bug.
+        raise NotImplementedError
+        # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, self)
+        # addToZoteroDlg.exec_()
         #if addToZoteroDlg.exec_() == QtGui.QDialog.Accepted:
         #    pass        
 
@@ -384,9 +398,11 @@ class Window(QtGui.QMainWindow):
 
 
     def modifySelectedZotItem(self):
-        row = self.zoteroTblWdg.selectionModel().currentIndex().row()
-        addToZoteroDlg = AddToZoteroDlg(self.zoteroTableModel, row, self)
-        addToZoteroDlg.exec_() 
+        # FIXME Delayed refactoring. Already unreachable before because of a bug.
+        raise NotImplementedError
+        # row = self.zoteroTblWdg.selectionModel().currentIndex().row()
+        # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, row, self)
+        # addToZoteroDlg.exec_()
 
 
 
@@ -398,8 +414,6 @@ class Window(QtGui.QMainWindow):
 
 
     def setupWindowsUI(self) :
-
-        self.setupZoteroGB()
         self.setupPaperGB()
         self.setupListAnnotGB()
         self.setupEditAnnotGB()
@@ -408,9 +422,17 @@ class Window(QtGui.QMainWindow):
         self.expPropWgt  = ExpPropWgt(self)
 
         # Main layout
+        # FIXME Delayed refactoring. Create a dedicated QTabWidget object.
         self.mainTabs = QtGui.QTabWidget(self)
-        self.mainTabs.addTab(self.zoteroGroupBox, "Paper Zotero database")        
 
+        # FIXME Refactor settings management with QSettings.
+        zotero_settings = self.settings.config["ZOTERO"]
+        work_dir = working_directory()
+        # NB: Don't specify a parent for widgets to be added to a QTabWidget.
+        self.zotero_widget = ZoteroTableWidget(zotero_settings, work_dir,
+                                               self.checkIdInDB, self.dbPath,
+                                               self)
+        self.mainTabs.addTab(self.zotero_widget, "Paper Zotero database")
 
         self.taggingTabs = QtGui.QTabWidget(self)
         self.taggingTabs.addTab(self.tagAnnotGroupBox, "Tagging")
@@ -470,46 +492,15 @@ class Window(QtGui.QMainWindow):
         self.setCentralWidget(self.mainTabs)
 
         # Initial behavior
-        self.taggingTabs.setDisabled(True)        
+        self.taggingTabs.setDisabled(True)
 
-
-
-    def setupZoteroGB(self): 
-        # Widgets
-        self.zoteroTblWdg          = QtGui.QTableView()
-        self.zoteroTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.zoteroTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.zoteroTableModel     = ZoteroTableModel(self, self.checkIdInDB)
-        self.zoteroTblWdg.setModel(self.zoteroTableModel)
-        self.zoteroTableModel.loadCachedDB(self.settings.config['ZOTERO']['libraryID'], 
-                                           self.settings.config['ZOTERO']['libraryType'], 
-                                           self.settings.config['ZOTERO']['apiKey'])
-
-        self.zoteroTblWdg.doubleClicked.connect(self.changeTagToAnnotations)
-
-        # Layout
-        self.zoteroGroupBox     = QtGui.QGroupBox("Zotero database content")
-        gridZotero                 = QtGui.QGridLayout(self.zoteroGroupBox)
-        gridZotero.addWidget(self.zoteroTblWdg, 0, 0)        
-        selection = self.zoteroTblWdg.selectionModel()
-        selection.selectionChanged.connect(self.paperSelectionChanged)
-
-        # Initial behavior
-        self.zoteroTblWdg.setSortingEnabled(True)
-        self.zoteroTblWdg.horizontalHeader().sectionClicked.connect(self.setZotSortCol)
-
-
-
-    def changeTagToAnnotations(self):
+    @QtCore.Slot(QModelIndex)
+    def changeTagToAnnotations(self, index):
+        # FIXME No use of the index sent by ZoteroTableView::doubleClicked?
         self.mainTabs.setCurrentIndex(1)
-        
-
-    def setZotSortCol(self, col):
-        self.zoteroTableModel.sortCol = col        
-        self.zoteroTableModel.sortOrder = self.zoteroTblWdg.horizontalHeader().sortIndicatorOrder()
-
 
     def updateZotLib(self):
+        # FIXME Delayed refactoring.
         self.zoteroThread = ZoteroUpdateThread(self)
         self.zoteroThread.start()
 
@@ -665,21 +656,19 @@ class Window(QtGui.QMainWindow):
     def ontoTagSelected(self, term, curie):
         self.addTagToAnnotation(curie, term)
 
-
     @QtCore.Slot(object, object)
     def viewAnnotation(self, annotation):
-    
-        row = -1
-        try:
-            for row in range(self.zoteroTableModel.rowCount()):
-                if annotation.pubId == self.zoteroTableModel.getID(row):
-                    break    
-        except:
+        # FIXME Delayed refactoring.
+        # FIXME Only one parameter is sent.
+        zotero_view = self.zotero_widget.view
+        zotero_model = zotero_view.model()
+        match = zotero_model.match(zotero_model.index(0, 0), Qt.DisplayRole,
+                                   annotation.pubId, 1, Qt.MatchExactly)
+        if match:
+            zotero_view.selectRow(match[0].row())
+        else:
             print(annotation)
-            raise
-        assert(row > -1)
-
-        self.zoteroTblWdg.selectRow(row)
+            raise ValueError("No matching annotation ID found!")
 
         row = -1
         for row, annot in enumerate(self.annotTableModel.annotationList):
@@ -993,95 +982,110 @@ class Window(QtGui.QMainWindow):
 
 
     def managePaperNoID(self, row):
-        #row = self.zoteroTblWdg.selectionModel().currentIndex().row()
-        #ID = self.zoteroTableModel.getID(row)
-        addToZoteroDlg = AddToZoteroDlg(self.zoteroTableModel, row, self)
-        addToZoteroDlg.exec_() 
+        # FIXME Delayed refactoring. Already unreachable before because of a bug.
+        raise NotImplementedError
+        # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, row, self)
+        # addToZoteroDlg.exec_()
 
+    @QtCore.Slot(QModelIndex, QModelIndex)
+    def paperSelectionChanged(self, current, previous):
+        # FIXME Delayed refactoring. Use indexes sent by currentRowChanged.
+        if current.isValid() and previous.isValid():
 
-    def paperSelectionChanged(self, selected, deselected):
-        if self.checkSavingAnnot() == False:
-            return False
+            # FIXME DEBUG during refactoring.
+            # import pprint
+            # pp = pprint.PrettyPrinter(indent=4)
+            # source_model = current.model().sourceModel()
+            # idx = source_model.mapToSource(current).row()
+            # print("\n\n\nREFERENCE")
+            # pp.pprint(source_model._zotero_wrap._references[idx])
+            # print("\nREFERENCE PROXY ROW NUMBER: " + str(current.row()))
+            # print("\nREFERENCE SOURCE ROW NUMBER: " + str(idx))
+            # FIXME /DEBUG during refactoring.
 
-        row = self.zoteroTblWdg.selectionModel().currentIndex().row()
-        ID = self.zoteroTableModel.getID(row)
+            if self.checkSavingAnnot() == False:
+                return False
 
-        if ID == "":
-            msgBox = QtGui.QMessageBox(self)
-            msgBox.setWindowTitle("Warning")
-            msgBox.setText("This paper has currently no ID. It will not be possible " +
-                           "to process this paper until an ID is attributed. Would " +
-                           "you like to set its ID now?")
-            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            if msgBox.exec_() == QtGui.QMessageBox.Yes:
-                self.managePaperNoID(row)
-                self.paperSelectionChanged(selected, deselected)
-            else:
-                self.invalidPaperChoice()
-            return
-            
-        isPMID = False
-        isUNPUBLISHED = False
-        isDOI = False         
-        if "PMID" in ID:
-            isPMID = True
-        elif "UNPUBLISHED" in ID:
-            isUNPUBLISHED = True
-        else:
-            isDOI = True                
-                
-        self.IdTxt.setText(ID)
+            # FIXME Simplify. Remove hard-coded column number.
+            reference_id = current.model().data(current.model().index(current.row(), 0))
 
-        # Check if paper is already in the database
-        if not self.checkIdInDB(self.IdTxt.text()):
-            if isDOI or isPMID:
+            if reference_id == "":
                 msgBox = QtGui.QMessageBox(self)
-                msgBox.setWindowTitle("Paper not in the database")
-                msgBox.setText("This paper is not already in the curator database.")
-                pdfButton        = QtGui.QPushButton("Select PDF")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
-                msgBox.addButton(pdfButton, QtGui.QMessageBox.YesRole)
-    
-    
-                if isDOI:
-                    websiteButton    = QtGui.QPushButton("Follow DOI to the publication website")
-                    msgBox.addButton(websiteButton, QtGui.QMessageBox.ActionRole)
-    
-                msgBox.setDefaultButton(pdfButton)
-                retCode = msgBox.exec_() 
-    
-                if retCode == 0:
-                    try:
-                        if not self.importPDF():
-                            self.invalidPaperChoice()
-                            return
-                    except UnicodeEncodeError:
-                        errorMessage(self, "Unicode error", "Please check that " +\
-                                     "the path of the file you are trying to " +\
-                                     "upload does not contain non ASCII " +\
-                                     "characters. Complete support of unicode " +\
-                                     "encoding for file names and paths are " +\
-                                     "not provided.")
-                        
-                elif retCode == 1 and isDOI:
-                    url = "http://dx.doi.org/" + self.IdTxt.text()
-                    webbrowser.open(url)
-                    return
+                msgBox.setWindowTitle("Warning")
+                msgBox.setText("This paper has currently no ID. It will not be possible " +
+                               "to process this paper until an ID is attributed. Would " +
+                               "you like to set its ID now?")
+                msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
+                msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
+                if msgBox.exec_() == QtGui.QMessageBox.Yes:
+                    row = current.model().sourceModel().mapToSource(current).row()
+                    self.managePaperNoID(row)
+                    self.paperSelectionChanged(current, previous)
                 else:
                     self.invalidPaperChoice()
-                    return
-    
-            elif isUNPUBLISHED:
-                saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
-                with open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore'): 
-                    self.gitMng.addFiles([saveFileName + ".pcr"])       
-                    
+                return
 
-        self.openPDFBtn.setDisabled(isUNPUBLISHED)
-        self.refreshListAnnotation(0)
-        self.paperGroupBox.setDisabled(False)
-        self.listAnnotGroupBox.setDisabled(False)        
+            isPMID = False
+            isUNPUBLISHED = False
+            isDOI = False
+            if "PMID" in reference_id:
+                isPMID = True
+            elif "UNPUBLISHED" in reference_id:
+                isUNPUBLISHED = True
+            else:
+                isDOI = True
+
+            self.IdTxt.setText(reference_id)
+
+            # Check if paper is already in the database
+            if not self.checkIdInDB(self.IdTxt.text()):
+                if isDOI or isPMID:
+                    msgBox = QtGui.QMessageBox(self)
+                    msgBox.setWindowTitle("Paper not in the database")
+                    msgBox.setText("This paper is not already in the curator database.")
+                    pdfButton        = QtGui.QPushButton("Select PDF")
+                    msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
+                    msgBox.addButton(pdfButton, QtGui.QMessageBox.YesRole)
+
+
+                    if isDOI:
+                        websiteButton    = QtGui.QPushButton("Follow DOI to the publication website")
+                        msgBox.addButton(websiteButton, QtGui.QMessageBox.ActionRole)
+
+                    msgBox.setDefaultButton(pdfButton)
+                    retCode = msgBox.exec_()
+
+                    if retCode == 0:
+                        try:
+                            if not self.importPDF():
+                                self.invalidPaperChoice()
+                                return
+                        except UnicodeEncodeError:
+                            errorMessage(self, "Unicode error", "Please check that " +\
+                                         "the path of the file you are trying to " +\
+                                         "upload does not contain non ASCII " +\
+                                         "characters. Complete support of unicode " +\
+                                         "encoding for file names and paths are " +\
+                                         "not provided.")
+
+                    elif retCode == 1 and isDOI:
+                        url = "http://dx.doi.org/" + self.IdTxt.text()
+                        webbrowser.open(url)
+                        return
+                    else:
+                        self.invalidPaperChoice()
+                        return
+
+                elif isUNPUBLISHED:
+                    saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
+                    with open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore'):
+                        self.gitMng.addFiles([saveFileName + ".pcr"])
+
+
+            self.openPDFBtn.setDisabled(isUNPUBLISHED)
+            self.refreshListAnnotation(0)
+            self.paperGroupBox.setDisabled(False)
+            self.listAnnotGroupBox.setDisabled(False)
 
 
     def invalidPaperChoice(self):
@@ -1339,9 +1343,8 @@ class Window(QtGui.QMainWindow):
         #self.refreshModelingParam()
         return True
 
-
-
     def checkIdInDB(self, ID):
+        # FIXME Delayed refactoring.
         papersPCR = glob(join(self.dbPath, Id2FileName(ID) + ".pcr")) # paper curation record
         papersPDF = glob(join(self.dbPath, Id2FileName(ID) + ".pdf")) # paper curation record
         papersTXT = glob(join(self.dbPath, Id2FileName(ID) + ".txt")) # paper curation record

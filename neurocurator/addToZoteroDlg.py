@@ -222,9 +222,9 @@ class IdWgt(QtGui.QWidget):
 
 class DocumentObject:        
 
-    def __init__(self, docItemType, zotWrap):
-        self.zotLib = zotWrap.zotLib
-        self.reference = deepcopy(zotWrap.itemTemplates[docItemType["itemType"]])
+    def __init__(self, docItemType, zotero_wrap):
+        self.zotLib = zotero_wrap.zotLib
+        self.reference = deepcopy(zotero_wrap.itemTemplates[docItemType["itemType"]])
 
     def getCreatorsWidget(self, creatorsLst):
         return CreatorsWgt(creatorsLst)

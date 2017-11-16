@@ -9,13 +9,7 @@ import os
 import sys
 #import getpass
 
-
-def working_directory():
-    """Return the working directory according to it being bundled/frozen."""
-    if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
-    else:
-        return os.path.dirname(__file__)
+from neurocurator.utils import working_directory
 
 
 def getSettings(popDialog = False):
