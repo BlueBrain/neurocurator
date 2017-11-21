@@ -18,7 +18,7 @@ from requests.exceptions import ConnectionError
 
 # Contributed libraries imports
 from PySide import QtGui, QtCore
-from PySide.QtCore import Qt, QModelIndex
+from PySide.QtCore import Qt, QModelIndex, Slot
 import numpy as np
 
 # NeuroAnnotation Toolbox imports
@@ -49,24 +49,6 @@ from .searchOntoWgt  import OntoOnlineSearch
 
 from neurocurator.utils import working_directory
 from neurocurator.zotero_widget import ZoteroTableWidget
-
-
-class ZoteroUpdateThread(QtCore.QThread):
-    # FIXME Delayed refactoring.
-
-    def __init__(self, window):
-        super(ZoteroUpdateThread, self).__init__()
-        self.window = window
-
-    def run(self):
-        self.window.statusLabel.setText("Please wait. Loading Zotero database...")
-        #statusBar.showMessage("Loading Zotero database...")
-        #self.window.splash.showMessage("Loading Zotero database...")
-        self.window.zotero_widget.view.model().sourceModel().refresh()
-        #statusBar.clearMessage()
-        self.window.statusLabel.setText("Ready.")
-
-
 
 
 class Window(QtGui.QMainWindow):
@@ -100,6 +82,7 @@ class Window(QtGui.QMainWindow):
 
         self.needSavingDisabled = False
 
+        # FIXME Delayed refactoring. Use signals/slots to update the message.
         self._statusBar = self.statusBar()
         self.statusLabel = QtGui.QLabel("")
         self._statusBar.addWidget(self.statusLabel)
@@ -163,8 +146,9 @@ class Window(QtGui.QMainWindow):
         # Load from config the path where the GIT database is located.
         self.dbPath   = os.path.abspath(os.path.expanduser(self.settings.config["GIT"]["local"]))
 
-        self.setupMenus()
         self.setupWindowsUI()
+        # Must be called after the creation of the widgets to connect to their slots.
+        self.setupMenus()
 
         self.firstShow = True
 
@@ -352,9 +336,10 @@ class Window(QtGui.QMainWindow):
 
         #######################################################################
         # COMMAND MENU
-        refreshZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Refresh Zotero', self)
-        refreshZoteroAction.setStatusTip('Refresh Zotero database')
-        refreshZoteroAction.triggered.connect(self.updateZotLib)
+        # FIXME Disable when an action editing the Zotero data is started.
+        refreshZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Refresh database', self)
+        refreshZoteroAction.setStatusTip('Refresh the Zotero database')
+        refreshZoteroAction.triggered.connect(self.zotero_widget.refresh)
 
         addZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Add reference', self)
         addZoteroAction.setStatusTip('Add a reference to the Zotero database')
@@ -388,18 +373,15 @@ class Window(QtGui.QMainWindow):
 
     def addToZotLib(self):
         # FIXME Delayed refactoring. Already unreachable before because of a bug.
-        raise NotImplementedError
+        pass
         # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, self)
         # addToZoteroDlg.exec_()
         #if addToZoteroDlg.exec_() == QtGui.QDialog.Accepted:
-        #    pass        
-
-
-
+        #    pass
 
     def modifySelectedZotItem(self):
         # FIXME Delayed refactoring. Already unreachable before because of a bug.
-        raise NotImplementedError
+        pass
         # row = self.zoteroTblWdg.selectionModel().currentIndex().row()
         # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, row, self)
         # addToZoteroDlg.exec_()
@@ -494,16 +476,10 @@ class Window(QtGui.QMainWindow):
         # Initial behavior
         self.taggingTabs.setDisabled(True)
 
-    @QtCore.Slot(QModelIndex)
+    @Slot(QModelIndex)
     def changeTagToAnnotations(self, index):
         # FIXME No use of the index sent by ZoteroTableView::doubleClicked?
         self.mainTabs.setCurrentIndex(1)
-
-    def updateZotLib(self):
-        # FIXME Delayed refactoring.
-        self.zoteroThread = ZoteroUpdateThread(self)
-        self.zoteroThread.start()
-
     
     def setupPaperGB(self):
         # Widgets
@@ -656,7 +632,7 @@ class Window(QtGui.QMainWindow):
     def ontoTagSelected(self, term, curie):
         self.addTagToAnnotation(curie, term)
 
-    @QtCore.Slot(object, object)
+    @Slot(object, object)
     def viewAnnotation(self, annotation):
         # FIXME Delayed refactoring.
         # FIXME Only one parameter is sent.
@@ -987,20 +963,22 @@ class Window(QtGui.QMainWindow):
         # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, row, self)
         # addToZoteroDlg.exec_()
 
-    @QtCore.Slot(QModelIndex, QModelIndex)
+    @Slot(QModelIndex, QModelIndex)
     def paperSelectionChanged(self, current, previous):
         # FIXME Delayed refactoring. Use indexes sent by currentRowChanged.
         if current.isValid() and previous.isValid():
 
             # FIXME DEBUG during refactoring.
-            # import pprint
-            # pp = pprint.PrettyPrinter(indent=4)
-            # source_model = current.model().sourceModel()
-            # idx = source_model.mapToSource(current).row()
-            # print("\n\n\nREFERENCE")
-            # pp.pprint(source_model._zotero_wrap._references[idx])
-            # print("\nREFERENCE PROXY ROW NUMBER: " + str(current.row()))
-            # print("\nREFERENCE SOURCE ROW NUMBER: " + str(idx))
+            import pprint
+            pp = pprint.PrettyPrinter(indent=4)
+            idx = current.model().mapToSource(current).row()
+            # print("\n\n")
+            # print("REFERENCE")
+            # pp.pprint(current.model().sourceModel()._zotero_wrap._references[idx])
+            print("\n")
+            print("REFERENCE TITLE: " + current.model().sourceModel()._zotero_wrap.reference_title(idx))
+            print("REFERENCE PROXY ROW NUMBER: " + str(current.row()))
+            print("REFERENCE SOURCE ROW NUMBER: " + str(idx))
             # FIXME /DEBUG during refactoring.
 
             if self.checkSavingAnnot() == False:

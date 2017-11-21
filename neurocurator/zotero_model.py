@@ -31,7 +31,10 @@ class ZoteroTableModel(QAbstractTableModel):
 
     def refresh(self):
         # TODO Implement an offline mode.
-        # TODO Only latest sorting kept. Enforce all previous sorting after refresh()?
+        # TODO Displayed annotation counts will be inconsistent if new ones
+        # TODO have been created during the refresh!
+        # TODO Only latest sorting kept. Row numbers change after in the proxy
+        # TODO model in this case. Enforce all previous sorting after refresh()?
         self.layoutAboutToBeChanged.emit()
         self._zotero_wrap.load_distant()
         self._compute_annotation_counts()
