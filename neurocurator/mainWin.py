@@ -3,52 +3,44 @@
 __authors__ = ["Christian O'Reilly", "Pierre-Alexandre Fonta"]
 __maintainer__ = "Pierre-Alexandre Fonta"
 
-# Standard imports
-import sys
-import os
-import webbrowser
-import pickle
 import getpass
+import os
+import pickle
+import sys
 import time
-from threading import Thread
+import webbrowser
 from glob import glob
 from os.path import join
 from subprocess import call
-from requests.exceptions import ConnectionError
+from threading import Thread
 
-# Contributed libraries imports
+import numpy as np
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt, QModelIndex, Slot
-import numpy as np
+from PySide.QtGui import QAction, QItemSelection
 
-# NeuroAnnotation Toolbox imports
-from nat.utils import Id2FileName #, fileName2Id
 from nat.annotation import Annotation
 from nat.gitManager import GitManager, GitMngError
 from nat.id import checkID
-from nat.tag import Tag
 from nat.ontoManager import OntoManager
 from nat.restClient import RESTClient, RESTImportPDFErr
-    
-
-# Local imports
-from .autocomplete import AutoCompleteEdit
-from .suggestedTagMng import TagSuggester
-from .uiUtilities import errorMessage, disableTextWidget
-from .settingsDlg import getSettings, SettingsDlg
-from .addOntoTermDlg import AddOntoTermDlg
-from .addToZoteroDlg import AddToZoteroDlg
-
-from .annotWidgets import EditAnnotWgt
-from .modParamWidgets import ParamModWgt
-from .experimentalPropertyWgt import ExpPropWgt
-from .searchInterface import SearchWgt
-from .tagWidget import TagWidget
-from .annotationListModel import AnnotationListModel
-from .searchOntoWgt  import OntoOnlineSearch
-
+from nat.tag import Tag
+from nat.utils import Id2FileName  # , fileName2Id
 from neurocurator.utils import working_directory
 from neurocurator.zotero_widget import ZoteroTableWidget
+from requests.exceptions import ConnectionError
+from .addOntoTermDlg import AddOntoTermDlg
+from .annotWidgets import EditAnnotWgt
+from .annotationListModel import AnnotationListModel
+from .autocomplete import AutoCompleteEdit
+from .experimentalPropertyWgt import ExpPropWgt
+from .modParamWidgets import ParamModWgt
+from .searchInterface import SearchWgt
+from .searchOntoWgt import OntoOnlineSearch
+from .settingsDlg import getSettings, SettingsDlg
+from .suggestedTagMng import TagSuggester
+from .tagWidget import TagWidget
+from .uiUtilities import errorMessage, disableTextWidget
 
 
 class Window(QtGui.QMainWindow):
@@ -184,7 +176,7 @@ class Window(QtGui.QMainWindow):
 
 
     def closeEvent(self, event):
-        # FIXME Refactor settings management with QSettings.
+        # FIXME Delayed refactoring. Do settings management with QSettings.
         window_settings = self.settings.config['WINDOW']
         window_settings['mainSplitterPos'] = str(self.mainWidget.sizes())
         window_settings['leftSplitterPos'] = str(self.leftPanel.sizes())
@@ -198,7 +190,7 @@ class Window(QtGui.QMainWindow):
         window_settings['zotTableViewColWidth'] = colWidths
 
         zotero_table_header = zotero_view.horizontalHeader()
-        # FIXME "If no section has a sort indicator, return value is undefined".
+        # FIXME Delayed refactoring. "If no section has a sort indicator, return value is undefined".
         zotero_sort_order = zotero_table_header.sortIndicatorOrder()
         zotero_sort_column = zotero_table_header.sortIndicatorSection()
         window_settings['zotTableSortOrder'] = str(int(zotero_sort_order))
@@ -234,7 +226,7 @@ class Window(QtGui.QMainWindow):
 
 
     def showEvent(self, event):
-        # FIXME Save/Restore also the main window size.
+        # FIXME Delayed refactoring. Save/Restore also the main window size.
         if self.firstShow:
             if 'mainSplitterPos' in self.settings.config['WINDOW']:
                 self.mainWidget.setSizes(eval(self.settings.config['WINDOW']['mainSplitterPos']))
@@ -247,9 +239,8 @@ class Window(QtGui.QMainWindow):
 
             if 'zotTableViewColWidth' in self.settings.config['WINDOW']:            
                 for i, width in enumerate(eval(self.settings.config['WINDOW']['zotTableViewColWidth'])):
-                    # TODO Try QTableView.resizeColumnsToContents() slot.
                     self.zotero_widget.view.setColumnWidth(i, width)
-            if 'annotTableViewColWidth' in self.settings.config['WINDOW']:            
+            if 'annotTableViewColWidth' in self.settings.config['WINDOW']:
                 for i, width in enumerate(eval(self.settings.config['WINDOW']['annotTableViewColWidth'])):
                     self.annotListTblWdg.setColumnWidth(i, width)
 
@@ -259,7 +250,7 @@ class Window(QtGui.QMainWindow):
             if 'annotTableSortCol' in self.settings.config['WINDOW']:
                 self.annotTableModel.sortCol = int(self.settings.config['WINDOW']['annotTableSortCol'])
 
-            # FIXME Refactor settings management with QSettings.
+            # FIXME Delayed refactoring. Do settings management with QSettings.
             window_settings = self.settings.config['WINDOW']
             is_zotero_sort_order_set = 'zotTableSortOrder' in window_settings
             is_zotero_sort_column_set = 'zotTableSortCol' in window_settings
@@ -272,21 +263,14 @@ class Window(QtGui.QMainWindow):
             self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, 
                                            self.annotTableModel.sortOrder)
 
-
-
             self.firstShow = False
-
-
-
-
-
 
     def setupMenus(self):
 
 
         self.statusBar()
 
-        menubar = self.menuBar()
+        menu_bar = self.menuBar()
         
         #######################################################################
         # FILE MENU
@@ -295,7 +279,7 @@ class Window(QtGui.QMainWindow):
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
         
-        fileMenu = menubar.addMenu('&File')
+        fileMenu = menu_bar.addMenu('&File')
         fileMenu.addAction(exitAction)        
 
         #######################################################################
@@ -304,7 +288,7 @@ class Window(QtGui.QMainWindow):
         openPreferencesAction.setStatusTip('Edit preferences')
         openPreferencesAction.triggered.connect(self.editPreferences)
 
-        editMenu = menubar.addMenu('&Edit')
+        editMenu = menu_bar.addMenu('&Edit')
         editMenu.addAction(openPreferencesAction)
 
 
@@ -328,32 +312,40 @@ class Window(QtGui.QMainWindow):
         addModParamTypeAction.triggered.connect(self.addModParamType)
         
 
-        commandMenu = menubar.addMenu('&Command')
+        commandMenu = menu_bar.addMenu('&Command')
         commandMenu.addAction(pushToServerAction)
         commandMenu.addAction(refreshLocalOntoAction)
         commandMenu.addAction(addToOntologyAction)
         commandMenu.addAction(addModParamTypeAction)
 
-        #######################################################################
-        # COMMAND MENU
-        # FIXME Disable when an action editing the Zotero data is started.
-        refreshZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Refresh database', self)
-        refreshZoteroAction.setStatusTip('Refresh the Zotero database')
-        refreshZoteroAction.triggered.connect(self.zotero_widget.refresh)
+        # Zotero menu section.
 
-        addZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Add reference', self)
-        addZoteroAction.setStatusTip('Add a reference to the Zotero database')
-        addZoteroAction.triggered.connect(self.addToZotLib)
+        refresh_zotero_action = QAction("Refresh database", self)
+        refresh_zotero_action.setStatusTip("Refresh the Zotero database")
+        refresh_zotero_action.triggered.connect(self.zotero_widget.refresh_database)
 
-        modifZoteroAction = QtGui.QAction(QtGui.QIcon(), '&Modify selected reference', self)
-        modifZoteroAction.setStatusTip('Modify the Zotero item currently selected')
-        modifZoteroAction.triggered.connect(self.modifySelectedZotItem)
+        add_zotero_action = QAction("Add reference", self)
+        add_zotero_action.setStatusTip("Add a reference to the Zotero database")
+        add_zotero_action.triggered.connect(self.zotero_widget.add_reference)
 
-        zoteroMenu = menubar.addMenu('&Zotero')
-        zoteroMenu.addAction(refreshZoteroAction)
-        zoteroMenu.addAction(addZoteroAction)
-        zoteroMenu.addAction(modifZoteroAction)
+        edit_zotero_action = QAction("Edit reference", self)
+        edit_zotero_action.setStatusTip('Edit selected Zotero reference')
+        edit_zotero_action.triggered.connect(self.zotero_widget.edit_reference)
 
+        self.zotero_menu = menu_bar.addMenu("Zotero")
+        self.zotero_menu.addAction(refresh_zotero_action)
+        self.zotero_menu.addAction(add_zotero_action)
+        self.zotero_menu.addAction(edit_zotero_action)
+
+    @Slot()
+    def zotero_refresh_started(self):
+        self.zotero_menu.setEnabled(False)
+        self.statusBar().showMessage("Refreshing the Zotero database...")
+
+    @Slot()
+    def zotero_refresh_finished(self):
+        self.zotero_menu.setEnabled(True)
+        self.statusBar().showMessage("The Zotero database has been refreshed.", 10 * 1000)
 
     def addToOntology(self):
         addToOntoDlg = AddOntoTermDlg(self)
@@ -370,31 +362,6 @@ class Window(QtGui.QMainWindow):
         #TODO: Need to refresh auto-completion lists if we want it to take
         # this refreshed ontology into account without restarting the app.
 
-
-    def addToZotLib(self):
-        # FIXME Delayed refactoring. Already unreachable before because of a bug.
-        pass
-        # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, self)
-        # addToZoteroDlg.exec_()
-        #if addToZoteroDlg.exec_() == QtGui.QDialog.Accepted:
-        #    pass
-
-    def modifySelectedZotItem(self):
-        # FIXME Delayed refactoring. Already unreachable before because of a bug.
-        pass
-        # row = self.zoteroTblWdg.selectionModel().currentIndex().row()
-        # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, row, self)
-        # addToZoteroDlg.exec_()
-
-
-
-
-
-
-
-
-
-
     def setupWindowsUI(self) :
         self.setupPaperGB()
         self.setupListAnnotGB()
@@ -407,14 +374,26 @@ class Window(QtGui.QMainWindow):
         # FIXME Delayed refactoring. Create a dedicated QTabWidget object.
         self.mainTabs = QtGui.QTabWidget(self)
 
-        # FIXME Refactor settings management with QSettings.
+        # FIXME Delayed refactoring. Do settings management with QSettings.
         zotero_settings = self.settings.config["ZOTERO"]
         work_dir = working_directory()
+
         # NB: Don't specify a parent for widgets to be added to a QTabWidget.
-        self.zotero_widget = ZoteroTableWidget(zotero_settings, work_dir,
-                                               self.checkIdInDB, self.dbPath,
-                                               self)
-        self.mainTabs.addTab(self.zotero_widget, "Paper Zotero database")
+        self.zotero_widget = ZoteroTableWidget(zotero_settings, work_dir, self.checkIdInDB, self.dbPath, self)
+
+        self.zotero_widget.view.doubleClicked.connect(self.changeTagToAnnotations)
+
+        # The signals currentRowChanged and selectionChanged of QItemSelectionModel
+        # are emitted when QSortFilterProxyModel::setFilterFixedString() is called.
+        # The signal currentRowChanged is emitted when the user clicks on the
+        # application for the first time.
+        selection_model = self.zotero_widget.view.selectionModel()  # Necessary.
+        selection_model.selectionChanged.connect(self.paperSelectionChanged)
+
+        self.zotero_widget.refresh_thread.started.connect(self.zotero_refresh_started)
+        self.zotero_widget.refresh_thread.finished.connect(self.zotero_refresh_finished)
+
+        self.mainTabs.addTab(self.zotero_widget, "References - Zotero database")
 
         self.taggingTabs = QtGui.QTabWidget(self)
         self.taggingTabs.addTab(self.tagAnnotGroupBox, "Tagging")
@@ -478,7 +457,7 @@ class Window(QtGui.QMainWindow):
 
     @Slot(QModelIndex)
     def changeTagToAnnotations(self, index):
-        # FIXME No use of the index sent by ZoteroTableView::doubleClicked?
+        # FIXME Delayed refactoring. No use of the index sent by ZoteroTableView::doubleClicked?
         self.mainTabs.setCurrentIndex(1)
     
     def setupPaperGB(self):
@@ -634,10 +613,15 @@ class Window(QtGui.QMainWindow):
 
     @Slot(object, object)
     def viewAnnotation(self, annotation):
-        # FIXME Delayed refactoring.
-        # FIXME Only one parameter is sent.
+        # FIXME Delayed refactoring. Only one parameter is sent.
+
         zotero_view = self.zotero_widget.view
         zotero_model = zotero_view.model()
+
+        # Deactivate the filtering of the Zotero QTableView.
+        self.zotero_widget.filter_edit.clear()
+        self.zotero_widget.filter_edit.clearFocus()
+
         match = zotero_model.match(zotero_model.index(0, 0), Qt.DisplayRole,
                                    annotation.pubId, 1, Qt.MatchExactly)
         if match:
@@ -955,37 +939,24 @@ class Window(QtGui.QMainWindow):
             self.needSaving = False
         return True
 
+    @Slot(QItemSelection, QItemSelection)
+    def paperSelectionChanged(self, selected, deselected):
+        if selected.indexes():
+            index = selected.indexes()[0]
 
-
-    def managePaperNoID(self, row):
-        # FIXME Delayed refactoring. Already unreachable before because of a bug.
-        raise NotImplementedError
-        # addToZoteroDlg = AddToZoteroDlg(self.zotero_table_model, row, self)
-        # addToZoteroDlg.exec_()
-
-    @Slot(QModelIndex, QModelIndex)
-    def paperSelectionChanged(self, current, previous):
-        # FIXME Delayed refactoring. Use indexes sent by currentRowChanged.
-        if current.isValid() and previous.isValid():
-
-            # FIXME DEBUG during refactoring.
-            import pprint
-            pp = pprint.PrettyPrinter(indent=4)
-            idx = current.model().mapToSource(current).row()
-            # print("\n\n")
-            # print("REFERENCE")
-            # pp.pprint(current.model().sourceModel()._zotero_wrap._references[idx])
-            print("\n")
-            print("REFERENCE TITLE: " + current.model().sourceModel()._zotero_wrap.reference_title(idx))
-            print("REFERENCE PROXY ROW NUMBER: " + str(current.row()))
-            print("REFERENCE SOURCE ROW NUMBER: " + str(idx))
-            # FIXME /DEBUG during refactoring.
+            # # FIXME DEBUG during refactoring.
+            # row = index.model().mapToSource(index).row()
+            # print("\n")
+            # print("TITLE: " + index.model().sourceModel()._zotero_wrap.reference_title(row))
+            # print("PROXY ROW NB: " + str(index.row()))
+            # print("SOURCE ROW NB: " + str(row))
+            # # /FIXME DEBUG during refactoring.
 
             if self.checkSavingAnnot() == False:
                 return False
 
-            # FIXME Simplify. Remove hard-coded column number.
-            reference_id = current.model().data(current.model().index(current.row(), 0))
+            # FIXME Delayed refactoring. Simplify. Remove hard-coded column number.
+            reference_id = index.model().data(index.model().index(index.row(), 0))
 
             if reference_id == "":
                 msgBox = QtGui.QMessageBox(self)
@@ -996,9 +967,8 @@ class Window(QtGui.QMainWindow):
                 msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
                 msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
                 if msgBox.exec_() == QtGui.QMessageBox.Yes:
-                    row = current.model().sourceModel().mapToSource(current).row()
-                    self.managePaperNoID(row)
-                    self.paperSelectionChanged(current, previous)
+                    self.zotero_widget.edit_reference()
+                    self.paperSelectionChanged(index, deselected)
                 else:
                     self.invalidPaperChoice()
                 return

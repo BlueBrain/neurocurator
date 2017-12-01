@@ -10,32 +10,36 @@ from nat.annotationSearch import AnnotationSearch
 
 
 class ZoteroTableModel(QAbstractTableModel):
+
     HEADERS = ["ID", "Title", "Creators", "Year", "Journal", "Annotations"]
 
     def __init__(self, zotero_wrap, check_id_fct, annotations_path, parent=None):
         super().__init__(parent)
-        self.check_id_fct = check_id_fct  # FIXME Delayed refactoring.
-        self.annotations_path = annotations_path  # FIXME Delayed refactoring.
+        # FIXME Delayed refactoring.
+        self.check_id_fct = check_id_fct
+        # FIXME Delayed refactoring.
+        self.annotations_path = annotations_path
         self._zotero_wrap = zotero_wrap
-        self._annotation_counts = []  # TODO Cache them?
+        # TODO Cache them?
+        self._annotation_counts = []
         # TODO For performance, create a data structure with only the displayed data?
 
-    # load / refresh / save methods section.
+    # Load / Refresh / Save methods section.
 
     def load(self):
-        # TODO Implement an offline mode.
         self.layoutAboutToBeChanged.emit()
+        # TODO Implement an offline mode. Catch PyZoteroError.
         self._zotero_wrap.initialize()
         self._compute_annotation_counts()
         self.layoutChanged.emit()
 
     def refresh(self):
-        # TODO Implement an offline mode.
         # TODO Displayed annotation counts will be inconsistent if new ones
-        # TODO have been created during the refresh!
+        # have been created during the refresh!
         # TODO Only latest sorting kept. Row numbers change after in the proxy
-        # TODO model in this case. Enforce all previous sorting after refresh()?
+        # model in this case. Enforce all previous sorting after refresh()?
         self.layoutAboutToBeChanged.emit()
+        # TODO Implement an offline mode. Catch PyZoteroError.
         self._zotero_wrap.load_distant()
         self._compute_annotation_counts()
         self.layoutChanged.emit()
@@ -55,7 +59,7 @@ class ZoteroTableModel(QAbstractTableModel):
         column = index.column()
         if self._is_index_too_large(row, column):
             return None
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.DisplayRole:
             return self._cell_data(row, column)
         if role == Qt.BackgroundRole:
             ref_id = self._zotero_wrap.reference_id(row)
@@ -72,8 +76,10 @@ class ZoteroTableModel(QAbstractTableModel):
     def flags(self, index):
         if not index.isValid():
             return Qt.ItemIsEnabled
-        else:
+        elif self.HEADERS[index.column()] == "Annotations":
             return super().flags(index) | Qt.ItemIsEditable
+        else:
+            return super().flags(index)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if section >= len(self.HEADERS):
@@ -82,16 +88,6 @@ class ZoteroTableModel(QAbstractTableModel):
             return self.HEADERS[section]
         return None
 
-    def insertRow(self, position, ref_type, parent=QModelIndex()):
-        """QAbstractItemModel::insertRow() overload to handle reference types.
-
-        The inserted row index will be 'position', which starts at 0.
-        """
-        self.beginInsertRows(QModelIndex(), position, position)
-        reference_template = self._zotero_wrap.create_empty_reference(ref_type)
-        self._zotero_wrap.create_local_reference(position, reference_template)
-        self.endInsertRows()
-
     def rowCount(self, parent=QModelIndex()):
         if parent.isValid():
             return 0
@@ -99,8 +95,6 @@ class ZoteroTableModel(QAbstractTableModel):
             return self._zotero_wrap.reference_count()
 
     def setData(self, index, value, role=Qt.EditRole):
-        # FIXME Use: before, call self.insertRow().
-        # FIXME Use: after, call ZoteroWrap.create_distant_reference().
         if not index.isValid():
             return False
         row = index.row()
@@ -108,24 +102,27 @@ class ZoteroTableModel(QAbstractTableModel):
         if self._is_index_too_large(row, column):
             return False
         if role == Qt.EditRole:
-            header = self.HEADERS[column]
-            if header == "ID":
-                self._zotero_wrap.set_reference_id(row, value)
-            elif header == "Title":
-                self._zotero_wrap.set_reference_title(row, value)
-            elif header == "Creators":
-                self._zotero_wrap.set_reference_creators(row, value)
-            elif header == "Year":
-                self._zotero_wrap.set_reference_year(row, value)
-            elif header == "Journal":
-                self._zotero_wrap.set_reference_journal(row, value)
-            elif header == 'Annotations':
+            if self.HEADERS[column] == 'Annotations':
                 self._set_annotation_count(row, value)
-            else:
-                return False
-            self.dataChanged.emit(index, index)
-            return True
+                self.dataChanged.emit(index, index)
+                return True
         return False
+
+    # Public methods section.
+
+    def add_reference(self, ref):
+        row = 0
+        self.beginInsertRows(QModelIndex(), row, row)
+        self._zotero_wrap.create_local_reference(ref)
+        index = self.index(row, self.HEADERS.index("Annotation"), QModelIndex())
+        self.setData(index, 0)
+        self.endInsertRows()
+
+    def update_reference(self, row, ref):
+        self._zotero_wrap.update_local_reference(row, ref)
+        start_index = self.index(row, 0, QModelIndex())
+        end_index = self.index(row, self.columnCount() - 2, QModelIndex())
+        self.dataChanged.emit(start_index, end_index)
 
     # Private @properties surrogates section.
 
@@ -140,16 +137,15 @@ class ZoteroTableModel(QAbstractTableModel):
     # Private methods section.
 
     def _compute_annotation_counts(self):
-        # FIXME Delayed refactoring.
+        # FIXME Delayed refactoring (related to search).
         results = AnnotationSearch(self.annotations_path).search()
         counts = results["Publication ID"].value_counts().to_dict()
-        # FIXME Refactoring fix in the meantime.
         self._annotation_counts = [int(counts.get(self._zotero_wrap.reference_id(i), 0))
                                    for i in range(self._zotero_wrap.reference_count())]
 
     def _is_index_too_large(self, row, column):
-        # QModelIndex::isValid() only checks if the index belongs to a model
-        # and has non-negative row and column numbers.
+        # NB: QModelIndex::isValid() only checks if the index belongs to
+        # a model and has non-negative row and column numbers.
         return row >= self.rowCount() or column >= len(self.HEADERS)
 
     def _cell_data(self, row, column):
