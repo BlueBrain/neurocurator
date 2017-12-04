@@ -6,7 +6,8 @@ __maintainer__ = "Pierre-Alexandre Fonta"
 from PySide.QtCore import Slot, Qt, QSize
 from PySide.QtGui import (QDialog, QComboBox, QFormLayout, QLineEdit,
                           QStackedWidget, QVBoxLayout, QDialogButtonBox,
-                          QTableWidget, QWidget, QTableWidgetItem)
+                          QTableWidget, QWidget, QTableWidgetItem,
+                          QAbstractItemView)
 
 
 class ZoteroReferenceDialog(QDialog):
@@ -150,8 +151,11 @@ class CreatorsTableWidget(QTableWidget):
         # Own configuration section.
 
         self.setHorizontalHeaderLabels(self.HEADERS)
+        self.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setCornerButtonEnabled(False)
         self.verticalHeader().hide()
+        # NB: Sorting is disabled by default.
 
         # Signals section.
 
