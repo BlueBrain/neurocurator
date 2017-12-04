@@ -43,10 +43,10 @@ class ZoteroTableWidget(QWidget):
 
         self.view = QTableView(self)
         self.view.setModel(proxy_model)
+        self.view.setCornerButtonEnabled(False)
         self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.view.setCornerButtonEnabled(False)
         # NB: Triggers a call to sortByColumn() which sorts by the first column.
         self.view.setSortingEnabled(True)
         self.view.setWordWrap(False)

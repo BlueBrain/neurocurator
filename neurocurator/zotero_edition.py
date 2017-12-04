@@ -150,10 +150,10 @@ class CreatorsTableWidget(QTableWidget):
 
         # Own configuration section.
 
+        self.setCornerButtonEnabled(False)
         self.setHorizontalHeaderLabels(self.HEADERS)
         self.setSelectionBehavior(QAbstractItemView.SelectItems)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.setCornerButtonEnabled(False)
         self.verticalHeader().hide()
         # NB: Sorting is disabled by default.
 
