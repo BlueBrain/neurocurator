@@ -968,7 +968,7 @@ class Window(QtGui.QMainWindow):
                 msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
                 if msgBox.exec_() == QtGui.QMessageBox.Yes:
                     self.zotero_widget.edit_reference()
-                    self.paperSelectionChanged(index, deselected)
+                    self.paperSelectionChanged(selected, deselected)
                 else:
                     self.invalidPaperChoice()
                 return
