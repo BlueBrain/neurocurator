@@ -105,6 +105,7 @@ class ZoteroTableWidget(QWidget):
     def add_reference(self):
         dialog = ZoteroReferenceDialog(self.zotero.reference_templates, self)
         dialog.setWindowTitle("Zotero reference creation")
+        dialog.select_reference_type("journalArticle")
         # NB: exec() always pops up the dialog as modal.
         if dialog.exec():
             reference_data = dialog.reference_data()

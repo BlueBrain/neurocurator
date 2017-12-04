@@ -32,7 +32,7 @@ class ZoteroReferenceDialog(QDialog):
         for x in template_widgets:
             self._template_widgets_stack.addWidget(x)
 
-        self.creators_table = CreatorsTableWidget()
+        self._creators_table = CreatorsTableWidget()
 
         # NB: The first button with the accept role is made the default button.
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -41,7 +41,7 @@ class ZoteroReferenceDialog(QDialog):
 
         header_layout = QFormLayout()
         header_layout.addRow("Reference type:", self._types_combo_box)
-        header_layout.addRow("creators: ", self.creators_table)
+        header_layout.addRow("creators: ", self._creators_table)
         header_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
         header_layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
         header_layout.setLabelAlignment(Qt.AlignLeft)
@@ -61,20 +61,24 @@ class ZoteroReferenceDialog(QDialog):
 
     # Load / Refresh / Save methods section.
 
+    def select_reference_type(self, ref_type):
+        """Initialize the QDialog for the given reference type."""
+        reference_type_index = self._types.index(ref_type)
+        self._types_combo_box.setCurrentIndex(reference_type_index)
+
     def load_reference_data(self, ref_data):
         reference_type = ref_data["itemType"]
-        reference_type_index = self._types.index(reference_type)
-        self._types_combo_box.setCurrentIndex(reference_type_index)
+        self.select_reference_type(reference_type)
         reference_creators = ref_data["creators"]
-        self.creators_table.load_creators(reference_creators)
+        self._creators_table.load_creators(reference_creators)
         self._load_template_fields(ref_data)
 
     def reference_data(self):
         data = self._template_fields()
         data["itemType"] = self._types_combo_box.currentText()
-        headers = self.creators_table.HEADERS
+        headers = self._creators_table.HEADERS
         data["creators"] = [{headers[0]: x[0], headers[1]: x[1], headers[2]: x[2]}
-                            for x in self.creators_table.creators()]
+                            for x in self._creators_table.creators()]
         return data
 
     # Private methods section.
