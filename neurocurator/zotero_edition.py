@@ -28,14 +28,12 @@ class ZoteroReferenceDialog(QDialog):
 
         # Variables sections.
 
-        types_subset = {"book", "bookSection", "conferencePaper", "document",
-                        "forumPost", "journalArticle", "patent", "report",
-                        "thesis", "webpage"}
-        templates_subset = OrderedDict({ref_type: v
-                                        for ref_type, v in ref_templates.items()
-                                        if ref_type in types_subset})
-
-        self._types = list(templates_subset.keys())
+        # NB: Sorted.
+        self._types = ["book", "bookSection", "conferencePaper", "document",
+                       "forumPost", "journalArticle", "patent", "report",
+                       "thesis", "webpage"]
+        templates_subset = OrderedDict([(k, v) for k, v in ref_templates.items()
+                                        if k in self._types])
 
         # Own configuration section.
 
