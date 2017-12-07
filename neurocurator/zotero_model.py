@@ -24,9 +24,10 @@ class ZoteroTableModel(QAbstractTableModel):
         self._annotation_counts = []
         # TODO For performance, create a data structure with only the displayed data?
 
-    # Load / Refresh / Save methods section.
+    # Data I/O methods section.
 
     def load(self):
+        """Load the Zotero data and compute the annotation counts."""
         self.layoutAboutToBeChanged.emit()
         # TODO Implement an offline mode. Catch PyZoteroError.
         self._zotero_wrap.initialize()
@@ -34,6 +35,7 @@ class ZoteroTableModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def refresh(self):
+        """Replace the cached Zotero data with the distant one."""
         # TODO Displayed annotation counts will be inconsistent if new ones
         # have been created during the refresh!
         # TODO Only latest sorting kept. Row numbers change after in the proxy
@@ -111,6 +113,7 @@ class ZoteroTableModel(QAbstractTableModel):
     # Public methods section.
 
     def add_reference(self, ref):
+        """Add the reference at the top."""
         row = 0
         self.beginInsertRows(QModelIndex(), row, row)
         self._zotero_wrap.create_local_reference(ref)
@@ -119,6 +122,7 @@ class ZoteroTableModel(QAbstractTableModel):
         self.endInsertRows()
 
     def update_reference(self, row, ref):
+        """Update the reference at the given row."""
         self._zotero_wrap.update_local_reference(row, ref)
         start_index = self.index(row, 0, QModelIndex())
         end_index = self.index(row, self.columnCount() - 2, QModelIndex())
@@ -127,16 +131,17 @@ class ZoteroTableModel(QAbstractTableModel):
     # Private @properties surrogates section.
 
     def _annotation_count(self, row):
-        """Return the number of annotations of a reference."""
+        """Return the number of annotations of the reference at the given row."""
         return self._annotation_counts[row]
 
-    def _set_annotation_count(self, row, value):
-        """Set the number of annotations of a reference."""
-        self._annotation_counts[row] = value
+    def _set_annotation_count(self, row, count):
+        """Set the number of annotations of the reference at the given row."""
+        self._annotation_counts[row] = count
 
     # Private methods section.
 
     def _compute_annotation_counts(self):
+        """Compute the number of annotations for all references and set it."""
         # FIXME Delayed refactoring (related to search).
         results = AnnotationSearch(self.annotations_path).search()
         counts = results["Publication ID"].value_counts().to_dict()
@@ -144,12 +149,15 @@ class ZoteroTableModel(QAbstractTableModel):
                                    for i in range(self._zotero_wrap.reference_count())]
 
     def _is_index_too_large(self, row, column):
-        # NB: QModelIndex::isValid() only checks if the index belongs to
-        # a model and has non-negative row and column numbers.
+        """Check if row and column numbers are not out of range.
+
+        QModelIndex::isValid() only checks if the index belongs to a model and
+        has non-negative row and column numbers.
+        """
         return row >= self.rowCount() or column >= len(self.HEADERS)
 
     def _cell_data(self, row, column):
-        """Return a property of a reference."""
+        """Return the attribute, in this column, of the reference in this row."""
         header = self.HEADERS[column]
         if header == "ID":
             return self._zotero_wrap.reference_id(row)
