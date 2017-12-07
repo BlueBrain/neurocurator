@@ -89,13 +89,13 @@ class ZoteroReferenceDialog(QDialog):
                 elif field == self.EXTRA_FIELD:
                     # NB: '\n' is represented as a new line.
                     widget.setPlainText(ref_data[self.EXTRA_FIELD])
-                elif field == self.UNPUBLISHED_ID_FIELD:
-                    if self.UNPUBLISHED_ID_KEY in ref_data[self.EXTRA_FIELD]:
-                        widget.setDisabled(True)
                 else:
                     widget.setText(ref_data[field])
                     widget.home(False)
-            elif field != self.UNPUBLISHED_ID_FIELD:
+            elif field == self.UNPUBLISHED_ID_FIELD:
+                if self.UNPUBLISHED_ID_KEY in ref_data[self.EXTRA_FIELD]:
+                    widget.setDisabled(True)
+            else:
                 ignored_fields.append(field)
         # TODO Display in the GUI?
         if ignored_fields:
