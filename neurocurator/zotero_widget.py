@@ -8,6 +8,7 @@ from PySide.QtGui import (QAbstractItemView, QSortFilterProxyModel, QWidget,
                           QTableView, QVBoxLayout, QLineEdit, QFormLayout)
 
 from nat.zotero_wrap import ZoteroWrap
+from neurocurator import utils
 from neurocurator.zotero_edition import ZoteroReferenceDialog
 from neurocurator.zotero_model import ZoteroTableModel
 from neurocurator.zotero_thread import ZoteroRefreshThread
@@ -24,16 +25,12 @@ class ZoteroTableWidget(QWidget):
         library_id = settings["libraryID"]
         library_type = settings["libraryType"]
         api_key = settings["apiKey"]
+        self._zotero = ZoteroWrap(library_id, library_type, api_key, work_dir)
 
         # Widgets section.
 
-        self.zotero = ZoteroWrap(library_id, library_type, api_key, work_dir)
-
-        model = ZoteroTableModel(self.zotero, check_id_fct, annotations_path)
+        model = ZoteroTableModel(self._zotero, check_id_fct, annotations_path)
         model.load()
-
-        # NB: The thread does not begin executing until start() is called.
-        self.refresh_thread = ZoteroRefreshThread(model, self)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSourceModel(model)
@@ -54,14 +51,15 @@ class ZoteroTableWidget(QWidget):
 
         self.filter_edit = FilterEdit(self.view)
 
+        # NB: The thread does not begin executing until start() is called.
+        self.refresh_thread = ZoteroRefreshThread(model, self)
+
         # Layouts section.
 
         header_layout = QFormLayout()
         header_layout.addRow("Filter:", self.filter_edit)
-        header_layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
-        header_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
-        header_layout.setLabelAlignment(Qt.AlignLeft)
-        header_layout.setRowWrapPolicy(QFormLayout.DontWrapRows)
+        header_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        utils.configure_form_layout(header_layout)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(header_layout)
@@ -87,61 +85,78 @@ class ZoteroTableWidget(QWidget):
 
     @Slot()
     def refresh_database(self):
-        # NB: If the thread is already running, this function does nothing.
+        """Start the thread refreshing the Zotero data.
+
+        If the thread is already running, it is not restarted.
+        """
         self.refresh_thread.start()
 
     @Slot()
     def refresh_started(self):
-        # TODO Display an information dialog.
-        # Disable handling of keyboard/mouse events to ensure a thread-safe refresh.
-        self.setEnabled(False)
+        """Disable the Zotero widget when the thread refreshing its data runs.
+
+        Disable handling of keyboard/mouse events to ensure a thread-safe refresh.
+        """
+        # TODO Display an information on top of the disabled widget.
+        self.setDisabled(True)
 
     @Slot()
     def refresh_finished(self):
-        # Enable handling of keyboard/mouse events.
+        """Enable the Zotero widget when the thread refreshing its data finishes.
+
+        Enable again the handling of keyboard/mouse events.
+        """
         self.setEnabled(True)
 
     @Slot()
     def add_reference(self):
-        dialog = ZoteroReferenceDialog(self.zotero.reference_templates, self)
+        """Display the form for and handle the creation of a new reference."""
+        dialog = ZoteroReferenceDialog(self._zotero.reference_templates, self)
         dialog.setWindowTitle("Zotero reference creation")
         dialog.select_reference_type("journalArticle")
         # NB: exec() always pops up the dialog as modal.
         if dialog.exec():
             reference_data = dialog.reference_data()
+            # FIXME DEBUG.
+            # print("\n")
+            # print("REFERENCE DATA: " + repr(reference_data))
+            # /FIXME DEBUG.
             # TODO Implement an offline mode. Catch PyZoteroError.
-            reference_key = self.zotero.create_distant_reference(reference_data)
+            reference_key = self._zotero.create_distant_reference(reference_data)
             # TODO Implement an offline mode. Catch PyZoteroError.
-            reference = self.zotero.get_reference(reference_key)
+            reference = self._zotero.get_reference(reference_key)
             self.view.model().sourceModel().add_reference(reference)
 
     @Slot()
     def edit_reference(self):
+        """Display the form for and handle the edition of the selected reference."""
         selected = self.view.selectionModel().currentIndex()
         if selected.isValid():
             row = self.view.model().mapToSource(selected).row()
-
-            # # FIXME DEBUG during refactoring.
+            # FIXME DEBUG.
             # print("\n")
             # print("TITLE: " + self.zotero.reference_title(row))
             # print("SOURCE ROW NB: " + str(row))
-            # # /FIXME DEBUG during refactoring.
-
-            reference_key = self.zotero.reference_key(row)
-            # TODO Refresh local when distant is different and "Cancel" clicked.
+            # /FIXME DEBUG.
+            reference_key = self._zotero.reference_key(row)
+            # TODO Refresh local when distant is different and 'Cancel' clicked.
             # TODO Display an information dialog when local and distant are different.
             # TODO Implement an offline mode. Catch PyZoteroError.
-            reference = self.zotero.get_reference(reference_key)
-            dialog = ZoteroReferenceDialog(self.zotero.reference_templates, self)
+            reference = self._zotero.get_reference(reference_key)
+            dialog = ZoteroReferenceDialog(self._zotero.reference_templates, self)
             dialog.setWindowTitle("Zotero reference edition")
             dialog.load_reference_data(reference["data"])
             # NB: exec() always pops up the dialog as modal.
             if dialog.exec():
                 reference["data"] = dialog.reference_data()
+                # FIXME DEBUG.
+                # print("\n")
+                # print("REFERENCE DATA: " + repr(reference["data"]))
+                # /FIXME DEBUG.
                 # TODO Implement an offline mode. Catch PyZoteroError.
-                self.zotero.update_distant_reference(reference)
+                self._zotero.update_distant_reference(reference)
                 # TODO Implement an offline mode. Catch PyZoteroError.
-                reference = self.zotero.get_reference(reference_key)
+                reference = self._zotero.get_reference(reference_key)
                 self.view.model().sourceModel().update_reference(row, reference)
         else:
             # TODO Display an information dialog.
@@ -160,8 +175,8 @@ class FilterEdit(QLineEdit):
 
     # Qt interface implementation section.
 
-    def focusInEvent(self, focus_event):
+    def focusInEvent(self, event):
         # QItemSelectionModel::clearSelection() is not sufficient.
         # QItemSelectionModel::clearSelection() emits signals, reset() not.
         self._view.selectionModel().reset()
-        super().focusInEvent(focus_event)
+        super().focusInEvent(event)

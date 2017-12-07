@@ -2,14 +2,12 @@
 
 __author__ = "Christian O'Reilly"
 
-# Import PySide classes
-from PySide import QtGui, QtCore
 import configparser
 import os
-import sys
-#import getpass
 
-from neurocurator.utils import working_directory
+from PySide import QtGui, QtCore
+
+from neurocurator import utils
 
 
 def getSettings(popDialog = False):
@@ -31,7 +29,7 @@ def getSettings(popDialog = False):
         
 
 class Settings:
-    fileName = os.path.join(working_directory(), 'settings.ini')
+    fileName = os.path.join(utils.working_directory(), 'settings.ini')
     def __init__(self):
         self.config = configparser.ConfigParser()
         with open(Settings.fileName) as configfile: # Raise an exception if file does not exist
@@ -116,7 +114,7 @@ class SettingsDlg(QtGui.QDialog):
 
         config = self.projectSettings.writeConfig(config)
 
-        with open(os.path.join(working_directory(), 'settings.ini'), 'w') as configfile:
+        with open(os.path.join(utils.working_directory(), 'settings.ini'), 'w') as configfile:
           config.write(configfile)
 
         self.accept() 

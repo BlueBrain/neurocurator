@@ -13,7 +13,8 @@ from neurocurator.mainWin import Window
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Window()
-    # FIXME Temporary, for debug.
-    window.setGeometry(0, 0, 500, 1424)
+    # FIXME DEBUG.
+    # window.setGeometry(0, 0, 500, 1424)
+    # /FIXME DEBUG.
     window.show()
     sys.exit(app.exec_())

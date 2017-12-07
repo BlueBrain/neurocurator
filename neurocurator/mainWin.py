@@ -26,7 +26,7 @@ from nat.ontoManager import OntoManager
 from nat.restClient import RESTClient, RESTImportPDFErr
 from nat.tag import Tag
 from nat.utils import Id2FileName  # , fileName2Id
-from neurocurator.utils import working_directory
+from neurocurator import utils
 from neurocurator.zotero_widget import ZoteroTableWidget
 from requests.exceptions import ConnectionError
 from .addOntoTermDlg import AddOntoTermDlg
@@ -339,7 +339,7 @@ class Window(QtGui.QMainWindow):
 
     @Slot()
     def zotero_refresh_started(self):
-        self.zotero_menu.setEnabled(False)
+        self.zotero_menu.setDisabled(True)
         self.statusBar().showMessage("Refreshing the Zotero database...")
 
     @Slot()
@@ -376,7 +376,7 @@ class Window(QtGui.QMainWindow):
 
         # FIXME Delayed refactoring. Do settings management with QSettings.
         zotero_settings = self.settings.config["ZOTERO"]
-        work_dir = working_directory()
+        work_dir = utils.working_directory()
 
         # NB: Don't specify a parent for widgets to be added to a QTabWidget.
         self.zotero_widget = ZoteroTableWidget(zotero_settings, work_dir, self.checkIdInDB, self.dbPath, self)
@@ -393,7 +393,7 @@ class Window(QtGui.QMainWindow):
         self.zotero_widget.refresh_thread.started.connect(self.zotero_refresh_started)
         self.zotero_widget.refresh_thread.finished.connect(self.zotero_refresh_finished)
 
-        self.mainTabs.addTab(self.zotero_widget, "References - Zotero database")
+        self.mainTabs.addTab(self.zotero_widget, "References (Zotero)")
 
         self.taggingTabs = QtGui.QTabWidget(self)
         self.taggingTabs.addTab(self.tagAnnotGroupBox, "Tagging")
@@ -944,13 +944,13 @@ class Window(QtGui.QMainWindow):
         if selected.indexes():
             index = selected.indexes()[0]
 
-            # # FIXME DEBUG during refactoring.
+            # FIXME DEBUG.
             # row = index.model().mapToSource(index).row()
             # print("\n")
             # print("TITLE: " + index.model().sourceModel()._zotero_wrap.reference_title(row))
             # print("PROXY ROW NB: " + str(index.row()))
             # print("SOURCE ROW NB: " + str(row))
-            # # /FIXME DEBUG during refactoring.
+            # /FIXME DEBUG.
 
             if self.checkSavingAnnot() == False:
                 return False
