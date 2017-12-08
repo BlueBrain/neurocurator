@@ -125,7 +125,9 @@ class ZoteroTableWidget(QWidget):
             reference_key = self._zotero.create_distant_reference(reference_data)
             # TODO Implement an offline mode. Catch PyZoteroError.
             reference = self._zotero.get_reference(reference_key)
-            self.view.model().sourceModel().add_reference(reference)
+            source_index = self.view.model().sourceModel().add_reference(reference)
+            proxy_index = self.view.model().mapFromSource(source_index)
+            self.view.selectRow(proxy_index.row())
 
     @Slot()
     def edit_reference(self):

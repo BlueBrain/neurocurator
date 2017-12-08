@@ -113,13 +113,14 @@ class ZoteroTableModel(QAbstractTableModel):
     # Public methods section.
 
     def add_reference(self, ref):
-        """Add the reference at the top."""
-        row = 0
-        self.beginInsertRows(QModelIndex(), row, row)
+        """Add the reference at the end. Return the row as a QModelIndex."""
+        new_row = self.rowCount()
+        self.beginInsertRows(QModelIndex(), new_row, new_row)
         self._zotero_wrap.create_local_reference(ref)
-        index = self.index(row, self.HEADERS.index("Annotation"), QModelIndex())
-        self.setData(index, 0)
+        self._insert_annotation_count()
         self.endInsertRows()
+        # NB: Column number will not be used.
+        return self.index(new_row, 0, QModelIndex())
 
     def update_reference(self, row, ref):
         """Update the reference at the given row."""
@@ -137,6 +138,10 @@ class ZoteroTableModel(QAbstractTableModel):
     def _set_annotation_count(self, row, count):
         """Set the number of annotations of the reference at the given row."""
         self._annotation_counts[row] = count
+
+    def _insert_annotation_count(self):
+        """Insert an annotation count of value 0 at the end, for a new reference."""
+        self._annotation_counts.append(0)
 
     # Private methods section.
 
