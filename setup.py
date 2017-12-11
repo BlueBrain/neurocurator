@@ -6,7 +6,7 @@ NAME = "neurocurator"
 DESCRIPTION = open(os.path.join(os.path.dirname(__file__), "README.md")).read()
 AUTHOR = "Christian O'Reilly"
 AUTHOR_EMAIL = "christian.oreilly@epfl.ch"
-VERSION = "0.3.2"
+VERSION = "0.4.0"
 REQUIRED = ["nat", "PySide", "numpy", "parse", "metapub", "pyzotero", "GitPython",
             "biopython", "beautifulsoup4", "quantities", "wand", "scipy", "pandas"]
 
