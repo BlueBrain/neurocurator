@@ -104,8 +104,10 @@ class ZoteroTableWidget(QWidget):
     def refresh_finished(self):
         """Enable the Zotero widget when the thread refreshing its data finishes.
 
+        Reset the selection model of the view in case of new/deleted references.
         Enable again the handling of keyboard/mouse events.
         """
+        self.view.selectionModel().reset()
         self.setEnabled(True)
 
     @Slot()
