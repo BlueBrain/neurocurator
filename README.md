@@ -1,4 +1,11 @@
-### NeuroCurator
+[Getting started](#getting-started) |
+[Releases](#releases) |
+[Status](#status) |
+[Requirements: macOS](#macos) |
+[Requirements: Ubuntu](#ubuntu) |
+[Packaging](#packaging)
+
+# NeuroCurator
 
 Desktop application to perform systematic and collaborative curation of neuroscientific literature.
 
@@ -11,9 +18,11 @@ With NeuroCurator, annotations are:
 - reusable across projects,
 - structured with controlled vocabularies.
 
-### Getting started
+---
 
-Install the [requirements](https://github.com/BlueBrain/neurocurator/blob/master/README.md#requirements).
+## Getting started
+
+Install the [requirements](#requirements).
 
 Download the packaged executable of the [latest release](https://github.com/BlueBrain/neurocurator/releases/latest).
 
@@ -23,14 +32,14 @@ Launch NeuroCurator:
 ```
 (in the folder where you downloaded the file)
 
-### Releases
+## Releases
 
 In the [dedicated section](https://github.com/BlueBrain/neurocurator/releases/), you can find:
 - the latest version,
 - the notable changes of each version,
 - the packaged executables for macOS and Ubuntu.
 
-### Status
+## Status
 
 Created during 2016.
 
@@ -42,9 +51,9 @@ New features, bug fixes and improvements are done on the reengineered code secti
 
 When a reengineered code section is stable, it's merged into the branch _master_ and a release is published.
 
-### Requirements
+## Requirements
 
-#### macOS
+### macOS
 
 Work on El Capitan (10.11.x) and higher.
 
@@ -66,7 +75,7 @@ You might require to allow execution:
 sudo chmod u+x neurocurator_<version>_mac_x64
 ```
 
-#### Ubuntu
+### Ubuntu
 
 Should work on 16.04.x LTS (Xenial) and higher, and also on other Debian-based distributions.
 
@@ -75,7 +84,7 @@ The packaged executable needs [Git](https://git-scm.com):
 sudo apt install git
 ```
 
-### Packaging
+## Packaging
 
 The code from the branch _master_ of NeuroCurator and [NAT](https://github.com/BlueBrain/nat) is used.
 
