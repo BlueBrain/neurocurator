@@ -1,26 +1,54 @@
-# neurocurator
+### NeuroCurator
 
-GUI-based application and API to perform systematic and collaborative scientific literature curation. This is a front-end for the NeuroAnnotation Toolbox (NAT).
+Desktop application to perform systematic and collaborative curation of neuroscientific literature.
 
-This framework has been described in details in the following open-access paper: http://journal.frontiersin.org/article/10.3389/fninf.2017.00027/full 
+This is a Graphical User Interface (GUI) for the Python package [NeuroAnnotation Toolbox (NAT)](https://github.com/BlueBrain/nat).
 
-# Installation
+This framework has been described in details in the following open-access paper: https://doi.org/10.3389/fninf.2017.00027.
 
-**EXPERIMENTAL**
+With NeuroCurator, annotations are:
+- traceable,
+- reusable across projects,
+- structured with controlled vocabularies.
 
-Latest NeuroCurator version (01/09/17) from *master* packaged on up-to-date **64 bits** systems.
+### Getting started
 
-NeuroCurator's configuration is stored in a *settings.ini* file created alongside the executable.
+Install the [requirements](https://github.com/BlueBrain/neurocurator/blob/master/README.md#requirements).
 
-## macOS standalone executable
+Download the packaged executable of the [latest release](https://github.com/BlueBrain/neurocurator/releases/latest).
 
-Packaged on OS X El Capitan (10.11.6).
+Launch NeuroCurator:
+```
+./neurocurator_<version>_<operating system>_x64
+```
+(in the folder where you downloaded the file)
 
-Launched successfully on El Capitan (10.11.6) and Sierra (10.12.6). It should also work on High Sierra (10.13.x).
+### Releases
 
-The executable can be downloaded here: https://goo.gl/TmFJH3 (51 MB).
+In the [dedicated section](https://github.com/BlueBrain/neurocurator/releases/), you can find:
+- the latest version,
+- the notable changes of each version,
+- the packaged executables for macOS and Ubuntu.
 
-It requires [Git](https://git-scm.com) and [ImageMagick](https://www.imagemagick.org) 6.
+### Status
+
+Created during 2016.
+
+Ongoing reengineering in the branch _refactor-architecture_.
+
+The branch _refactor-architecture_ is **not** intended to be used by end-users.
+
+New features, bug fixes and improvements are done on the reengineered code sections.
+
+When a reengineered code section is stable, it's merged into the branch _master_ and a release is published.
+
+### Requirements
+
+#### macOS
+
+Work on El Capitan (10.11.x) and higher.
+
+The packaged executable needs [Git](https://git-scm.com) and [ImageMagick](https://www.imagemagick.org) **6**.
 
 ImageMagick 6 can be installed with [Homebrew](https://brew.sh):
 ```
@@ -33,30 +61,24 @@ Git can also be installed with Homebrew:
 brew install git
 ```
 
-To launch NeuroCurator, in the folder where you downloaded the file:
-```
-./NeuroCurator_mac_10.11.6_x64
-```
-
 You might require to allow execution:
 ```
-sudo chmod u+x NeuroCurator_mac_10.11.6_x64
+sudo chmod u+x neurocurator_<version>_mac_x64
 ```
 
-## Ubuntu standalone executable
+#### Ubuntu
 
-Packaged on Ubuntu 16.04 LTS (Xenial).
+Should work on 16.04.x LTS (Xenial) and higher, and also on other Debian-based distributions.
 
-Launched successfully on Ubuntu 16.04 LTS. It should also work on other Debian-based distributions.
-
-The executable can be downloaded here: https://goo.gl/3ud71d (98 MB).
-
-It requires [Git](https://git-scm.com):
+The packaged executable needs [Git](https://git-scm.com):
 ```
 sudo apt install git
 ```
 
-To launch NeuroCurator, in the folder where you downloaded the file:
-```
-./NeuroCurator_ubuntu_16.04_x64
-```
+### Packaging
+
+The code from the branch _master_ of NeuroCurator and [NAT](https://github.com/BlueBrain/nat) is used.
+
+The packaged executables of NeuroCurator are created on up-to-date 64 bits OS X El Capitan and Ubuntu 16.04 LTS systems.
+
+NeuroCurator's configuration is stored in a *settings.ini* file created alongside the executable.
