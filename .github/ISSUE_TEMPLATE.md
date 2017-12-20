@@ -1,4 +1,4 @@
-_Tell in the title the affected section (References, Annotations, Search, Notebooks) between square brackets and what doesn't work._
+_Tell in the title the affected section (References, Annotations, Search, Notebooks, Installation) between square brackets and what doesn't work._
 
 Steps:
 
