@@ -4,7 +4,7 @@ import os
 PACKAGE = "neurocurator"
 NAME = "neurocurator"
 DESCRIPTION = open(os.path.join(os.path.dirname(__file__), "README.md")).read()
-AUTHOR = "Christian O'Reilly"
+AUTHOR = "Christian O'Reilly, Pierre-Alexandre Fonta"
 AUTHOR_EMAIL = "christian.oreilly@epfl.ch"
 VERSION = "0.4.0"
 REQUIRED = ["nat", "PySide", "numpy", "parse", "metapub", "pyzotero", "GitPython",
