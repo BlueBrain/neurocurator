@@ -1,5 +1,7 @@
 _Tell in the title the affected section (References, Annotations, Search, Notebooks, Installation, Packaging) between square brackets and what doesn't work._
 
+_Please **do not** specify 'Assignees', 'Labels', 'Projects' or 'Milestones'._
+
 Steps:
 
 1. _Describe the first step, after opening NeuroCurator, to reproduce the non expected behavior._
