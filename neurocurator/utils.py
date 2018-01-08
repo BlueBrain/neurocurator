@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 __author__ = "Pierre-Alexandre Fonta"
 
 import os

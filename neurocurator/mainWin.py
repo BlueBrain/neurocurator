@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 __authors__ = ["Christian O'Reilly", "Pierre-Alexandre Fonta"]
 __maintainer__ = "Pierre-Alexandre Fonta"
 
