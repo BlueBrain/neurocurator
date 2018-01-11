@@ -4,7 +4,7 @@ __maintainer__ = "Pierre-Alexandre Fonta"
 from collections import OrderedDict
 from uuid import uuid4
 
-from PySide.QtCore import Slot, Qt, QSize
+from PySide.QtCore import Slot, QSize
 from PySide.QtGui import (QDialog, QComboBox, QFormLayout, QLineEdit,
                           QStackedWidget, QDialogButtonBox, QTableWidget,
                           QWidget, QTableWidgetItem, QAbstractItemView,
