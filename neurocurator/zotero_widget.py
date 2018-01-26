@@ -122,9 +122,7 @@ class ZoteroTableWidget(QWidget):
             # print("REFERENCE DATA: " + repr(reference_data))
             # /FIXME DEBUG.
             # TODO Implement an offline mode. Catch PyZoteroError.
-            reference_key = self._zotero.create_distant_reference(reference_data)
-            # TODO Implement an offline mode. Catch PyZoteroError.
-            reference = self._zotero.get_reference(reference_key)
+            reference = self._zotero.create_distant_reference(reference_data)
             source_index = self.view.model().sourceModel().add_reference(reference)
             proxy_index = self.view.model().mapFromSource(source_index)
             self.view.selectRow(proxy_index.row())
