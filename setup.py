@@ -1,64 +1,59 @@
-from distutils.core import setup
+__authors__ = ["Pierre-Alexandre Fonta", "Christian O'Reilly"]
+__maintainer__ = "Pierre-Alexandre Fonta"
+
 import os
 
-PACKAGE = "neurocurator"
-NAME = "neurocurator"
-DESCRIPTION = open(os.path.join(os.path.dirname(__file__), "README.md")).read()
-AUTHOR = "Christian O'Reilly, Pierre-Alexandre Fonta"
-AUTHOR_EMAIL = "christian.oreilly@epfl.ch"
-VERSION = "0.4.0"
-REQUIRED = ["nat", "PySide", "numpy", "parse", "metapub", "pyzotero", "GitPython",
-            "biopython", "beautifulsoup4", "quantities", "wand", "scipy", "pandas"]
+from setuptools import setup
 
-def is_package(path):
-    return (
-        os.path.isdir(path) and
-        os.path.isfile(os.path.join(path, '__init__.py'))
-        )
+VERSION = "0.4.1"
 
-def find_packages(path, base=""):
-    """ Find all packages in path """
-    packages = {}
-    for item in os.listdir(path):
-        dir = os.path.join(path, item)
-        if is_package( dir ):
-            if base:
-                module_name = "%(base)s.%(item)s" % vars()
-            else:
-                module_name = item
-            packages[module_name] = dir
-            packages.update(find_packages(dir, module_name))
-    return packages
+HERE = os.path.abspath(os.path.dirname(__file__))
 
-packages=find_packages(".")
+# Get the long description from the README file.
+# Convert to rst with: pandoc --from=markdown --to=rst README.md -o README.rst.
+with open(os.path.join(HERE, "README.rst"), encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
-    name=NAME,
-    packages=packages.keys(),
-    package_dir=packages,
-    version=VERSION, 
-    description=DESCRIPTION,
-    long_description=DESCRIPTION, #open("README.txt").read(),
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
-    maintainer=AUTHOR,
-    maintainer_email=AUTHOR_EMAIL,  
-    license='LICENSE.txt',
-    requires=REQUIRED,
-    install_requires=REQUIRED,
-    url="https://github.com/christian-oreilly/neurocurator",
-    classifiers=["Development Status :: 3 - Alpha",
-			"Environment :: MacOS X", #"Environment :: Win32 (MS Windows)",
-			"Environment :: X11 Applications",
-			"Intended Audience :: Developers",
-			"Intended Audience :: Science/Research",
-			"License :: Free for non-commercial use",
-			"License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-			"Natural Language :: English",
-			"Programming Language :: Python :: 3.4",
-			"Topic :: Scientific/Engineering"])
-
-	
-	
-	
-	
+    name="neurocurator",
+    version=VERSION,
+    description="Application to perform curation of neuroscientific literature.",
+    long_description=long_description,
+    keywords="neuroscience annotation curation literature modeling parameters",
+    url="https://github.com/BlueBrain/neurocurator",
+    author="Christian O'Reilly, Pierre-Alexandre Fonta",
+    author_email="christian.oreilly@epfl.ch, pierre-alexandre.fonta@epfl.ch",
+    # NB: 'If maintainer is provided, distutils lists it as the author in PKG-INFO'.
+    # https://docs.python.org/3/distutils/setupscript.html#meta-data
+    # maintainer="Pierre-Alexandre Fonta",
+    # maintainer_email="pierre-alexandre@epfl.ch",
+    license="GPLv3",
+    packages=["neurocurator"],
+    python_requires="~=3.4.0",  # Until #6 is solved.
+    install_requires=[
+        "nat==" + VERSION,
+        "pyside",
+        "numpy",
+        "pandas",
+        "wand"
+    ],
+    data_files=[("", ["LICENSE.txt"])],
+    entry_points={
+        # NB: gui_scripts: on Windows no console is attached (no stdout/stderr).
+        "console_scripts": ["neurocurator = neurocurator.__main__:main"]
+    },
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering",
+        "Environment :: X11 Applications :: Qt",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: Free for non-commercial use",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.4",
+        "Operating System :: MacOS",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows",
+        "Natural Language :: English"
+    ]
+)

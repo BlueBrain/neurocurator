@@ -10,7 +10,7 @@ from PySide.QtGui import QApplication
 from neurocurator.mainWin import Window
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication(sys.argv)
     window = Window()
     # FIXME DEBUG.
@@ -18,3 +18,7 @@ if __name__ == '__main__':
     # /FIXME DEBUG.
     window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()

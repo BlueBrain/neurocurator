@@ -1,17 +1,17 @@
-[Getting started](#getting-started) |
+[Getting Started](#getting-started) |
 [Releases](#releases) |
-[Status](#status) |
-[Requirements: macOS](#macos) |
-[Requirements: Ubuntu](#ubuntu) |
-[Packaging](#packaging)
+[Status](#status)
 
 # NeuroCurator
 
-Desktop application to perform systematic and collaborative curation of neuroscientific literature.
+Desktop application to perform systematic and collaborative curation of
+neuroscientific literature.
 
-This is a Graphical User Interface (GUI) for the Python package [NeuroAnnotation Toolbox (NAT)](https://github.com/BlueBrain/nat).
+This is a Graphical User Interface (GUI) for the Python package
+[NeuroAnnotation Toolbox (NAT)](https://github.com/BlueBrain/nat).
 
-This framework has been described in details in the following open-access paper: https://doi.org/10.3389/fninf.2017.00027.
+This framework has been described in details in the following open-access
+paper: https://doi.org/10.3389/fninf.2017.00027.
 
 With NeuroCurator, annotations are:
 - traceable,
@@ -20,74 +20,78 @@ With NeuroCurator, annotations are:
 
 ---
 
-## Getting started
+## Getting Started
 
-Install the [requirements](#requirements).
+**Requirements:**
 
-Download the packaged executable of the [latest release](https://github.com/BlueBrain/neurocurator/releases/latest).
+System side:
+
+- [Git 1.7.0+](https://git-scm.com/downloads)
+- [ImageMagick 6](http://docs.wand-py.org/en/latest/guide/install.html)
+- [Python 3.4*](https://www.python.org/downloads/)
+- [Qt 4.8.7*](https://doc.qt.io/archives/qt-4.8/supported-platforms.html)
+- [Miniconda*](https://conda.io/miniconda.html)
+
+Python side:
+
+- [NAT](https://github.com/BlueBrain/nat)
+- [PySide 1.2.4](https://wiki.qt.io/PySide)
+- [NumPy](http://www.numpy.org)
+- [pandas](https://pandas.pydata.org)
+- [Wand](http://docs.wand-py.org)
+
+*Miniconda is not required. It simplifies only temporary the installation:
+no need to compile Qt and to install manually Python 3.4.
+
+**Installation:**
+
+Create a virtual environment with Python 3.4:
+```bash
+conda create -y --name nc python=3.4
+```
+
+Switch to the virtual environment:
+```bash
+source activate nc
+```
+
+Install PySide 1.2.4 and Qt 4.8.7 from [conda-forge](https://conda-forge.org):
+```bash
+conda install -y pyside --channel conda-forge
+```
+
+Install NeuroCurator:
+```bash
+pip install nat
+pip install neurocurator --no-deps
+```
 
 Launch NeuroCurator:
+```bash
+neurocurator
 ```
-./neurocurator_<version>_<operating system>_x64
-```
-(in the folder where you downloaded the file)
+
+For the future uses:
+1. enter the virtual environment: `source activate nc`
+2. launch NeuroCurator: `neurocurator`
+3. use NeuroCurator
+4. close NeuroCurator
+5. exit the virtual environment: `source deactivate`
 
 ## Releases
 
-In the [dedicated section](https://github.com/BlueBrain/neurocurator/releases/), you can find:
-- the latest version,
-- the notable changes of each version,
-- the packaged executables for macOS and Ubuntu.
+Versions and their notable changes are listed in the
+[releases section](https://github.com/BlueBrain/neurocurator/releases/).
 
 ## Status
 
 Created during 2016.
 
-Ongoing reengineering in the branch _refactor-architecture_.
+Ongoing stabilization and reengineering in the branch _refactor-architecture_.
 
 The branch _refactor-architecture_ is **not** intended to be used by end-users.
 
 New features, bug fixes and improvements are done on the reengineered code sections.
 
-When a reengineered code section is stable, it's merged into the branch _master_ and a release is published.
-
-## Requirements
-
-### macOS
-
-Work on El Capitan (10.11.x) and higher.
-
-The packaged executable needs [Git](https://git-scm.com) and [ImageMagick](https://www.imagemagick.org) **6**.
-
-ImageMagick 6 can be installed with [Homebrew](https://brew.sh):
-```
-brew install imagemagick@6
-brew link imagemagick@6 --force
-```
-
-Git can also be installed with Homebrew:
-```
-brew install git
-```
-
-You might require to allow execution:
-```
-sudo chmod u+x neurocurator_<version>_mac_x64
-```
-
-### Ubuntu
-
-Should work on 16.04.x LTS (Xenial) and higher, and also on other Debian-based distributions.
-
-The packaged executable needs [Git](https://git-scm.com):
-```
-sudo apt install git
-```
-
-## Packaging
-
-The code from the branch _master_ of NeuroCurator and [NAT](https://github.com/BlueBrain/nat) is used.
-
-The packaged executables of NeuroCurator are created on up-to-date 64 bits OS X El Capitan and Ubuntu 16.04 LTS systems.
-
-NeuroCurator's configuration is stored in a *settings.ini* file created alongside the executable.
+When a reengineered code section is stable, it's merged into the branch
+_master_ and a release is published.

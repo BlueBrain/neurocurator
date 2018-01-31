@@ -1,18 +1,14 @@
 __author__ = "Pierre-Alexandre Fonta"
 
 import os
-import sys
 
 from PySide.QtCore import Qt
 from PySide.QtGui import QFormLayout
 
 
-def working_directory():
-    """Return the working directory according to it being bundled/frozen."""
-    if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
-    else:
-        return os.path.dirname(__file__)
+def package_directory():
+    """Return the absolute path to the directory containing the package files."""
+    return os.path.abspath(os.path.dirname(__file__))
 
 
 def configure_form_layout(form_layout):

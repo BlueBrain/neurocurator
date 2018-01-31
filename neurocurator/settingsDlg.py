@@ -7,7 +7,7 @@ import os
 
 from PySide import QtGui, QtCore
 
-from neurocurator import utils
+from neurocurator.utils import package_directory
 
 
 def getSettings(popDialog = False):
@@ -29,7 +29,7 @@ def getSettings(popDialog = False):
         
 
 class Settings:
-    fileName = os.path.join(utils.working_directory(), 'settings.ini')
+    fileName = os.path.join(package_directory(), 'settings.ini')
     def __init__(self):
         self.config = configparser.ConfigParser()
         with open(Settings.fileName) as configfile: # Raise an exception if file does not exist
@@ -114,7 +114,7 @@ class SettingsDlg(QtGui.QDialog):
 
         config = self.projectSettings.writeConfig(config)
 
-        with open(os.path.join(utils.working_directory(), 'settings.ini'), 'w') as configfile:
+        with open(os.path.join(package_directory(), 'settings.ini'), 'w') as configfile:
           config.write(configfile)
 
         self.accept() 

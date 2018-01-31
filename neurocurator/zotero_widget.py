@@ -14,7 +14,7 @@ from neurocurator.zotero_thread import ZoteroRefreshThread
 
 class ZoteroTableWidget(QWidget):
 
-    def __init__(self, settings, work_dir, check_id_fct, annotations_path, parent=None):
+    def __init__(self, settings, directory, check_id_fct, annotations_path, parent=None):
         super().__init__(parent)
         # FIXME Delayed refactoring of check_id_fct and annotations_path.
 
@@ -23,7 +23,7 @@ class ZoteroTableWidget(QWidget):
         library_id = settings["libraryID"]
         library_type = settings["libraryType"]
         api_key = settings["apiKey"]
-        self._zotero = ZoteroWrap(library_id, library_type, api_key, work_dir)
+        self._zotero = ZoteroWrap(library_id, library_type, api_key, directory)
 
         # Widgets section.
 
