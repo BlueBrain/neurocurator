@@ -41,9 +41,12 @@ Python side:
 - [Wand](http://docs.wand-py.org)
 
 *Miniconda is not required. It simplifies only temporary the installation:
-no need to compile Qt and to install manually Python 3.4.
+no need to compile Qt and to install manually Python 3.4. It also makes the
+installation easier on Windows (pandas).
 
 **Installation:**
+
+Instructions for macOS 10.13+, Ubuntu 16.04+, Windows 10+.
 
 Create a virtual environment with Python 3.4:
 ```bash
@@ -51,8 +54,15 @@ conda create -y --name nc python=3.4
 ```
 
 Switch to the virtual environment:
+
+On macOS and Linux:
 ```bash
 source activate nc
+```
+
+On Windows:
+```bash
+activate nc
 ```
 
 Install PySide 1.2.4 and Qt 4.8.7 from [conda-forge](https://conda-forge.org):
@@ -60,9 +70,22 @@ Install PySide 1.2.4 and Qt 4.8.7 from [conda-forge](https://conda-forge.org):
 conda install -y pyside --channel conda-forge
 ```
 
-Install NeuroCurator:
+Install NAT:
+
+On macOS and Linux:
 ```bash
 pip install nat
+```
+
+On Windows:
+```bash
+conda install -y pandas
+pip install beautifulsoup4 gitpython lxml numpy parse pyzotero quantities scipy wand
+pip install nat --no-deps
+```
+
+Install NeuroCurator:
+```bash
 pip install neurocurator --no-deps
 ```
 
@@ -72,11 +95,11 @@ neurocurator
 ```
 
 For the future uses:
-1. enter the virtual environment: `source activate nc`
+1. enter the virtual environment: `source activate nc` or  `activate nc`
 2. launch NeuroCurator: `neurocurator`
 3. use NeuroCurator
 4. close NeuroCurator
-5. exit the virtual environment: `source deactivate`
+5. exit the virtual environment: `source deactivate` or `deactivate`
 
 ## Releases
 
