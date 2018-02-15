@@ -53,7 +53,7 @@ class RequiredTagsTableView(QtGui.QTableView):
 
 class RequiredTagsListModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, parent, colHeader = ['Required categorie', 'Selected tag'], *args):
+    def __init__(self, parent, colHeader = ['Required categories', 'Selected tag'], *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
 
         self.colHeader             = colHeader
