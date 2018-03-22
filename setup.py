@@ -10,8 +10,7 @@ VERSION = "0.4.2"
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file.
-# Convert to rst with: pandoc --from=markdown --to=rst README.md -o README.rst.
-with open(os.path.join(HERE, "README.rst"), encoding="utf-8") as f:
+with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
@@ -19,6 +18,7 @@ setup(
     version=VERSION,
     description="Application to perform curation of neuroscientific literature.",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     keywords="neuroscience annotation curation literature modeling parameters",
     url="https://github.com/BlueBrain/neurocurator",
     author="Christian O'Reilly, Pierre-Alexandre Fonta",
