@@ -22,7 +22,7 @@ With NeuroCurator, annotations are:
 
 ## Getting Started
 
-**Requirements:**
+### Requirements:
 
 System side:
 
@@ -44,16 +44,16 @@ Python side:
 no need to compile Qt and to install manually Python 3.4. It also makes the
 installation easier on Windows (pandas).
 
-**Installation:**
+### Installation:
 
 Instructions for macOS 10.13+, Ubuntu 16.04+, Windows 10+.
 
-Create a virtual environment with Python 3.4:
+**1 - Create a virtual environment with Python 3.4:**
 ```bash
 conda create -y --name nc python=3.4
 ```
 
-Switch to the virtual environment:
+**2 - Switch to the virtual environment:**
 
 On macOS and Linux:
 ```bash
@@ -65,12 +65,12 @@ On Windows:
 activate nc
 ```
 
-Install PySide 1.2.4 and Qt 4.8.7 from [conda-forge](https://conda-forge.org):
+**3 -  Install PySide 1.2.4 and Qt 4.8.7 from [conda-forge](https://conda-forge.org):**
 ```bash
 conda install -y pyside --channel conda-forge
 ```
 
-Install NAT:
+**4 - Install NAT:**
 
 On macOS and Linux:
 ```bash
@@ -84,10 +84,12 @@ pip install beautifulsoup4 gitpython lxml numpy parse pyzotero quantities scipy 
 pip install nat --no-deps
 ```
 
-Install NeuroCurator:
+**5 - Install NeuroCurator:**
 ```bash
 pip install neurocurator --no-deps
 ```
+
+### Use
 
 Launch NeuroCurator:
 ```bash
