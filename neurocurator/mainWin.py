@@ -4,18 +4,19 @@ __maintainer__ = "Pierre-Alexandre Fonta"
 import getpass
 import os
 import pickle
-import sys
+import subprocess
 import time
 import webbrowser
 from glob import glob
 from os.path import join
-from subprocess import call
 from threading import Thread
 
 import numpy as np
 from PySide import QtGui, QtCore
+from PySide.QtCore import QUrl
 from PySide.QtCore import Qt, QModelIndex, Slot
 from PySide.QtGui import QAction, QItemSelection
+from PySide.QtGui import QDesktopServices
 
 from nat.annotation import Annotation
 from nat.gitManager import GitManager, GitMngError
@@ -63,6 +64,9 @@ class Window(QtGui.QMainWindow):
 
     def __init__(self):
         super(Window, self).__init__()
+
+        # TODO Remove after the integration of the Annotation Viewer.
+        self.annotation_viewer_process = None
 
         # Annotation curently being displayed, modified, or created
         self.currentAnnotation = None
@@ -218,6 +222,13 @@ class Window(QtGui.QMainWindow):
             msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
             if msgBox.exec_() == QtGui.QMessageBox.Yes:
                 self.pushToServer()
+
+        # TODO Remove after the integration of the Annotation Viewer.
+        try:
+            self.annotation_viewer_process.terminate()
+            print("Annotation Viewer closed.")
+        except AttributeError:
+            pass
 
         event.accept()
 
@@ -443,8 +454,8 @@ class Window(QtGui.QMainWindow):
         self.annotSearchWgt.annotationSelected.connect(self.viewAnnotation)
         self.paramSearchWgt.parameterSelected.connect(self.viewParameter)
         
-        self.mainTabs.addTab(self.searchTabs, "Search")    
-        
+        self.mainTabs.addTab(self.searchTabs, "Search")
+
         #self.mainWidget.setSizes([1,1])
         #self.mainWidget.setStretchFactor(0, 1)
         #self.mainWidget.setStretchFactor(1, 1)
@@ -894,34 +905,44 @@ class Window(QtGui.QMainWindow):
     def removeSuggestedTag(self, tag):
         self.addTagToAnnotation(tag.id)
 
-
-
     def openPDF(self):
-        pdfFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pdf"
+        base_path = join(self.dbPath, Id2FileName(self.IdTxt.text()))
+        pdf_path = base_path + ".pdf"
+        data_path = base_path + ".pcr"
 
-        if not os.path.isfile(pdfFileName):
+        if not os.path.isfile(pdf_path):
             msgBox = QtGui.QMessageBox(self)
             msgBox.setWindowTitle("Missing PDF")
             msgBox.setText("The PDF file seems to be missing. Do you want to attach one?")
             msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
             msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
             if msgBox.exec_() == QtGui.QMessageBox.Yes:
-                fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
-                if fileName != '':
-                    self.importPDF()
-                    #self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
-                else:
+                # self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
+                if not self.importPDF():
                     return
             else:
                 return
-                                
-        if sys.platform.startswith('darwin'):
-            call(('open', pdfFileName))
-        elif os.name == 'nt':
-            os.startfile(pdfFileName)
-        elif os.name == 'posix':
-            call(('xdg-open', pdfFileName))
 
+        # TODO Adapt the following after the integration of the Annotation Viewer.
+
+        # TODO Remove after the Annotation Viewer can handle text selection.
+        QDesktopServices.openUrl(QUrl.fromLocalFile(pdf_path))
+
+        # Close the Annotation Viewer if it is opened.
+        try:
+            self.annotation_viewer_process.terminate()
+            print("Annotation Viewer closed.")
+        except AttributeError:
+            pass
+
+        args = ["/usr/local/bin/python3", "./annotation_viewer.py", pdf_path]
+
+        # NB: Currently an empty PCR file is created when importing a PDF.
+        if os.path.isfile(data_path) and os.path.getsize(data_path) > 0:
+            args.append(data_path)
+
+        print("\nStarting Annotation Viewer...")
+        self.annotation_viewer_process = subprocess.Popen(args)
 
     def checkSavingAnnot(self):
         if self.needSaving:
@@ -1110,7 +1131,7 @@ class Window(QtGui.QMainWindow):
 
         if not checkID(self.IdTxt.text()):
             errorMessage(self, "Error", "This ID seem to be invalid.")
-            return    
+            return
 
 
         fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
@@ -1139,10 +1160,14 @@ class Window(QtGui.QMainWindow):
                 thread.start()  
                 return False
 
-            with open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore'): 
-                self.gitMng.addFiles([saveFileName + ".pcr"])
-                
+            # FIXME Hot fix 18-05-18 (os.path.isfile).
+            pcr_path = saveFileName + ".pcr"
+            if not os.path.isfile(pcr_path):
+                with open(pcr_path, "w", encoding="utf-8", errors="ignore"):
+                    self.gitMng.addFiles([pcr_path])
+
             return True
+
         return False
 
 
