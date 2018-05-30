@@ -7,16 +7,16 @@ The Annotation Viewer displays the text annotations made with
 It can also load and display the annotations made on and exported from the
 [OpenMinTeD platform](https://services.openminted.eu).
 
-No interaction is **currently** possible with the Annotation Viewer.
-As part of this limitation, **text cannot be selected**. This is why the
-default PDF Reader of the user computer is still launched.
+No interaction is **currently** possible with the Annotation Viewer. This implies:
+- text cannot be selected, but the default OS PDF Reader is still launched,
+- scale factor ('zoom') is hard coded, it should be adapted to the screen
+[here](https://github.com/BlueBrain/neurocurator/blob/3bb2f0e906a42bdd5bd680644a286ba91f43510a/neurocurator/annotation_viewer.py#L431).
 
 ---
 
 ## Screenshot
 
-One multiline and multicolumn annotation visualized. 
-Two multiline annotations visualized.
+Two multiline annotations visualized with one also being multicolumn . 
 
 ![Annotation Viewer screenshot](screenshots/multiline_multicolumn_annotations.jpeg)
 
@@ -41,23 +41,23 @@ requirements as NeuroCurator**.
 
 ### Installation
 
-#### Instructions for Ubuntu 16.04+
+**Instructions for Ubuntu 16.04+**
 
 ```bash
 sudo apt install python3-poppler-qt5
 ```
 
-#### Instructions for macOS 10.13+
+**Instructions for macOS 10.13+**
 
 We will use [Homebrew](https://brew.sh) to simplify the installations.
 
-**Python** - https://formulae.brew.sh/formula/python
+1 - Python - https://formulae.brew.sh/formula/python
 
 ```bash
 brew install python
 ```
 
-**GCC** - https://formulae.brew.sh/formula/gcc
+2 - GCC - https://formulae.brew.sh/formula/gcc
 
 ```bash
 brew install gcc
@@ -66,7 +66,7 @@ brew install gcc
 alias gcc=gcc-7
 ```
 
-**Qt** - https://formulae.brew.sh/formula/qt
+3 - Qt - https://formulae.brew.sh/formula/qt
 
 ```bash
 brew install qt
@@ -74,7 +74,7 @@ brew install qt
 export PATH="/usr/local/opt/qt/bin:$PATH"
 ```
 
-**PyQt** - https://formulae.brew.sh/formula/pyqt
+4 - PyQt - https://formulae.brew.sh/formula/pyqt
 
 ```bash
 brew install pyqt --without-python@2
@@ -83,13 +83,13 @@ brew install pyqt --without-python@2
 ln -s /usr/local/Cellar/pyqt/5.10.1/share/sip/Qt5 /usr/local/share/sip/PyQt5
 ```
 
-**Poppler** - https://formulae.brew.sh/formula/poppler
+5 - Poppler - https://formulae.brew.sh/formula/poppler
 
 ```bash
 brew install poppler --with-qt
 ```
 
-**python-poppler-qt5** - https://github.com/wbsoft/python-poppler-qt5
+6 - python-poppler-qt5 - https://github.com/wbsoft/python-poppler-qt5
 
 ```bash
 git clone https://github.com/wbsoft/python-poppler-qt5
@@ -104,7 +104,7 @@ git pull origin pull/21/head
 /usr/local/bin/python3 setup.py install
 ```
 
-#### Test if successful
+**Test if successful**
 
 This command should return without errors:
 
