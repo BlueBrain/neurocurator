@@ -5,7 +5,8 @@ import os
 
 from setuptools import setup
 
-VERSION = "0.4.2"
+NEUROCURATOR_VERSION = "0.4.3"
+NAT_MINIMUM_VERSION = "0.4.2"
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -16,7 +17,7 @@ with open(os.path.join(HERE, "README.rst"), encoding="utf-8") as f:
 
 setup(
     name="neurocurator",
-    version=VERSION,
+    version=NEUROCURATOR_VERSION,
     description="Application to perform curation of neuroscientific literature.",
     long_description=long_description,
     keywords="neuroscience annotation curation literature modeling parameters",
@@ -31,7 +32,7 @@ setup(
     packages=["neurocurator"],
     python_requires="~=3.4.0",  # Until #6 is solved.
     install_requires=[
-        "nat==" + VERSION,
+        "nat>=" + NAT_MINIMUM_VERSION,
         "pyside",
         "numpy",
         "pandas",
