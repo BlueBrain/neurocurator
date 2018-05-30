@@ -2,6 +2,8 @@
 [Releases](#releases) |
 [Status](#status)
 
+**Annotation Viewer specific instructions: [ANNOTATION_VIEWER.md](ANNOTATION_VIEWER.md).**
+
 # NeuroCurator
 
 Desktop application to perform systematic and collaborative curation of
