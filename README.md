@@ -1,4 +1,5 @@
 [Getting Started](#getting-started) |
+[Upgrade](#upgrade) |
 [Releases](#releases) |
 [Status](#status)
 
@@ -102,6 +103,34 @@ For the future uses:
 3. use NeuroCurator
 4. close NeuroCurator
 5. exit the virtual environment: `source deactivate` or `deactivate`
+
+## Upgrade
+
+Instructions for macOS 10.13+, Ubuntu 16.04+, Windows 10+.
+
+**1 - Switch to the virtual environment:**
+
+On macOS and Linux:
+```bash
+source activate nc
+```
+
+On Windows:
+```bash
+activate nc
+```
+
+**2 - Upgrade NAT:**
+
+```bash
+pip install --upgrade nat
+```
+
+**3 - Upgrade NeuroCurator:**
+
+```bash
+pip install --upgrade neurocurator --no-deps
+```
 
 ## Releases
 
