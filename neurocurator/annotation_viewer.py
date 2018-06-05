@@ -254,7 +254,7 @@ class Mapper:
             rx = chunk.x()
             rw = chunk.width()
             rh = chunk.height()
-            return min(rx, page_width - rx) < 30 and rw / rh < 0.1
+            return min(rx, page_width - rx) < 30 and rh / rw > 5
 
         def detect_ysplits(chunks):
             slices = list(((ceil(x.top()), ceil(x.bottom())) for x in chunks))
