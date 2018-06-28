@@ -1,6 +1,7 @@
 [Getting Started](#getting-started) |
 [Upgrade](#upgrade) |
 [Releases](#releases) |
+[Roadmap](#roadmap) |
 [Status](#status)
 
 **For the Annotation Viewer or the integration with the
@@ -141,6 +142,19 @@ pip install --upgrade neurocurator --no-deps
 
 Versions and their notable changes are listed in the
 [releases section](https://github.com/BlueBrain/neurocurator/releases/).
+
+## Roadmap
+
+1. [_ongoing_] Make the annotations publishable into a
+[Blue Brain Nexus](https://bluebrain.github.io/nexus/) instance.
+2. [_ongoing_] Stabilize NeuroCurator and NAT (Software Architecture).
+3. Remove legacy dependencies in NeuroCurator (Qt 4 and Python 3.4).
+4. Integrate fully the
+[Annotation Viewer](https://github.com/BlueBrain/neurocurator/blob/annotation_viewer/ANNOTATION_VIEWER.md)
+into NeuroCurator.
+5. Semi-automate the Knowledge Extraction process.
+
+Updated on 28.06.18.
 
 ## Status
 
