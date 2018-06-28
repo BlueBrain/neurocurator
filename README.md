@@ -3,6 +3,11 @@
 [Releases](#releases) |
 [Status](#status)
 
+**For the Annotation Viewer or the integration with the
+[OpenMinTeD](https://openminted.eu)
+platform, please refer to this
+[branch](https://github.com/BlueBrain/neurocurator/blob/annotation_viewer/ANNOTATION_VIEWER.md).**
+
 # NeuroCurator
 
 Desktop application to perform systematic and collaborative curation of
