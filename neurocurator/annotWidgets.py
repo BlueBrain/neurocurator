@@ -766,10 +766,11 @@ class EditAnnotTextWgt(QtGui.QWidget):
         self.contextTxt.setText(fileText[contextStart:contextEnd])
         
         localizer = TextLocalizer(self.textToAnnotateTxt.text(), starts[0])
+
+        # FIXME A new Annotation shouldn't be created here!!
         self.container.currentAnnotation = Annotation(self.container.commentEdt.toPlainText(), 
                                                     [self.container.parent.username], 
                                                     self.container.parent.IdTxt.text(), localizer)
-
 
         self.startTxt.setText(str(starts[0]))
         ID = self.container.parent.IdTxt.text()
@@ -831,9 +832,7 @@ class EditAnnotTextWgt(QtGui.QWidget):
             self.container.currentAnnotation.localizer = TextLocalizer(self.textToAnnotateTxt.text(), int(self.startTxt.text()))
         except ValueError:
             msgBox = QtGui.QMessageBox(self)
-            msgBox.setWindowTitle("Invalide localizer")
-            msgBox.setText("Before saving changes to this annotation, you must enter and \"Annotated text\" and then localize it.")
+            msgBox.setWindowTitle("Invalid localizer")
+            msgBox.setText("Before saving changes to this annotation, you must enter an \"Annotated text\" and then localize it.")
             msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
             msgBox.exec_()
-
-
