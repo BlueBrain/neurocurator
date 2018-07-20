@@ -3,25 +3,28 @@
 __author__ = 'oreilly'
 __email__  = 'christian.oreilly@epfl.ch'
 
-from PySide import QtGui, QtCore
+from PyQt5.QtCore import Qt, QModelIndex, QAbstractItemModel
+from PyQt5.QtWidgets import QTreeView
 
-class TreeModel(QtCore.QAbstractItemModel):
 
-    def __init__(self, tree):
-        super(TreeModel, self).__init__()
+class TreeModel(QAbstractItemModel):
+
+    def __init__(self, tree, parent=None):
+        super().__init__(parent)
+
         self.__tree = tree
+
         if len(tree):
             self.__current = tree[0]
 
-
     def flags(self, index):
-        flag = QtCore.Qt.ItemIsEnabled
+        flag = Qt.ItemIsEnabled
         if index.isValid():
-            flag |= QtCore.Qt.ItemIsSelectable
+            flag |= Qt.ItemIsSelectable
         return flag
 
 
-    def index(self, row, column, parent=QtCore.QModelIndex()):
+    def index(self, row, column, parent=QModelIndex()):
         if parent.isValid():
             node = parent.internalPointer().children[row]
         else:
@@ -32,7 +35,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
 
     def parent(self, index):
-        node = QtCore.QModelIndex()
+        node = QModelIndex()
         if index.isValid():
             nodeS = index.internalPointer()
             parent = nodeS.parent
@@ -41,34 +44,34 @@ class TreeModel(QtCore.QAbstractItemModel):
         return node
 
 
-    def rowCount(self, index=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         count = len(self.__tree)
-        node = index.internalPointer()
+        node = parent.internalPointer()
         if node is not None:
             count = len(node.children)
         return count
 
 
-    def columnCount(self, index=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 1
 
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         data = None
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             node = index.internalPointer()
             data = node.txt
 
-        if role == QtCore.Qt.UserRole:
+        if role == Qt.UserRole:
             node = index.internalPointer()
             data = node.id
 
         return data
 
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=Qt.DisplayRole):
         result = True
-        if role == QtCore.Qt.EditRole and value != "":
+        if role == Qt.EditRole and value != "":
             node = index.internalPointer()
             node.text = value
             result = True
@@ -85,23 +88,23 @@ class TreeModel(QtCore.QAbstractItemModel):
         node.index = index
         return node.index
 
-    def headerData(self, section, orientation, role):
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
         return None
 
 
 
 
 
-class TreeView(QtGui.QTreeView):
+class TreeView(QTreeView):
 
     def __init__(self, model, parent=None):
-        super(TreeView, self).__init__(parent)
+        super().__init__(parent)
+
         self.__model = model
         self.setModel(model)
 
-        self.header().hide() 
+        self.header().hide()
 
         index = self.__model.index(0, 0)
         if not index is None:
             self.setCurrentIndex(index)
-

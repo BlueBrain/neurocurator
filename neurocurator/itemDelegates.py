@@ -2,32 +2,37 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui, QtCore
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtWidgets import (QItemDelegate, QPushButton, QCheckBox,
+                             QStyledItemDelegate, QLineEdit, QMessageBox,
+                             QComboBox)
 
-
+from nat.modelingParameter import getParameterTypes
 from nat.values import unitIsValid, statisticList
-from nat.modelingParameter import getParameterTypes #, expPropertyStrList
-
 from .autocomplete import AutoCompleteEdit
 
-parameterTypes         = getParameterTypes()
+
+parameterTypes = getParameterTypes()
+
 
 class ParamTypeCbo(AutoCompleteEdit):
+
     def __init__(self, parent=None):
-        super(ParamTypeCbo, self).__init__(parent)
+        super().__init__(parent)
         self.setModel([paramType.name for paramType in parameterTypes])
 
 
-class ButtonDelegate(QtGui.QItemDelegate):
+class ButtonDelegate(QItemDelegate):
     """
     A delegate that places a fully functioning QPushButton in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent):
+
+    def __init__(self, parent=None):
         # The parent is not an optional argument for the delegate as
         # we need to reference it in the paint method (see below)
-        QtGui.QItemDelegate.__init__(self, parent)
+        super().__init__(parent)
  
     def paint(self, painter, option, index):
         # This method will be called every time a particular cell is
@@ -38,20 +43,21 @@ class ButtonDelegate(QtGui.QItemDelegate):
         # connect its clicked signal to a slot in the parent view so 
         # we are notified when its used and can do something. 
         if not self.parent().indexWidget(index):
-            button = QtGui.QPushButton("delete", self.parent(), clicked=self.parent().cellButtonClicked)
+            button = QPushButton("delete", self.parent(), clicked=self.parent().cellButtonClicked)
             button.row = index.row()
             self.parent().setIndexWidget(index, button)
 
 
-class CheckBoxDelegate(QtGui.QItemDelegate):
+class CheckBoxDelegate(QItemDelegate):
     """
     A delegate that places a fully functioning QPushButton in every
     cell of the column to which it's applied
     """
-    def __init__(self, parent):
+
+    def __init__(self, parent=None):
         # The parent is not an optional argument for the delegate as
         # we need to reference it in the paint method (see below)
-        QtGui.QItemDelegate.__init__(self, parent)
+        super().__init__(parent)
  
     def paint(self, painter, option, index):
         # This method will be called every time a particular cell is
@@ -62,7 +68,7 @@ class CheckBoxDelegate(QtGui.QItemDelegate):
         # connect its clicked signal to a slot in the parent view so 
         # we are notified when its used and can do something. 
         if not self.parent().indexWidget(index):
-            checkBox = QtGui.QCheckBox(parent=self.parent(), clicked=self.parent().checkBoxClicked)
+            checkBox = QCheckBox(parent=self.parent(), clicked=self.parent().checkBoxClicked)
             checkBox.row = index.row()
             self.parent().setIndexWidget(index, checkBox)
         else:
@@ -73,44 +79,44 @@ class CheckBoxDelegate(QtGui.QItemDelegate):
 
 
 
-class DoubleDelegate(QtGui.QStyledItemDelegate):
+class DoubleDelegate(QStyledItemDelegate):
 
-    def __init__(self, parent):
-        super(DoubleDelegate, self).__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def createEditor(self, parent, option=None, index=None):
-        edit = QtGui.QLineEdit(parent)
-        edit.setValidator(QtGui.QDoubleValidator())
+        edit = QLineEdit(parent)
+        edit.setValidator(QDoubleValidator())
         return edit
 
 
-class UnitDelegate(QtGui.QStyledItemDelegate):
+class UnitDelegate(QStyledItemDelegate):
 
-    def __init__(self, parent):
-        super(UnitDelegate, self).__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def createEditor(self, parent, option=None, index=None):
-        return QtGui.QLineEdit(parent=parent)
+        return QLineEdit(parent=parent)
 
     def setModelData(self, editor, model, index):
         if unitIsValid(editor.text()):
             model.setData(index, editor.text()) #, QtGui.Qt.EditRole)
         else:
-            msgBox = QtGui.QMessageBox()
+            msgBox = QMessageBox()
             msgBox.setWindowTitle("Invalid parameter unit")
             msgBox.setText("This unit is not valid.")
             msgBox.exec_()             
 
 
-class ComboBoxDelegate(QtGui.QStyledItemDelegate):
+class ComboBoxDelegate(QStyledItemDelegate):
 
-    typeSelected = QtCore.Signal(str)
+    typeSelected = pyqtSignal(str)
 
-    def __init__(self, parent):
-        super(ComboBoxDelegate, self).__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def createEditor(self, parent, option=None, index=None):
-        self.comboBox = QtGui.QComboBox(parent)
+        self.comboBox = QComboBox(parent)
         self.comboBox.currentIndexChanged.connect(self.currentIndexChanged)
         return self.comboBox
 
@@ -145,7 +151,7 @@ class ComboBoxDelegate(QtGui.QStyledItemDelegate):
 class StatisticsDelegate(ComboBoxDelegate):
 
     def createEditor(self, parent, option=None, index=None):
-        super(StatisticsDelegate, self).createEditor(parent, option, index)
+        super().createEditor(parent, option, index)
         self.comboBox.addItems(statisticList)
         return self.comboBox
 
@@ -166,12 +172,12 @@ class ParamTypeDelegate(ComboBoxDelegate):
         return self.comboBox
 
 
-class AutoCompleteDelegate(QtGui.QStyledItemDelegate):
+class AutoCompleteDelegate(QStyledItemDelegate):
 
     #typeSelected = QtCore.Signal(str)
 
-    def __init__(self, parent):
-        super(AutoCompleteDelegate, self).__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def createEditor(self, parent, option=None, index=None):
         self.comboBox = AutoCompleteEdit(parent)
@@ -205,14 +211,14 @@ class AutoCompleteDelegate(QtGui.QStyledItemDelegate):
 
 class ReqTagDelegate(AutoCompleteDelegate):
 
-    cboNeedPopulation = QtCore.Signal(str)
+    cboNeedPopulation = pyqtSignal(str)
 
     def createEditor(self, parent, option=None, index=None):
-        super(ReqTagDelegate, self).createEditor(parent, option, index)
+        super().createEditor(parent, option, index)
         model = index.model() 
         row = index.row()
         index = model.index(row, 0)
-        paramTypeName = model.data(index, QtCore.Qt.UserRole)
+        paramTypeName = model.data(index, Qt.UserRole)
         self.initialText = model.data(model.index(row, 1))
         self.cboNeedPopulation.emit(paramTypeName)    
         #self.comboBox.enterKeyPressed.connect(self.enterKeyPressed)

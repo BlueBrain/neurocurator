@@ -11,11 +11,13 @@ from os.path import join
 from threading import Thread
 
 import numpy as np
-from PySide import QtGui, QtCore
-from PySide.QtCore import QUrl
-from PySide.QtCore import Qt, QModelIndex, Slot
-from PySide.QtGui import QAction, QItemSelection
-from PySide.QtGui import QDesktopServices
+from PyQt5.QtCore import QUrl, pyqtSlot, pyqtSignal, QItemSelection, Qt, QModelIndex
+from PyQt5.QtGui import QIcon, QDesktopServices
+from PyQt5.QtWidgets import (QAction, QMainWindow, QLabel, QMessageBox, QDialog,
+                             QTabWidget, QSplitter, QWidget, QVBoxLayout,
+                             QGroupBox, QPushButton, QLineEdit, QGridLayout,
+                             QTableView, QAbstractItemView, QListWidget,
+                             QListWidgetItem, QApplication, QFileDialog)
 
 from nat.annotation import Annotation
 from nat.gitManager import GitManager, GitMngError
@@ -41,11 +43,11 @@ from .tagWidget import TagWidget
 from .uiUtilities import errorMessage, disableTextWidget
 
 
-class Window(QtGui.QMainWindow):
+class Window(QMainWindow):
 
-    selectedAnnotationChangedConfirmed = QtCore.Signal()
-    annotationCleared                  = QtCore.Signal()
-    savingNeeded                       = QtCore.Signal(bool)
+    selectedAnnotationChangedConfirmed = pyqtSignal()
+    annotationCleared                  = pyqtSignal()
+    savingNeeded                       = pyqtSignal(bool)
 
     def popUpSettingsDlg(self):
         self.settings = getSettings(True)
@@ -61,8 +63,8 @@ class Window(QtGui.QMainWindow):
             except KeyError:
                 self.popUpSettingsDlg()
 
-    def __init__(self):
-        super(Window, self).__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         # Annotation curently being displayed, modified, or created
         self.currentAnnotation = None
@@ -74,7 +76,7 @@ class Window(QtGui.QMainWindow):
 
         # FIXME Delayed refactoring. Use signals/slots to update the message.
         self._statusBar = self.statusBar()
-        self.statusLabel = QtGui.QLabel("")
+        self.statusLabel = QLabel("")
         self._statusBar.addWidget(self.statusLabel)
 
         # Get the system username. It will be used to identify the curator
@@ -113,11 +115,11 @@ class Window(QtGui.QMainWindow):
             except KeyError:
                 self.popUpSettingsDlg()
             except GitMngError as e:
-                msgBox = QtGui.QMessageBox()
-                msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
+                msgBox = QMessageBox()
+                msgBox.setStandardButtons(QMessageBox.Cancel)
                 msgBox.setWindowTitle("GIT repository is dirty")
                 msgBox.setText(str(e))
-                button = msgBox.addButton("commit", QtGui.QMessageBox.YesRole)
+                button = msgBox.addButton("commit", QMessageBox.YesRole)
                 msgBox.setDefaultButton(button)
                 msgBox.exec_()
                 if msgBox.clickedButton() == button:
@@ -130,8 +132,7 @@ class Window(QtGui.QMainWindow):
         try:
             self.restClient = RESTClient(self.settings.config["REST"]["serverURL"])
         except KeyError:
-            self.popUpSettingsDlg()            
-            
+            self.popUpSettingsDlg()
 
         # Load from config the path where the GIT database is located.
         self.dbPath   = os.path.abspath(os.path.expanduser(self.settings.config["GIT"]["local"]))
@@ -141,7 +142,6 @@ class Window(QtGui.QMainWindow):
         self.setupMenus()
 
         self.firstShow = True
-
 
     @property
     def needSaving(self):
@@ -202,21 +202,21 @@ class Window(QtGui.QMainWindow):
         self.settings.save()
 
         if self.needSaving:
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Unsaved annotation")
             msgBox.setText("The current annotations has been modified. Do you want to save it before quitting?")
-            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            if msgBox.exec_() == QtGui.QMessageBox.Yes:
+            msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+            msgBox.setDefaultButton(QMessageBox.Yes)
+            if msgBox.exec_() == QMessageBox.Yes:
                 self.saveAnnotation()
             
         if self.needPush:
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("GIT Push recommanded")
             msgBox.setText("Some files have been modified. Do you want to push these modifications to the server before quitting?")
-            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            if msgBox.exec_() == QtGui.QMessageBox.Yes:
+            msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+            msgBox.setDefaultButton(QMessageBox.Yes)
+            if msgBox.exec_() == QMessageBox.Yes:
                 self.pushToServer()
 
         event.accept()
@@ -243,7 +243,7 @@ class Window(QtGui.QMainWindow):
                     self.annotListTblWdg.setColumnWidth(i, width)
 
             if 'annotTableSortOrder' in self.settings.config['WINDOW']:
-                self.annotTableModel.sortOrder = QtCore.Qt.SortOrder(int(self.settings.config['WINDOW']['annotTableSortOrder']))
+                self.annotTableModel.sortOrder = Qt.SortOrder(int(self.settings.config['WINDOW']['annotTableSortOrder']))
 
             if 'annotTableSortCol' in self.settings.config['WINDOW']:
                 self.annotTableModel.sortCol = int(self.settings.config['WINDOW']['annotTableSortCol'])
@@ -272,7 +272,7 @@ class Window(QtGui.QMainWindow):
         
         #######################################################################
         # FILE MENU
-        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+        exitAction = QAction(QIcon('exit.png'), '&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
@@ -282,7 +282,7 @@ class Window(QtGui.QMainWindow):
 
         #######################################################################
         # EDIT MENU
-        openPreferencesAction = QtGui.QAction(QtGui.QIcon(), '&Preferences', self)
+        openPreferencesAction = QAction(QIcon(), '&Preferences', self)
         openPreferencesAction.setStatusTip('Edit preferences')
         openPreferencesAction.triggered.connect(self.editPreferences)
 
@@ -293,19 +293,19 @@ class Window(QtGui.QMainWindow):
 
         #######################################################################
         # COMMAND MENU
-        refreshLocalOntoAction = QtGui.QAction(QtGui.QIcon(), 'Refresh local &ontologies', self)
+        refreshLocalOntoAction = QAction(QIcon(), 'Refresh local &ontologies', self)
         refreshLocalOntoAction.setStatusTip('Refresh local ontologies')
         refreshLocalOntoAction.triggered.connect(self.refreshLocalOnto)
 
-        pushToServerAction = QtGui.QAction(QtGui.QIcon(), '&Push annotations to server', self)
+        pushToServerAction = QAction(QIcon(), '&Push annotations to server', self)
         pushToServerAction.setStatusTip('Push modifications to the server')
         pushToServerAction.triggered.connect(self.pushToServer)
 
-        addToOntologyAction = QtGui.QAction(QtGui.QIcon(), '&Add a term to ontologies', self)
+        addToOntologyAction = QAction(QIcon(), '&Add a term to ontologies', self)
         addToOntologyAction.setStatusTip('Add a new ontological term')
         addToOntologyAction.triggered.connect(self.addToOntology)
 
-        addModParamTypeAction = QtGui.QAction(QtGui.QIcon(), '&Add a modeling parameter type', self)
+        addModParamTypeAction = QAction(QIcon(), '&Add a modeling parameter type', self)
         addModParamTypeAction.setStatusTip('Add a new type of modeling parameter')
         addModParamTypeAction.triggered.connect(self.addModParamType)
         
@@ -335,19 +335,19 @@ class Window(QtGui.QMainWindow):
         self.zotero_menu.addAction(add_zotero_action)
         self.zotero_menu.addAction(edit_zotero_action)
 
-    @Slot()
+    @pyqtSlot()
     def zotero_refresh_started(self):
         self.zotero_menu.setDisabled(True)
         self.statusBar().showMessage("Refreshing the Zotero database...")
 
-    @Slot()
+    @pyqtSlot()
     def zotero_refresh_finished(self):
         self.zotero_menu.setEnabled(True)
         self.statusBar().showMessage("The Zotero database has been refreshed.", 10 * 1000)
 
     def addToOntology(self):
         addToOntoDlg = AddOntoTermDlg(self)
-        if addToOntoDlg.exec_() == QtGui.QDialog.Accepted:
+        if addToOntoDlg.exec_() == QDialog.Accepted:
             pass
 
 
@@ -366,11 +366,11 @@ class Window(QtGui.QMainWindow):
         self.setupEditAnnotGB()
         self.setupTagAnnotGB()
         self.modParamWgt = ParamModWgt(self)
-        self.expPropWgt  = ExpPropWgt(self)
+        self.expPropWgt = ExpPropWgt(self)
 
         # Main layout
         # FIXME Delayed refactoring. Create a dedicated QTabWidget object.
-        self.mainTabs = QtGui.QTabWidget(self)
+        self.mainTabs = QTabWidget(self)
 
         # FIXME Delayed refactoring. Do settings management with QSettings.
         zotero_settings = self.settings.config["ZOTERO"]
@@ -393,24 +393,24 @@ class Window(QtGui.QMainWindow):
 
         self.mainTabs.addTab(self.zotero_widget, "References (Zotero)")
 
-        self.taggingTabs = QtGui.QTabWidget(self)
+        self.taggingTabs = QTabWidget(self)
         self.taggingTabs.addTab(self.tagAnnotGroupBox, "Tagging")
         self.taggingTabs.addTab(self.modParamWgt,      "Parameters")
         #self.taggingTabs.addTab(self.expPropWgt,       "Relevant experimental properties")
 
-        self.rightPanel = QtGui.QSplitter(QtCore.Qt.Vertical, self)
-        self.rightPanel.setOrientation(QtCore.Qt.Vertical)
+        self.rightPanel = QSplitter(Qt.Vertical, self)
+        self.rightPanel.setOrientation(Qt.Vertical)
 
-        self.leftPanel = QtGui.QSplitter(QtCore.Qt.Vertical, self)
-        self.leftPanel.setOrientation(QtCore.Qt.Vertical)
+        self.leftPanel = QSplitter(Qt.Vertical, self)
+        self.leftPanel.setOrientation(Qt.Vertical)
 
-        paperPannel = QtGui.QWidget(self)
-        paperPannel.setLayout(QtGui.QVBoxLayout())
+        paperPannel = QWidget(self)
+        paperPannel.setLayout(QVBoxLayout())
         paperPannel.layout().addWidget(self.paperGroupBox)
         paperPannel.layout().addWidget(self.listAnnotGroupBox)
 
-        bottomPannel = QtGui.QWidget(self)
-        bottomPannel.setLayout(QtGui.QVBoxLayout())
+        bottomPannel = QWidget(self)
+        bottomPannel.setLayout(QVBoxLayout())
         bottomPannel.layout().addWidget(self.taggingTabs)
 
 
@@ -420,20 +420,18 @@ class Window(QtGui.QMainWindow):
 
         self.leftPanel.addWidget(paperPannel)
         self.leftPanel.addWidget(self.editAnnotWgt)
-        self.expPropGB = QtGui.QGroupBox("Relevant experimental properties")
-        expPropLayout = QtGui.QVBoxLayout(self.expPropGB)
+        self.expPropGB = QGroupBox("Relevant experimental properties")
+        expPropLayout = QVBoxLayout(self.expPropGB)
         expPropLayout.addWidget(self.expPropWgt)
         self.leftPanel.addWidget(self.expPropGB)
 
-
-
-        self.mainWidget = QtGui.QSplitter(self, QtCore.Qt.Horizontal)
+        self.mainWidget = QSplitter(Qt.Horizontal, self)
         self.mainWidget.addWidget(self.leftPanel)
         self.mainWidget.addWidget(self.rightPanel)
 
         self.mainTabs.addTab(self.mainWidget, "Annotations")    
 
-        self.searchTabs =  QtGui.QTabWidget(self)
+        self.searchTabs =  QTabWidget(self)
         self.annotSearchWgt = SearchWgt("Annotation", self)
         self.paramSearchWgt = SearchWgt("Parameter", self)
         
@@ -453,23 +451,23 @@ class Window(QtGui.QMainWindow):
         # Initial behavior
         self.taggingTabs.setDisabled(True)
 
-    @Slot(QModelIndex)
+    @pyqtSlot(QModelIndex)
     def changeTagToAnnotations(self, index):
         # FIXME Delayed refactoring. No use of the index sent by ZoteroTableView::doubleClicked?
         self.mainTabs.setCurrentIndex(1)
     
     def setupPaperGB(self):
         # Widgets
-        self.openPDFBtn                = QtGui.QPushButton('Open PDF', self)
-        self.IdTxt                    = QtGui.QLineEdit('', self)
+        self.openPDFBtn                = QPushButton('Open PDF', self)
+        self.IdTxt                    = QLineEdit('', self)
 
         # Signals
         self.openPDFBtn.clicked.connect(self.openPDF)
 
         # Layout
-        self.paperGroupBox = QtGui.QGroupBox("Paper")
-        gridPaper = QtGui.QGridLayout(self.paperGroupBox)
-        gridPaper.addWidget(QtGui.QLabel('ID', self), 0, 0)
+        self.paperGroupBox = QGroupBox("Paper")
+        gridPaper = QGridLayout(self.paperGroupBox)
+        gridPaper.addWidget(QLabel('ID', self), 0, 0)
         gridPaper.addWidget(self.IdTxt, 0, 1)
         gridPaper.addWidget(self.openPDFBtn, 0, 3)
         #gridPaper.addWidget(self.refEdt, 1, 0, 1, 4)
@@ -485,10 +483,10 @@ class Window(QtGui.QMainWindow):
         self.cancelledAnnotSelectinChange = False        
 
         # Widget        
-        self.annotListTblWdg      = QtGui.QTableView() 
-        self.annotTableModel     = AnnotationListModel(self)
-        self.annotListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.annotListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.annotListTblWdg      = QTableView()
+        self.annotTableModel     = AnnotationListModel(parent=self)
+        self.annotListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.annotListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.annotListTblWdg.setModel(self.annotTableModel)
 
         # Signals
@@ -498,8 +496,8 @@ class Window(QtGui.QMainWindow):
 
 
         # Layout
-        self.listAnnotGroupBox     = QtGui.QGroupBox("Listing of existing annotations")
-        gridListAnnotations     = QtGui.QGridLayout(self.listAnnotGroupBox)
+        self.listAnnotGroupBox     = QGroupBox("Listing of existing annotations")
+        gridListAnnotations     = QGridLayout(self.listAnnotGroupBox)
         gridListAnnotations.addWidget(self.annotListTblWdg, 0, 0)
         
         # Initial behavior
@@ -517,8 +515,8 @@ class Window(QtGui.QMainWindow):
 
         self.editAnnotSubWgt = EditAnnotWgt(self)
 
-        self.editAnnotWgt = QtGui.QGroupBox("Annotation details")
-        layout               = QtGui.QVBoxLayout(self.editAnnotWgt)
+        self.editAnnotWgt = QGroupBox("Annotation details")
+        layout               = QVBoxLayout(self.editAnnotWgt)
         layout.addWidget(self.editAnnotSubWgt)
         self.editAnnotWgt.setEnabled(False)
 
@@ -539,24 +537,24 @@ class Window(QtGui.QMainWindow):
         self.updateAutoCompleteTagList()
 
         # List tags that have been selected by the user
-        self.selectedTagsWidget = QtGui.QListWidget(self)
+        self.selectedTagsWidget = QListWidget(self)
         self.selectedTagsWidget.showMaximized()
-        self.selectedTagsWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.selectedTagsWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.selectedTagsWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.selectedTagsWidget.setSelectionMode(QAbstractItemView.SingleSelection)
 
         # List tags that are suggested to the user based on his previous tagging
         # history and on tags that have already been used for other annotations 
         # on this paper.
-        self.suggestedTagsWidget = QtGui.QListWidget(self)
+        self.suggestedTagsWidget = QListWidget(self)
         self.suggestedTagsWidget.showMaximized()
-        self.suggestedTagsWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.suggestedTagsWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.suggestedTagsWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.suggestedTagsWidget.setSelectionMode(QAbstractItemView.SingleSelection)
 
         self.onlineOntoWgt     = OntoOnlineSearch(self)
         self.onlineOntoWgt.tagSelected.connect(self.ontoTagSelected)
 
 
-        self.tagSelectionTabs = QtGui.QTabWidget(self)
+        self.tagSelectionTabs = QTabWidget(self)
         self.tagSelectionTabs.addTab(self.suggestedTagsWidget, "Suggested tags")     
         self.tagSelectionTabs.addTab(self.onlineOntoWgt, "Search online ontologies")     
 
@@ -566,9 +564,9 @@ class Window(QtGui.QMainWindow):
         self.tagEdit.editTextChanged.connect(self.editTextChanged)
 
         # Layout
-        self.tagAnnotGroupBox     = QtGui.QGroupBox()
-        gridTagAnnotations     = QtGui.QGridLayout(self.tagAnnotGroupBox)
-        gridTagAnnotations.addWidget(QtGui.QLabel('Annotation tags', self), 0, 0)
+        self.tagAnnotGroupBox     = QGroupBox()
+        gridTagAnnotations     = QGridLayout(self.tagAnnotGroupBox)
+        gridTagAnnotations.addWidget(QLabel('Annotation tags', self), 0, 0)
         gridTagAnnotations.addWidget(self.selectedTagsWidget, 1, 0)
         gridTagAnnotations.addWidget(self.tagEdit, 2, 0)
         gridTagAnnotations.addWidget(self.tagSelectionTabs, 0, 1, 3, 1)
@@ -605,11 +603,11 @@ class Window(QtGui.QMainWindow):
 
 
 
-    @QtCore.Slot(object, str, str)
+    @pyqtSlot(str, str)
     def ontoTagSelected(self, term, curie):
         self.addTagToAnnotation(curie, term)
 
-    @Slot(object, object)
+    @pyqtSlot(object)
     def viewAnnotation(self, annotation):
         # FIXME Delayed refactoring. Only one parameter is sent.
 
@@ -637,7 +635,7 @@ class Window(QtGui.QMainWindow):
         self.annotListTblWdg.selectRow(row)
         self.mainTabs.setCurrentIndex(1)
 
-    @QtCore.Slot(object, object, object)
+    @pyqtSlot(object, object)
     def viewParameter(self, annotation, parameter):
         self.viewAnnotation(annotation)        
         self.modParamWgt.viewParameter(parameter)
@@ -652,7 +650,7 @@ class Window(QtGui.QMainWindow):
 
     def editPreferences(self):
         settingsDlg = SettingsDlg(self.settings, self)
-        if settingsDlg.exec_() == QtGui.QDialog.Accepted:
+        if settingsDlg.exec_() == QDialog.Accepted:
             self.settings = getSettings()
 
             self.gitMng = GitManager(self.settings.config["GIT"])
@@ -668,8 +666,10 @@ class Window(QtGui.QMainWindow):
     def annotTableLayoutChanged(self):
         self.selectedAnnotationChanged(self.annotListTblWdg.selectedIndexes())
 
-
-    def selectedAnnotationChanged(self, selection, deselected=None):
+    # Note: No @pyqtSlot because QModelIndexList doesn't exist in PyQt5.
+    # @pyqtSlot(QModelIndexList)
+    # @pyqtSlot(QItemSelection, QItemSelection)
+    def selectedAnnotationChanged(self, selected, deselected=None):
 
         if not hasattr(self, "editAnnotWgt"):
             # This if is triggered when selectedAnnotationChanged is automatically called
@@ -694,7 +694,7 @@ class Window(QtGui.QMainWindow):
 
         self.needSavingDisabled = True 
         self.editAnnotWgt.setDisabled(False)
-        self.currentAnnotation = self.annotTableModel.getSelectedAnnotation(selection)
+        self.currentAnnotation = self.annotTableModel.getSelectedAnnotation(selected)
         if self.currentAnnotation is None:
             # The current index is invalid. Thus, we deactivate controls
             # used to modify the current annotation.
@@ -732,7 +732,7 @@ class Window(QtGui.QMainWindow):
 
 
     #def nlTreeWasClicked(self, selected):
-    #    tagId     = selected.data(QtCore.Qt.UserRole)
+    #    tagId     = selected.data(Qt.UserRole)
     #    self.addTagToAnnotation(tagId)
 
 
@@ -766,7 +766,7 @@ class Window(QtGui.QMainWindow):
         # check that it is not a duplicate (for the widget)
         if not tagId in [tag.id for tag in self.getSelectedTags()]:
             tag = Tag(tagId, self.dicData[tagId])
-            item = QtGui.QListWidgetItem()
+            item = QListWidgetItem()
             tagEdit = TagWidget(tag, self.selectedTagsWidget)
             self.selectedTagsWidget.addItem(item)
             self.selectedTagsWidget.setItemWidget(item, tagEdit)
@@ -798,7 +798,7 @@ class Window(QtGui.QMainWindow):
     def addSuggestedTagFromId(self, tagId):
         tagName = self.dicData[tagId]
         tag = Tag(tagId, tagName)
-        item = QtGui.QListWidgetItem()
+        item = QListWidgetItem()
         tagEdit = TagWidget(tag, self.suggestedTagsWidget)
         self.suggestedTagsWidget.addItem(item)
         self.suggestedTagsWidget.setItemWidget(item, tagEdit)
@@ -808,8 +808,8 @@ class Window(QtGui.QMainWindow):
 
 
     def selectedTagClicked(self, tag):
-        modifiers = QtGui.QApplication.keyboardModifiers()
-        if modifiers == QtCore.Qt.ShiftModifier:
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ShiftModifier:
             ID = self.IdTxt.text()
             if not ID in self.selectedTagPersist:
                 self.selectedTagPersist[ID] = []
@@ -829,13 +829,13 @@ class Window(QtGui.QMainWindow):
             
                 isNewAnnot = not self.currentAnnotation in self.annotTableModel.annotationList or self.currentAnnotation is None
                 if len(annotations) > 1 - int(isNewAnnot) :
-                    msgBox = QtGui.QMessageBox(self)
+                    msgBox = QMessageBox(self)
                     msgBox.setWindowTitle("Tag persistence propagation")
                     msgBox.setText("There is already existing annotations for this paper. Do you want this tag to be added " +
                                    "to them too (any unsaved changes would be saved first)?")
-                    msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-                    msgBox.setDefaultButton(QtGui.QMessageBox.No)
-                    if msgBox.exec_() == QtGui.QMessageBox.Yes:
+                    msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+                    msgBox.setDefaultButton(QMessageBox.No)
+                    if msgBox.exec_() == QMessageBox.Yes:
                         # Add this tag to existing annotations (associated with the current publication)
 
                         # Save unsaved modifications if there are any...
@@ -867,8 +867,8 @@ class Window(QtGui.QMainWindow):
             self.removeTag(tag)
 
     def suggestedTagClicked(self, tag):
-        modifiers = QtGui.QApplication.keyboardModifiers()
-        if modifiers == QtCore.Qt.ShiftModifier:
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ShiftModifier:
             if tag.id in self.suggestTagPersist:
                 self.suggestTagPersist.remove(tag.id)
             else:
@@ -899,12 +899,12 @@ class Window(QtGui.QMainWindow):
         pdf_path = base_path + ".pdf"
 
         if not os.path.isfile(pdf_path):
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Missing PDF")
             msgBox.setText("The PDF file seems to be missing. Do you want to attach one?")
-            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            if msgBox.exec_() == QtGui.QMessageBox.Yes:
+            msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+            msgBox.setDefaultButton(QMessageBox.Yes)
+            if msgBox.exec_() == QMessageBox.Yes:
                 if not self.importPDF():
                     return
             else:
@@ -914,19 +914,19 @@ class Window(QtGui.QMainWindow):
 
     def checkSavingAnnot(self):
         if self.needSaving:
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Unsaved annotation")
             msgBox.setText("There are unsaved changes in the currently loaded annotation. Do you want to save modifications?")
-            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            if msgBox.exec_() == QtGui.QMessageBox.Yes:
+            msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+            msgBox.setDefaultButton(QMessageBox.Yes)
+            if msgBox.exec_() == QMessageBox.Yes:
                 self.editAnnotSubWgt.commentEdt.setFocus()
                 if self.saveAnnotation() == False:
                     return False
             self.needSaving = False
         return True
 
-    @Slot(QItemSelection, QItemSelection)
+    @pyqtSlot(QItemSelection, QItemSelection)
     def paperSelectionChanged(self, selected, deselected):
         if selected.indexes():
             index = selected.indexes()[0]
@@ -946,14 +946,14 @@ class Window(QtGui.QMainWindow):
             reference_id = index.model().data(index.model().index(index.row(), 0))
 
             if reference_id == "":
-                msgBox = QtGui.QMessageBox(self)
+                msgBox = QMessageBox(self)
                 msgBox.setWindowTitle("Warning")
                 msgBox.setText("This paper has currently no ID. It will not be possible " +
                                "to process this paper until an ID is attributed. Would " +
                                "you like to set its ID now?")
-                msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-                msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-                if msgBox.exec_() == QtGui.QMessageBox.Yes:
+                msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+                msgBox.setDefaultButton(QMessageBox.Yes)
+                if msgBox.exec_() == QMessageBox.Yes:
                     self.zotero_widget.edit_reference()
                     self.paperSelectionChanged(selected, deselected)
                 else:
@@ -975,17 +975,17 @@ class Window(QtGui.QMainWindow):
             # Check if paper is already in the database
             if not self.checkIdInDB(self.IdTxt.text()):
                 if isDOI or isPMID:
-                    msgBox = QtGui.QMessageBox(self)
+                    msgBox = QMessageBox(self)
                     msgBox.setWindowTitle("Paper not in the database")
                     msgBox.setText("This paper is not already in the curator database.")
-                    pdfButton        = QtGui.QPushButton("Select PDF")
-                    msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
-                    msgBox.addButton(pdfButton, QtGui.QMessageBox.YesRole)
+                    pdfButton        = QPushButton("Select PDF")
+                    msgBox.setStandardButtons(QMessageBox.Cancel)
+                    msgBox.addButton(pdfButton, QMessageBox.YesRole)
 
 
                     if isDOI:
-                        websiteButton    = QtGui.QPushButton("Follow DOI to the publication website")
-                        msgBox.addButton(websiteButton, QtGui.QMessageBox.ActionRole)
+                        websiteButton    = QPushButton("Follow DOI to the publication website")
+                        msgBox.addButton(websiteButton, QMessageBox.ActionRole)
 
                     msgBox.setDefaultButton(pdfButton)
                     retCode = msgBox.exec_()
@@ -1085,9 +1085,9 @@ class Window(QtGui.QMainWindow):
             time.sleep(5)          
         
         self.window.statusLabel.setText("OCR finished.")
-        if notify == QtGui.QMessageBox.Yes:        
-            msgBox = QtGui.QMessageBox()
-            msgBox.setStandardButtons(QtGui.QMessageBox.Cancel)
+        if notify == QMessageBox.Yes:
+            msgBox = QMessageBox()
+            msgBox.setStandardButtons(QMessageBox.Cancel)
             msgBox.setWindowTitle("OCR process finished")
             msgBox.setText("The optical character recognition for the paper " + paperId
                            + " is finished. You can now start annotating this paper.")
@@ -1101,7 +1101,7 @@ class Window(QtGui.QMainWindow):
             errorMessage(self, "Error", "This ID seem to be invalid.")
             return
 
-        fileName, _ = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
+        fileName, _ = QFileDialog.getOpenFileName(self, 'Open file')
         fileName    = fileName.encode("utf-8").decode("utf-8")
         if fileName != '':
             saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
@@ -1116,11 +1116,11 @@ class Window(QtGui.QMainWindow):
                 return False
                 
             except RESTImportPDFErr as e:
-                msgBox = QtGui.QMessageBox(self)
+                msgBox = QMessageBox(self)
                 msgBox.setWindowTitle("This PDF needs OCR")
                 msgBox.setText(str(e) + " Do you want to be notifed when this process is done?")
-                msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-                msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
+                msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+                msgBox.setDefaultButton(QMessageBox.Yes)
                 
                 thread = Thread(target = self.waitForOCR, 
                                 args = (self.IdTxt.text(), msgBox.exec_(), ))
@@ -1141,23 +1141,23 @@ class Window(QtGui.QMainWindow):
     def pushToServer(self):
         info = self.gitMng.push()
         if info is None:
-                        msgBox = QtGui.QMessageBox(self)
+                        msgBox = QMessageBox(self)
                         msgBox.setWindowTitle("Push error")
                         msgBox.setText("The push operation has not been performed because you are in offline mode.")
-                        msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+                        msgBox.setStandardButtons(QMessageBox.Ok)
                         msgBox.exec_()
 
         elif info.flags & info.ERROR :
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Push error")
             msgBox.setText("An error occured while trying to push to the server. Error flag: '" + str(info.flags) + "', message: '" + str(info.summary) + "'.")
-            msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgBox.setStandardButtons(QMessageBox.Ok)
             msgBox.exec_()
         else:
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Repository pushed to the server")
             msgBox.setText("Modifications has been successfully pushed to the server.")
-            msgBox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgBox.setStandardButtons(QMessageBox.Ok)
             msgBox.exec_()
 
         self.needPush = False
@@ -1247,7 +1247,7 @@ class Window(QtGui.QMainWindow):
             return False
 
         self.clearAddAnnotation()
-        self.annotListTblWdg.setCurrentIndex(QtCore.QModelIndex())
+        self.annotListTblWdg.setCurrentIndex(QModelIndex())
         self.currentAnnotation = Annotation(pubId=self.IdTxt.text())
         if self.IdTxt.text() in self.selectedTagPersist:
             for id in self.selectedTagPersist[self.IdTxt.text()]:
@@ -1267,7 +1267,7 @@ class Window(QtGui.QMainWindow):
 
         #self.clearAddAnnotation()
         self.currentAnnotation = self.currentAnnotation.duplicate()
-        #self.annotListTblWdg.setCurrentIndex(QtCore.QModelIndex())
+        #self.annotListTblWdg.setCurrentIndex(QModelIndex())
         self.saveAnnotation()
         #self.currentAnnotation = self.currentAnnotation.duplicate()
         #if self.IdTxt.text() in self.selectedTagPersist:

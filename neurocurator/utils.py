@@ -2,8 +2,8 @@ __author__ = "Pierre-Alexandre Fonta"
 
 import os
 
-from PySide.QtCore import Qt
-from PySide.QtGui import QFormLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFormLayout
 
 
 def package_directory():

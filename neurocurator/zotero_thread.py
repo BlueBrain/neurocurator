@@ -1,7 +1,7 @@
 __authors__ = ["Pierre-Alexandre Fonta", "Christian O'Reilly"]
 __maintainer__ = "Pierre-Alexandre Fonta"
 
-from PySide.QtCore import QThread
+from PyQt5.QtCore import QThread
 
 
 class ZoteroRefreshThread(QThread):

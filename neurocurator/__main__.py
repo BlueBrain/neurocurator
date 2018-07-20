@@ -5,7 +5,7 @@ __maintainer__ = "Pierre-Alexandre Fonta"
 
 import sys
 
-from PySide.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 from neurocurator.mainWin import Window
 

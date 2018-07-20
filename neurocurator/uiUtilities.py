@@ -2,31 +2,33 @@
 
 __author__ = "Christian O'Reilly"
 
-# Import PySide classes
-from PySide import QtGui, QtCore
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QPalette
+from PyQt5.QtWidgets import QMessageBox
 
-paleGray = QtGui.QColor(215, 214, 213) 
+
+paleGray = QColor(215, 214, 213)
 
 def errorMessage(selfObj, title, message):
-	msgBox = QtGui.QMessageBox(selfObj)
-	msgBox.setWindowTitle(title)
-	msgBox.setText(message)
-	msgBox.exec_()
+    msgBox = QMessageBox(selfObj)
+    msgBox.setWindowTitle(title)
+    msgBox.setText(message)
+    msgBox.exec_()
 
 
 def disableTextWidget(widget):
-	palette = QtGui.QPalette()
-	palette.setColor(QtGui.QPalette.Base,paleGray)
+    palette = QPalette()
+    palette.setColor(QPalette.Base,paleGray)
 
-	widget.setReadOnly(True)
-	widget.setPalette(palette)
+    widget.setReadOnly(True)
+    widget.setPalette(palette)
 
 
 def enableTextWidget(widget):
-	palette = QtGui.QPalette()
-	palette.setColor(QtGui.QPalette.Base, QtCore.Qt.white)
+    palette = QPalette()
+    palette.setColor(QPalette.Base, Qt.white)
 
-	widget.setReadOnly(False)
-	widget.setPalette(palette)
+    widget.setReadOnly(False)
+    widget.setPalette(palette)
 
 

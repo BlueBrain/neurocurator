@@ -4,11 +4,11 @@ __maintainer__ = "Pierre-Alexandre Fonta"
 from collections import OrderedDict
 from uuid import uuid4
 
-from PySide.QtCore import Slot, QSize
-from PySide.QtGui import (QDialog, QComboBox, QFormLayout, QLineEdit,
-                          QStackedWidget, QDialogButtonBox, QTableWidget,
-                          QWidget, QTableWidgetItem, QAbstractItemView,
-                          QPushButton, QPlainTextEdit)
+from PyQt5.QtCore import QSize, pyqtSlot
+from PyQt5.QtWidgets import (QDialog, QComboBox, QFormLayout, QLineEdit,
+                             QStackedWidget, QDialogButtonBox, QTableWidget,
+                             QWidget, QTableWidgetItem, QAbstractItemView,
+                             QPushButton, QPlainTextEdit)
 
 from neurocurator import utils
 
@@ -168,6 +168,10 @@ class ZoteroReferenceDialog(QDialog):
         # NB: If the QPlainTextEdit is not empty, a new line is added before.
         # Otherwise, a new line is not added as first character.
         type_widgets[self.EXTRA_FIELD].appendPlainText("{}: {}".format(self.UNPUBLISHED_ID_KEY, uuid))
+        # TODO After porting from Qt4 to Qt5, the disabling of the button and
+        # the appended text are not painted. QWidget.update() and
+        # qApp.processEvents() are not enough. The reason has not been found.
+        self.repaint()
 
 
 class CreatorsTableWidget(QTableWidget):
@@ -195,7 +199,7 @@ class CreatorsTableWidget(QTableWidget):
 
     # Slots section.
 
-    @Slot(int, int)
+    @pyqtSlot(int, int)
     def _add_row(self, row, column):
         """Add an empty row at the end if the last row is not empty."""
         row_count = self.rowCount()

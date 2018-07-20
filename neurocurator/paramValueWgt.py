@@ -1,62 +1,58 @@
 #!/usr/bin/python3
 
+
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui, QtCore
-
+from PyQt5.QtCore import QModelIndex, pyqtSignal, pyqtSlot, Qt, QAbstractTableModel
+from PyQt5.QtWidgets import (QTableView, QMessageBox, QLabel, QGridLayout,
+                             QAbstractItemView, QTextEdit, QWidget)
 
 from nat.modelingParameter import getParameterTypes, getParameterTypeIDFromName
+from nat.paramDesc import ParamDescPoint
 from nat.parameterInstance import ParameterInstance
 from nat.values import ValuesSimple, ValuesCompound
-from nat.paramDesc import ParamDescPoint
 from nat.variable import NumericalVariable
-
-from .itemDelegates import ParamTypeCbo, DoubleDelegate, UnitDelegate, \
-    StatisticsDelegate, ButtonDelegate
-
-
-parameterTypes         = getParameterTypes()
+from .itemDelegates import (ParamTypeCbo, DoubleDelegate, UnitDelegate,
+                            StatisticsDelegate, ButtonDelegate)
 
 
-class ParamValueWgt(QtGui.QWidget):
+parameterTypes = getParameterTypes()
 
-    paramTypeSelected = QtCore.Signal(str)
+
+class ParamValueWgt(QWidget):
+
+    paramTypeSelected = pyqtSignal(str)
 
     def __init__(self, parent=None):
-        super(ParamValueWgt, self).__init__()
+        super().__init__(parent)
 
-        self.parent = parent
+        # FIXME Delayed refactoring.
+        self._parent = parent
 
         # Widgets        
-        self.paramsEdit       = ParamTypeCbo(self)
-        self.paramDescription = QtGui.QTextEdit(self)
-        self.valListTblWdg    = ValueTableView() 
-        self.valListModel     = ValueListModel(self)
-        self.valListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.paramsEdit = ParamTypeCbo(self)
+        self.paramDescription = QTextEdit(self)
+        self.valListTblWdg = ValueTableView()
+        self.valListModel = ValueListModel(parent=self)
+        self.valListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.valListTblWdg.setModel(self.valListModel)
-
 
         # Signals
         self.paramsEdit.activated[str].connect(self.paramTypeChanged)
 
-
         # Layout
-        grid     = QtGui.QGridLayout(self)
-        grid.addWidget(QtGui.QLabel("Parameter"), 0, 0)
+        grid     = QGridLayout(self)
+        grid.addWidget(QLabel("Parameter"), 0, 0)
         grid.addWidget(self.paramsEdit,           0, 1)
         grid.addWidget(self.paramDescription, 1, 0, 1, 2)
         grid.addWidget(self.valListTblWdg, 2, 0, 1, 2)
 
-
         # Initial behavior
         self.paramDescription.setReadOnly(True)
 
-
-
     @property
     def selectedTags(self):
-        return self.parent.getSelectedTags()
+        return self._parent.getSelectedTags()
 
 
     def paramTypeChanged(self, paramName):
@@ -88,7 +84,7 @@ class ParamValueWgt(QtGui.QWidget):
             return ParameterInstance(paramId, description, [], relationship)
 
         else:
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Invalid modeling parameter")
             msgBox.setText("To save this annotation with an associated modeling parameter, a valid value and unit must be entered. The " + error + " entered is not valid.")
             msgBox.exec_() 
@@ -113,38 +109,31 @@ class ParamValueWgt(QtGui.QWidget):
         if row is None:
             self.loadRow(None)
         else:
-            self.loadRow(self.parent.currentAnnotation.parameters[row])
+            self.loadRow(self._parent.currentAnnotation.parameters[row])
 
 
+class ValueTableView(QTableView):
 
-
-
-
-
-class ValueTableView(QtGui.QTableView):
-
-    def __init__(self, *args, **kwargs):
-        QtGui.QTableView.__init__(self, *args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         
         self.setItemDelegateForColumn(0, DoubleDelegate(self))
         self.setItemDelegateForColumn(1, UnitDelegate(self))
         self.setItemDelegateForColumn(2, StatisticsDelegate(self))
         self.setItemDelegateForColumn(3, ButtonDelegate(self))
 
-
-
-    @QtCore.Slot(object) #, str
-    def cellButtonClicked(self):
+    @pyqtSlot(bool)
+    def cellButtonClicked(self, checked):
         # This slot will be called when our button is clicked. 
         # self.sender() returns a refence to the QPushButton created
         # by the delegate, not the delegate itself.
         self.model().deleteRow(self.sender().row)
 
 
-class ValueListModel(QtCore.QAbstractTableModel):
+class ValueListModel(QAbstractTableModel):
 
-    def __init__(self, parent, colHeader = ['Values', 'Unit', 'Statistic', 'delete'], *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+    def __init__(self, colHeader = ['Values', 'Unit', 'Statistic', 'delete'], parent=None):
+        super().__init__(parent)
         #self.parameterList = parameterList
         self.clear(colHeader)
 
@@ -156,10 +145,10 @@ class ValueListModel(QtCore.QAbstractTableModel):
 
 
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.values)+1
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return len(self.colHeader)
 
 
@@ -212,18 +201,18 @@ class ValueListModel(QtCore.QAbstractTableModel):
         return True
 
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole and  role != QtCore.Qt.EditRole:
+        if role != Qt.DisplayRole and  role != Qt.EditRole:
             return None
 
         return self.getDataByIndex(index.row(), index.column())
 
 
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=Qt.DisplayRole):
         if value is None:
             value = ""
         return self.setDataByIndex(index.row(), index.column(), value)
@@ -231,18 +220,18 @@ class ValueListModel(QtCore.QAbstractTableModel):
 
 
     def flags(self, index):
-        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled
 
 
 
-    def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.colHeader[section]        
         return None
 
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
+        self.layoutChanged.emit()
 
     def getValuesObject(self):
         """
@@ -258,7 +247,7 @@ class ValueListModel(QtCore.QAbstractTableModel):
             
             
     def deleteRow(self, row):
-        if row >= 0 and row < len(self.values):
+        if 0 <= row < len(self.values):
             del self.values[row]
             self.refresh()
 

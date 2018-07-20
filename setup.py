@@ -5,7 +5,7 @@ import os
 
 from setuptools import setup
 
-NEUROCURATOR_VERSION = "0.4.3"
+NEUROCURATOR_VERSION = "0.4.4"
 NAT_MINIMUM_VERSION = "0.4.2"
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -30,10 +30,10 @@ setup(
     # maintainer_email="pierre-alexandre@epfl.ch",
     license="GPLv3",
     packages=["neurocurator"],
-    python_requires="~=3.4.0",  # Until #6 is solved.
+    python_requires=">=3.4",
     install_requires=[
         "nat>=" + NAT_MINIMUM_VERSION,
-        "pyside",
+        "PyQt5",
         "numpy",
         "pandas",
         "wand"
@@ -52,6 +52,9 @@ setup(
         "License :: Free for non-commercial use",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",

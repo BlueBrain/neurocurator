@@ -5,15 +5,19 @@ Created on Tue Jul 26 10:23:39 2016
 @author: oreilly
 """
 
-# Import PySide classes
-from PySide import QtGui, QtCore
 from sys import platform as _platform
+
+from PyQt5.QtCore import (QModelIndex, pyqtSignal, pyqtSlot, QAbstractTableModel,
+                          QEvent, Qt)
+from PyQt5.QtWidgets import (QGridLayout, QAbstractItemView, QTableView, QWidget,
+                             QLineEdit)
 
 from nat import ontoServ
 
-class OntoAutoComplete(QtGui.QLineEdit):
 
-    completionTermatiated = QtCore.Signal(dict)
+class OntoAutoComplete(QLineEdit):
+
+    completionTerminated = pyqtSignal(dict)
 
     def focusInEvent(self, event):
         if _platform == "linux" or _platform == "linux2":
@@ -22,34 +26,30 @@ class OntoAutoComplete(QtGui.QLineEdit):
             # which was making this line erase the selected text.
             self.setText("")
 
-        super(OntoAutoComplete, self).focusInEvent(event)
+        super().focusInEvent(event)
 
         
     def event(self, event):
-        if event.type() == QtCore.QEvent.KeyPress:
-            if event.key() == QtCore.Qt.Key_Tab:
+        if event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Tab:
                 completion = ontoServ.autocomplete(self.text())
-                self.completionTermatiated.emit(completion)
+                self.completionTerminated.emit(completion)
                 
-        return super(OntoAutoComplete, self).event(event)        
+        return super().event(event)
 
 
+class OntoOnlineSearch(QWidget):
 
-
-class OntoOnlineSearch(QtGui.QWidget):
-
-
-    tagSelected = QtCore.Signal(str, str)
+    tagSelected = pyqtSignal(str, str)
     
-    def __init__(self, *args, **kwargs):
-        super(OntoOnlineSearch, self).__init__(*args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
-        self.termListTblWdg     = QtGui.QTableView() 
-        self.termTableModel     = OntoTermsListModel(self)
-        self.termListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.termListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.termListTblWdg = QTableView()
+        self.termTableModel = OntoTermsListModel(parent=self)
+        self.termListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.termListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.termListTblWdg.setModel(self.termTableModel)
-
 
         self.termListTblWdg.setColumnWidth(0, 300)
         self.termListTblWdg.setColumnWidth(1, 200)
@@ -59,15 +59,12 @@ class OntoOnlineSearch(QtGui.QWidget):
         self.termSelectionModel.selectionChanged.connect(self.termSelected)
         #self.termTableModel.layoutChanged.connect(self.termTableLayoutChanged)
 
-
         self.autoCompleteTxt = OntoAutoComplete(self)
-        self.autoCompleteTxt.completionTermatiated.connect(self.completionUpdate)        
+        self.autoCompleteTxt.completionTerminated.connect(self.completionUpdate)
         
-        grid = QtGui.QGridLayout(self)
+        grid = QGridLayout(self)
         grid.addWidget(self.termListTblWdg, 0, 0)   
         grid.addWidget(self.autoCompleteTxt, 1, 0)
-
-
 
     def termSelected(self, selection, deselected=None):
         #id = [tagId for tagId, tagName in self.dicData.items() if name == tagName]
@@ -85,29 +82,25 @@ class OntoOnlineSearch(QtGui.QWidget):
             self.termListTblWdg.clearSelection()
             self.termTableModel.refresh()
 
-
-
-
-    @QtCore.Slot(object, dict)
+    @pyqtSlot(dict)
     def completionUpdate(self, termDic):
         #print(termDic)
         self.termTableModel.setTerms(termDic)
 
 
+class OntoTermsListModel(QAbstractTableModel):
 
-class OntoTermsListModel(QtCore.QAbstractTableModel):
-
-    def __init__(self, parent, terms = [], header = ['term', 'curie'], *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+    def __init__(self, terms = [], header = ['term', 'curie'], parent=None):
+        super().__init__(parent)
         self.terms = terms
         self.header = header
         self.sortCol   = 0 
-        self.sortOrder = QtCore.Qt.AscendingOrder        
+        self.sortOrder = Qt.AscendingOrder
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.terms)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return len(self.header)
 
 
@@ -117,7 +110,7 @@ class OntoTermsListModel(QtCore.QAbstractTableModel):
         if isinstance(selection, list):
             if selection == []:
                 return None
-            elif isinstance(selection[0], QtCore.QModelIndex):
+            elif isinstance(selection[0], QModelIndex):
                 index = selection[0]
         else:
             if selection.at(0) is None:
@@ -131,17 +124,17 @@ class OntoTermsListModel(QtCore.QAbstractTableModel):
         return term[ind]
 
 
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole:
+        if role != Qt.DisplayRole:
             return None
 
         return self.getByIndex(self.terms[index.row()], index.column())
 
-    def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, col, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.header[col]
         return None
 
@@ -151,14 +144,13 @@ class OntoTermsListModel(QtCore.QAbstractTableModel):
         if order is None:
             order = self.sortOrder
 
-        """sort table by given column number col"""
-        self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
-        reverse = (order == QtCore.Qt.DescendingOrder)
+        # Sort table by given column number col.
+        self.layoutAboutToBeChanged.emit()
+        reverse = (order == Qt.DescendingOrder)
         self.annotationList = sorted(self.terms, key=lambda x: self.getByIndex(x, col), reverse = reverse) #operator.itemgetter(col))
-        #if order == QtCore.Qt.DescendingOrder:
+        #if order == Qt.DescendingOrder:
         #    self.mylist.reverse()
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
+        self.layoutChanged.emit()
 
     def getTerm(self, index):
         return self.terms[index.row()]
@@ -168,5 +160,4 @@ class OntoTermsListModel(QtCore.QAbstractTableModel):
         self.refresh()
     
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
+        self.layoutChanged.emit()

@@ -2,36 +2,34 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui
-
+from PyQt5.QtWidgets import QLabel, QGridLayout, QComboBox, QWidget, QStackedWidget
 
 from nat.relationship import Relationship
 from nat.tag import Tag
 
 
-class ParamRelationWgt(QtGui.QWidget):
+class ParamRelationWgt(QWidget):
 
-    def __init__(self, parent):
-        super(ParamRelationWgt, self).__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
-        self.parent = parent
-
+        # FIXME Delayed refactoring.
+        self._parent = parent
 
         # Widgets        
-        self.relationshipCbo    = QtGui.QComboBox(self)
+        self.relationshipCbo    = QComboBox(self)
         self.relationshipCbo.addItems(["unspecified", "point", "directed", "undirected"])
 
-        self.relationStack        = QtGui.QStackedWidget(self)
+        self.relationStack        = QStackedWidget(self)
 
-        self.relationWgt   = QtGui.QWidget()
-        self.relEntity1Cbo = QtGui.QComboBox(self.relationWgt)
-        self.relEntity2Cbo = QtGui.QComboBox(self.relationWgt)
-        self.relEntity1Lbl = QtGui.QLabel("Entity 1")
-        self.relEntity2Lbl = QtGui.QLabel("Entity 2")
-        self.infoLabel     = QtGui.QLabel("Note: Entity comboboxes are populated from selected tags.")
+        self.relationWgt   = QWidget()
+        self.relEntity1Cbo = QComboBox(self.relationWgt)
+        self.relEntity2Cbo = QComboBox(self.relationWgt)
+        self.relEntity1Lbl = QLabel("Entity 1")
+        self.relEntity2Lbl = QLabel("Entity 2")
+        self.infoLabel     = QLabel("Note: Entity comboboxes are populated from selected tags.")
 
-        relationLayout = QtGui.QGridLayout(self.relationWgt)
+        relationLayout = QGridLayout(self.relationWgt)
         relationLayout.addWidget(self.relEntity1Lbl, 0, 0)
         relationLayout.addWidget(self.relEntity2Lbl, 1, 0)
         relationLayout.addWidget(self.relEntity1Cbo, 0, 1)
@@ -42,16 +40,15 @@ class ParamRelationWgt(QtGui.QWidget):
         self.relationshipCbo.currentIndexChanged.connect(self.relationSelected)
 
         # Layout
-        grid     = QtGui.QGridLayout(self)
+        grid     = QGridLayout(self)
 
-        grid.addWidget(QtGui.QLabel("Relationship"),  0, 0)
+        grid.addWidget(QLabel("Relationship"),  0, 0)
         grid.addWidget(self.relationshipCbo,  0, 1)
         grid.addWidget(self.relationWgt,  1, 0, 1, 2)
 
         # Initial behavior
         self.refreshEntityCbo()
         self.relationSelected(0)
-
 
     def clear(self):
         self.refreshEntityCbo()
@@ -61,7 +58,7 @@ class ParamRelationWgt(QtGui.QWidget):
 
     @property
     def selectedTags(self):
-        return self.parent.getSelectedTags()
+        return self._parent.getSelectedTags()
 
 
     def refreshEntityCbo(self):

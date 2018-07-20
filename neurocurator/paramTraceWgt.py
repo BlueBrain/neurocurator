@@ -2,31 +2,30 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui, QtCore
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QItemSelection, QModelIndex
+from PyQt5.QtWidgets import QWidget, QAbstractItemView, QPushButton, QGridLayout
 
 from nat.modelingParameter import getParameterTypes
-from nat.parameterInstance import ParameterInstance
 from nat.paramDesc import ParamDescTrace
+from nat.parameterInstance import ParameterInstance
 
 from .variableTableWgt import VariableTableView, VariableListModel
 
 
+class ParamTraceWgt(QWidget):
 
-class ParamTraceWgt(QtGui.QWidget):
-
-    paramTypeSelected = QtCore.Signal(str)
+    paramTypeSelected = pyqtSignal(str)
     
-    def __init__(self, parent):
-        self.parent = parent
-        super(ParamTraceWgt, self).__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
         self.parameterTypes = getParameterTypes()
 
         # Widgets        
-        self.varListTblWdg  = VariableTableView(self) 
-        self.varListModel   = VariableListModel(self)
-        self.varListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.varListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        self.varListTblWdg = VariableTableView(self)
+        self.varListModel = VariableListModel(parent=self)
+        self.varListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.varListTblWdg.setSelectionBehavior(QAbstractItemView.SelectItems)
         self.varListTblWdg.setModel(self.varListModel)
 
         selection = self.varListTblWdg.selectionModel()
@@ -34,12 +33,12 @@ class ParamTraceWgt(QtGui.QWidget):
         
         self.varListTblWdg.depTypeSelected.connect(self.newParamSelected)
         
-        self.addIndepVarBtn    = QtGui.QPushButton("Add indep. variable")
-        self.addDepVarCompBtn  = QtGui.QPushButton("Add a component to the dep. var.")
-        self.deleteIndepVarBtn = QtGui.QPushButton("Delete variable")
-        self.addSample         = QtGui.QPushButton("Add sample")
-        self.deleteSample      = QtGui.QPushButton("Delete sample")
-        self.loadCSV           = QtGui.QPushButton("Load CSV")
+        self.addIndepVarBtn    = QPushButton("Add indep. variable")
+        self.addDepVarCompBtn  = QPushButton("Add a component to the dep. var.")
+        self.deleteIndepVarBtn = QPushButton("Delete variable")
+        self.addSample         = QPushButton("Add sample")
+        self.deleteSample      = QPushButton("Delete sample")
+        self.loadCSV           = QPushButton("Load CSV")
 
         self.deleteSample.setDisabled(True)
         self.deleteIndepVarBtn.setDisabled(True)
@@ -53,7 +52,7 @@ class ParamTraceWgt(QtGui.QWidget):
         self.varListTblWdg.depTypeSelected.connect(self.depVarSelected)
 
         # Layout
-        grid = QtGui.QGridLayout(self)
+        grid = QGridLayout(self)
         grid.addWidget(self.varListTblWdg, 0, 0, 7, 1)
         grid.addWidget(self.addIndepVarBtn, 0, 1)
         grid.addWidget(self.addDepVarCompBtn, 1, 1)
@@ -63,7 +62,6 @@ class ParamTraceWgt(QtGui.QWidget):
         grid.addWidget(self.loadCSV, 5, 1)
 
         self.varListTblWdg.clicked.connect(self.tableClicked)
-
 
     def tableClicked(self, index):
         self.varSelectionChanged(index, None)
@@ -75,9 +73,9 @@ class ParamTraceWgt(QtGui.QWidget):
     def varSelectionChanged(self, selected, deselected):
         #col = self.varListTblWdg.selectionModel().currentIndex().column()
 
-        if isinstance(selected, QtCore.QModelIndex):
+        if isinstance(selected, QModelIndex):
             index = selected
-        elif isinstance(selected, QtGui.QItemSelection):
+        elif isinstance(selected, QItemSelection):
             if len(selected.indexes()) == 1:
                 index = selected.indexes()[0]
             else:
@@ -94,7 +92,7 @@ class ParamTraceWgt(QtGui.QWidget):
         #    self.paramTypeSelected.emit(paramType)
 
 
-    @QtCore.Slot(object, str)
+    @pyqtSlot(str)
     def depVarSelected(self, depVar):
         self.paramTypeSelected.emit(depVar)
 

@@ -4,17 +4,16 @@
 [Roadmap](#roadmap) |
 [Status](#status)
 
-**For the Annotation Viewer or the integration with the
-[OpenMinTeD](https://openminted.eu)
-platform, please refer to this
-[branch](https://github.com/BlueBrain/neurocurator/blob/annotation_viewer/ANNOTATION_VIEWER.md).**
+**For the Annotation Viewer or the integration with the [OpenMinTeD](
+https://openminted.eu) platform, please refer to this [branch](
+https://github.com/BlueBrain/neurocurator/blob/annotation_viewer/ANNOTATION_VIEWER.md).**
 
 # NeuroCurator
 
 Desktop application to perform systematic and collaborative curation of
 neuroscientific literature.
 
-This is a Graphical User Interface (GUI) for the Python package
+This is a Graphical User Interface (GUI) for the Python module
 [NeuroAnnotation Toolbox (NAT)](https://github.com/BlueBrain/nat).
 
 This framework has been described in details in the following open-access
@@ -29,132 +28,94 @@ With NeuroCurator, annotations are:
 
 ## Getting Started
 
-### Requirements:
+### Installation
 
-System side:
+After having **installed Git and ImageMagick 6**:
 
-- [Git 1.7.0+](https://git-scm.com/downloads)
-- [ImageMagick 6](http://docs.wand-py.org/en/latest/guide/install.html)
-- [Python 3.4*](https://www.python.org/downloads/)
-- [Qt 4.8.7*](https://doc.qt.io/archives/qt-4.8/supported-platforms.html)
-- [Miniconda*](https://conda.io/miniconda.html)
-
-Python side:
-
-- [NAT](https://github.com/BlueBrain/nat)
-- [PySide 1.2.4](https://wiki.qt.io/PySide)
-- [NumPy](http://www.numpy.org)
-- [pandas](https://pandas.pydata.org)
-- [Wand](http://docs.wand-py.org)
-
-*Miniconda is not required. It simplifies only temporary the installation:
-no need to compile Qt and to install manually Python 3.4. It also makes the
-installation easier on Windows (pandas).
-
-### Installation:
-
-Instructions for macOS 10.13+, Ubuntu 16.04+, Windows 10+.
-
-**1 - Create a virtual environment with Python 3.4:**
 ```bash
-conda create -y --name nc python=3.4
+pip3 install neurocurator
 ```
 
-**2 - Switch to the virtual environment:**
+If you would like to simplify the installation with Miniconda:
 
-On macOS and Linux:
 ```bash
-source activate nc
+conda create --name nc python=3.7
+conda activate nc
+conda install beautifulsoup4 gitpython lxml numpy pandas scipy
+pip install neurocurator
 ```
 
-On Windows:
-```bash
-activate nc
-```
+**Requirements**
 
-**3 -  Install PySide 1.2.4 and Qt 4.8.7 from [conda-forge](https://conda-forge.org):**
-```bash
-conda install -y pyside --channel conda-forge
-```
+- System side:
+    - [Python 3.4+](https://www.python.org/downloads/)
+    - [Qt 5.11+](https://doc.qt.io/qt-5/gettingstarted.html)
+    - [Git 1.7.0+](https://git-scm.com/downloads)
+    - [ImageMagick 6](http://docs.wand-py.org/en/latest/guide/install.html)
+    - [Miniconda](https://conda.io/miniconda.html) (optional)
 
-**4 - Install NAT:**
+- Python side:
+    - [NAT](https://pypi.org/project/nat/)
+    - [PyQt5](https://pypi.org/project/PyQt5/)
+    - [NumPy](https://pypi.org/project/numpy/)
+    - [pandas](https://pypi.org/project/pandas/)
+    - [Wand](https://pypi.org/project/Wand/)
 
-On macOS and Linux:
-```bash
-pip install nat
-```
+### Launch
 
-On Windows:
-```bash
-conda install -y pandas
-pip install beautifulsoup4 gitpython lxml numpy parse pyzotero quantities scipy wand
-pip install nat --no-deps
-```
-
-**5 - Install NeuroCurator:**
-```bash
-pip install neurocurator --no-deps
-```
-
-### Use
-
-Launch NeuroCurator:
 ```bash
 neurocurator
 ```
 
-For the future uses:
-1. enter the virtual environment: `source activate nc` or  `activate nc`
-2. launch NeuroCurator: `neurocurator`
-3. use NeuroCurator
-4. close NeuroCurator
-5. exit the virtual environment: `source deactivate` or `deactivate`
+If you have used Miniconda:
+
+```bash
+conda activate nc
+neurocurator
+```
 
 ## Upgrade
 
-Instructions for macOS 10.13+, Ubuntu 16.04+, Windows 10+.
-
-**1 - Switch to the virtual environment:**
-
-On macOS and Linux:
 ```bash
-source activate nc
+pip install --upgrade neurocurator
 ```
 
-On Windows:
-```bash
-activate nc
-```
-
-**2 - Upgrade NAT:**
+If you have used Miniconda:
 
 ```bash
-pip install --upgrade nat
+conda activate nc
+pip install --upgrade neurocurator
 ```
 
-**3 - Upgrade NeuroCurator:**
-
-```bash
-pip install --upgrade neurocurator --no-deps
-```
 
 ## Releases
 
-Versions and their notable changes are listed in the
-[releases section](https://github.com/BlueBrain/neurocurator/releases/).
+Versions and their notable changes are listed in the [releases section](
+https://github.com/BlueBrain/neurocurator/releases/).
 
 ## Roadmap
 
-1. [_ongoing_] Make the annotations publishable into a
-[Blue Brain Nexus](https://bluebrain.github.io/nexus/) instance.
-2. [_ongoing_] Stabilize NeuroCurator and NAT (Software Architecture).
-3. Remove legacy dependencies in NeuroCurator (Qt 4 and Python 3.4).
-4. Integrate fully the
-[Annotation Viewer](https://github.com/BlueBrain/neurocurator/blob/annotation_viewer/ANNOTATION_VIEWER.md)
-into NeuroCurator.
-5. Semi-automate the Knowledge Extraction process.
+**Ongoing**
 
-Updated on 28.06.18.
+1. Make the annotations publishable into a [Blue Brain Nexus](
+https://bluebrain.github.io/nexus/) instance.
+2. Stabilize NeuroCurator and NAT (Software Architecture).
+
+**TODO**
+
+1. Integrate fully the [Annotation Viewer](
+https://github.com/BlueBrain/neurocurator/blob/annotation_viewer/ANNOTATION_VIEWER.md)
+into NeuroCurator.
+2. Semi-automate the Knowledge Extraction process.
+
+**Done** (latest first)
+
+* Remove legacy dependencies in NeuroCurator (Qt 4 and Python 3.4).
+* Integrate OpenMinTeD annotations into the literature curation framework.
+* Visualize NeuroCurator and OpenMinTeD annotations directly on PDFs.
+* Make NeuroCurator easily installable, especially by scientists.
+
+Updated on 20.07.18.
 
 ## Status
 

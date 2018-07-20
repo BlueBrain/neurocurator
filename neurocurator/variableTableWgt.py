@@ -2,41 +2,38 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui, QtCore
+from PyQt5.QtCore import Qt, QAbstractTableModel
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QModelIndex
+from PyQt5.QtWidgets import QMessageBox, QTableView
 
-
-from nat.modelingParameter import getParameterTypes, getParameterTypeIDFromName, \
-    getParameterTypeFromID, ParameterTypeTree
-from nat.variable import Variable, NumericalVariable
+from nat.modelingParameter import (getParameterTypes, getParameterTypeIDFromName,
+                                   getParameterTypeFromID, ParameterTypeTree)
 from nat.paramDesc import ParamDescFunction, ParamDescTrace
 from nat.values import ValuesSimple, ValuesCompound
-
-from .itemDelegates import DoubleDelegate, ParamTypeDelegate, UnitDelegate, StatisticsDelegate
-
-parameterTypeTree     = ParameterTypeTree.load()
-parameterTypes         = getParameterTypes()
+from nat.variable import Variable, NumericalVariable
+from .itemDelegates import (DoubleDelegate, ParamTypeDelegate, UnitDelegate,
+                            StatisticsDelegate)
 
 
-class VariableTableView(QtGui.QTableView):
+parameterTypeTree = ParameterTypeTree.load()
+parameterTypes = getParameterTypes()
 
-    depTypeSelected  = QtCore.Signal(str)
+
+class VariableTableView(QTableView):
+
+    depTypeSelected  = pyqtSignal(str)
     #selectionChanged = QtCore.Signal(str)
 
-    def __init__(self, *args, **kwargs):
-        super(VariableTableView, self).__init__(*args, **kwargs)
-
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setItemDelegate(DoubleDelegate(self))
         typeDelegate = ParamTypeDelegate(self)
         self.setItemDelegateForRow(0, typeDelegate)
         self.setItemDelegateForRow(1, UnitDelegate(self))
         self.setItemDelegateForRow(2, StatisticsDelegate(self))
-
         typeDelegate.typeSelected.connect(self.typeSelected)
 
-
-
-    @QtCore.Slot(object, str)
+    @pyqtSlot(str)
     def typeSelected(self, paramType):
         if self.selectionModel().currentIndex().column() == 0:
             self.depTypeSelected.emit(paramType)
@@ -48,14 +45,11 @@ class VariableTableView(QtGui.QTableView):
         self.model().deleteSample(self.selectionModel().currentIndex().row())
 
 
+class VariableListModel(QAbstractTableModel):
 
-
-class VariableListModel(QtCore.QAbstractTableModel):
-
-    def __init__(self, parent, colHeader = ['Dependant', 'Independant 1'], rowHeader = ['Type', 'Unit', 'Statistic'], *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+    def __init__(self, colHeader = ['Dependant', 'Independant 1'], rowHeader = ['Type', 'Unit', 'Statistic'], parent=None):
+        super().__init__(parent)
         self.clear(colHeader, rowHeader)
-
 
     def clear(self, colHeader = ['Dependant', 'Independant 1'], rowHeader = ['Type', 'Unit', 'Statistic']):
         self.colHeader = colHeader
@@ -220,10 +214,10 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
 
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.rowHeader)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return len(self.colHeader)
 
 
@@ -295,12 +289,12 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
     def deleteVariable(self, col):
 
-        msgBox = QtGui.QMessageBox()
+        msgBox = QMessageBox()
         msgBox.setWindowTitle("Deletion")
         msgBox.setText("Are you sure you want to delete the variable '" + self.colHeader[col] + "'?")
-        msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-        msgBox.setDefaultButton(QtGui.QMessageBox.No)
-        if msgBox.exec_() == QtGui.QMessageBox.Yes:
+        msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+        msgBox.setDefaultButton(QMessageBox.No)
+        if msgBox.exec_() == QMessageBox.Yes:
             for rowName in self.rowHeader:
                 del self.__data[(rowName, self.colHeader[col])]
                 
@@ -316,12 +310,12 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
     def deleteSample(self, noRow):
 
-        msgBox = QtGui.QMessageBox()
+        msgBox = QMessageBox()
         msgBox.setWindowTitle("Deletion")
         msgBox.setText("Are you sure you want to delete the sample at index " + self.rowHeader[noRow] + "?")
-        msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-        msgBox.setDefaultButton(QtGui.QMessageBox.No)
-        if msgBox.exec_() == QtGui.QMessageBox.Yes:
+        msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+        msgBox.setDefaultButton(QMessageBox.No)
+        if msgBox.exec_() == QMessageBox.Yes:
             for colName in self.colHeader:
                 del self.__data[(self.rowHeader[noRow], colName)]
             del self.rowHeader[noRow]
@@ -329,18 +323,18 @@ class VariableListModel(QtCore.QAbstractTableModel):
         self.refresh()
 
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole and  role != QtCore.Qt.EditRole:
+        if role != Qt.DisplayRole and  role != Qt.EditRole:
             return None
 
         return str(self.__data[(self.rowHeader[index.row()], self.colHeader[index.column()])])
 
 
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=Qt.DisplayRole):
         if value is None:
             value = ""
             
@@ -355,23 +349,22 @@ class VariableListModel(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if "comp." in self.colHeader[index.column()] and self.rowHeader[index.row()] == "Type":
-            return QtCore.Qt.NoItemFlags
+            return Qt.NoItemFlags
             
         else:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled
 
 
-    def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.colHeader[section]        
-        elif orientation == QtCore.Qt.Vertical and role == QtCore.Qt.DisplayRole:
+        elif orientation == Qt.Vertical and role == Qt.DisplayRole:
             return self.rowHeader[section]
         return None
 
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
+        self.layoutChanged.emit()
 
     def load(self, param):
         #param.description.

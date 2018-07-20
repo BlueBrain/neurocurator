@@ -2,58 +2,60 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui, QtCore
+from PyQt5.QtCore import (QModelIndex, pyqtSignal, pyqtSlot, Qt, QAbstractTableModel)
+from PyQt5.QtWidgets import (QTableView, QMessageBox, QLabel, QGridLayout,
+                             QTabWidget, QLineEdit, QAbstractItemView, QWidget,
+                             QPushButton)
 
-from nat.modelingParameter import getParameterTypes, ParameterTypeTree, \
-    getParameterTypeNameFromID 
-from nat.parameterInstance import ParameterInstance
-from nat.paramDesc import ParamDescFunction, InvalidEquation, ParamRef 
-from nat.utils import Id2FileName
 from nat.annotation import getParametersForPub
-
+from nat.modelingParameter import (getParameterTypes, ParameterTypeTree,
+                                   getParameterTypeNameFromID)
+from nat.paramDesc import ParamDescFunction, InvalidEquation, ParamRef
+from nat.parameterInstance import ParameterInstance
+from nat.utils import Id2FileName
 from .itemDelegates import CheckBoxDelegate
 from .variableTableWgt import VariableTableView, VariableListModel
 
 
-parameterTypeTree     = ParameterTypeTree.load()
-parameterTypes        = getParameterTypes()
+parameterTypeTree = ParameterTypeTree.load()
+parameterTypes = getParameterTypes()
 
 
+class ParamFunctionWgt(QWidget):
 
-class ParamFunctionWgt(QtGui.QWidget):
-
-    paramTypeSelected = QtCore.Signal(str)
+    paramTypeSelected = pyqtSignal(str)
     
-    def __init__(self, parent):
-        super(ParamFunctionWgt, self).__init__()
-        self.parent = parent
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self._parent = parent
+
         self.parameterTypes = getParameterTypes()
 
         # Widgets        
-        self.addIndepVarBtn        = QtGui.QPushButton("Add variable")
-        self.deleteIndepVarBtn     = QtGui.QPushButton("Delete variable")
-        self.varListTblWdg         = VariableTableView() 
-        self.varListModel          = VariableListModel(self)
-        self.varListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.addIndepVarBtn = QPushButton("Add variable")
+        self.deleteIndepVarBtn = QPushButton("Delete variable")
+        self.varListTblWdg = VariableTableView()
+        self.varListModel = VariableListModel(parent=self)
+        self.varListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.varListTblWdg.setModel(self.varListModel)
 
-        self.varTab                = QtGui.QWidget(self)    
-        grid                       = QtGui.QGridLayout(self.varTab)
+        self.varTab                = QWidget(self)
+        grid                       = QGridLayout(self.varTab)
         grid.addWidget(self.varListTblWdg, 0, 0, 3, 1)
         grid.addWidget(self.addIndepVarBtn, 0, 1)
         grid.addWidget(self.deleteIndepVarBtn, 1, 1)
 
         self.paramListTblWdg       = ParameterInstanceTableView()
-        self.paramListModel        = ParameterInstanceListModel(self)
-        self.paramListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.paramListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.paramListModel        = ParameterInstanceListModel(parent=self)
+        self.paramListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.paramListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.paramListTblWdg.setModel(self.paramListModel)
 
-        self.functionTxt        = QtGui.QLineEdit(self)
-        self.functionDepPartTxt    = QtGui.QLabel(self)
+        self.functionTxt        = QLineEdit(self)
+        self.functionDepPartTxt    = QLabel(self)
 
-        self.eqElementsTabs = QtGui.QTabWidget(self)
+        self.eqElementsTabs = QTabWidget(self)
         self.eqElementsTabs.addTab(self.varTab,   "Equation variables")
         self.eqElementsTabs.addTab(self.paramListTblWdg, "Equation parameters")
         #self.eqElementsTabs.setTabEnabled(1, False)
@@ -62,24 +64,20 @@ class ParamFunctionWgt(QtGui.QWidget):
         # It need not be from the same annotation, nor even the same paper (in case they took a parameter 
         # values from a paper they cite).
 
-
         # Signals
         self.addIndepVarBtn.clicked.connect(self.varListModel.addVariable)
         self.deleteIndepVarBtn.clicked.connect(self.varListTblWdg.deleteVariable)
         self.varListTblWdg.depTypeSelected.connect(self.setDepText)
 
-
         # Layout
-        grid     = QtGui.QGridLayout(self)
+        grid     = QGridLayout(self)
 
         grid.addWidget(self.eqElementsTabs, 0, 0, 1, 3)
-        grid.addWidget(QtGui.QLabel("Equation:  "), 2, 0)
+        grid.addWidget(QLabel("Equation:  "), 2, 0)
         grid.addWidget(self.functionDepPartTxt, 2, 1)
         grid.addWidget(self.functionTxt, 2, 2)
 
-
-
-    @QtCore.Slot(object, str)
+    @pyqtSlot(str)
     def setDepText(self, depVar):
         self.functionDepPartTxt.setText(depVar + " = ")
         self.paramTypeSelected.emit(depVar)
@@ -108,7 +106,7 @@ class ParamFunctionWgt(QtGui.QWidget):
         try:
             description = ParamDescFunction(depVar, indepVars, parameters, equation)
         except InvalidEquation:
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Invalid equation")
             msgBox.setText("The equation '" + equation + "' is not a valid Python expression. Please correct this expression and try saving again.")
             msgBox.exec_()
@@ -154,7 +152,7 @@ class ParamFunctionWgt(QtGui.QWidget):
 
 
     def fillingEquationParameterList(self, currentParameter = None):
-        parameters = getParametersForPub(self.parent.dbPath, Id2FileName(self.parent.currentAnnotation.pubId))
+        parameters = getParametersForPub(self._parent.dbPath, Id2FileName(self._parent.currentAnnotation.pubId))
         parameters = [param for param in parameters if param.isExperimentProperty == False]
         if currentParameter is None:
             selectedParams = []
@@ -169,40 +167,28 @@ class ParamFunctionWgt(QtGui.QWidget):
         pass
 
 
+class ParameterInstanceTableView(QTableView):
 
+    tableCheckBoxClicked = pyqtSignal(int)
 
-
-
-
-
-
-
-
-
-class ParameterInstanceTableView(QtGui.QTableView):
-
-
-    tableCheckBoxClicked = QtCore.Signal(int)
-
-    def __init__(self, *args, **kwargs):
-        QtGui.QTableView.__init__(self, *args, **kwargs)
-        
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setItemDelegateForColumn(0, CheckBoxDelegate(self))      
 
-    @QtCore.Slot(object) #, str
-    def checkBoxClicked(self):
+    @pyqtSlot(bool)
+    def checkBoxClicked(self, checked):
         # This slot will be called when our button is clicked. 
         # self.sender() returns a refence to the QPushButton created
         # by the delegate, not the delegate itself.
         #self.model().deleteRow(self.sender().row)
-        self.model().selectParameter(self.sender().row, not self.sender().isChecked())
+        self.model().selectParameter(self.sender().row, not checked)
         self.tableCheckBoxClicked.emit(self.sender().row)
 
 
-class ParameterInstanceListModel(QtCore.QAbstractTableModel):
+class ParameterInstanceListModel(QAbstractTableModel):
 
-    def __init__(self, parent, colHeader = ['', 'Type', 'Description'], *args): #'Type', 
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+    def __init__(self, colHeader = ['', 'Type', 'Description'], parent=None): #'Type',
+        super().__init__(parent)
         #self.parameterList = parameterList
         self.colHeader = colHeader
         self.nbCol     = len(colHeader)
@@ -215,10 +201,10 @@ class ParameterInstanceListModel(QtCore.QAbstractTableModel):
             self.selected[id] = False
         self.refresh()
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.instances)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return self.nbCol 
 
 
@@ -247,23 +233,23 @@ class ParameterInstanceListModel(QtCore.QAbstractTableModel):
             raise ValueError
 
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole:
+        if role != Qt.DisplayRole:
             return None
 
         return self.getByIndex(self.instances[index.row()], index.column())
 
 
     def flags(self, index):
-        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled
 
 
 
-    def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.colHeader[section]        
         return None
 
@@ -282,5 +268,4 @@ class ParameterInstanceListModel(QtCore.QAbstractTableModel):
 
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
+        self.layoutChanged.emit()

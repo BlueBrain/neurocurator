@@ -2,57 +2,53 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui
+from PyQt5.QtWidgets import QHBoxLayout, QAbstractItemView, QWidget
 
 from nat.annotation import getParametersForPub
-from nat.utils import Id2FileName
 from nat.paramDesc import ParamRef
+from nat.utils import Id2FileName
 
-#from modelingParameter import ExperimentProperty
-#from itemDelegates import ExpPropertiesDelegate
 from .paramFunctionWgt import ParameterInstanceTableView, ParameterInstanceListModel
 
-class ExpPropWgt(QtGui.QWidget):
 
-    def __init__(self, parent):
+class ExpPropWgt(QWidget):
 
-        self.parent = parent
-        super(ExpPropWgt, self).__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.main_window = parent
 
         # Widgets
-        self.expPropertiesListTblWdg      = ParameterInstanceTableView() 
-        self.expPropertiesListModel       = ParameterInstanceListModel(self)
-        self.expPropertiesListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.expPropertiesListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.expPropertiesListTblWdg = ParameterInstanceTableView()
+        self.expPropertiesListModel = ParameterInstanceListModel(parent=self)
+        self.expPropertiesListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.expPropertiesListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.expPropertiesListTblWdg.setModel(self.expPropertiesListModel)
 
         self.expPropertiesListTblWdg.setColumnWidth(0, 20)
         self.expPropertiesListTblWdg.setColumnWidth(1, 150)
         self.expPropertiesListTblWdg.setColumnWidth(2, 500)
 
-
         # Signal
         self.expPropertiesListTblWdg.tableCheckBoxClicked.connect(self.propSelectionChanged)
 
         # Layout        
-        expPropertiesLayout = QtGui.QHBoxLayout(self)
+        expPropertiesLayout = QHBoxLayout(self)
         expPropertiesLayout.addWidget(self.expPropertiesListTblWdg)
 
-
     def fillingExpPropList(self, checkAll=False):
-        if self.parent.currentAnnotation is None:      
+        if self.main_window.currentAnnotation is None:
             return
             
-        parameters = getParametersForPub(self.parent.dbPath, Id2FileName(self.parent.currentAnnotation.pubId))
+        parameters = getParametersForPub(self.main_window.dbPath, Id2FileName(self.main_window.currentAnnotation.pubId))
         parameters = [param for param in parameters if param.isExperimentProperty == True]
 
         if checkAll:
             selectedParams = [param.id for param in parameters]  
-        elif self.parent.currentAnnotation is None:
+        elif self.main_window.currentAnnotation is None:
             selectedParams = []      
         else:
-            selectedParams = [ref.instanceId for ref in self.parent.currentAnnotation.experimentProperties]                  
+            selectedParams = [ref.instanceId for ref in self.main_window.currentAnnotation.experimentProperties]
             
         self.expPropertiesListModel.load(parameters, selectedParams)
         self.expPropertiesListModel.refresh()
@@ -68,5 +64,4 @@ class ExpPropWgt(QtGui.QWidget):
         return parameters
 
     def propSelectionChanged(self, row):
-        self.parent.setNeedSaving()
-
+        self.main_window.setNeedSaving()

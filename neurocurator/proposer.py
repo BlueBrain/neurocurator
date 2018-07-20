@@ -2,53 +2,51 @@
 
 __author__ = "Christian O'Reilly"
 
-from PySide import QtCore
+from PyQt5.QtCore import QModelIndex, QAbstractTableModel, Qt
 
 
-class PropositionTableModel(QtCore.QAbstractTableModel):
+class PropositionTableModel(QAbstractTableModel):
 
-    def __init__(self, *args):
-        super(PropositionTableModel, self).__init__(*args)
-
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.header = ["value", "unit", "authors", "year", "journal"]
         self.nbCol = len(self.header)
         self.propositions = []
 
     def refreshData(self, annotatedInstances, modelingInstance):
         self.propositions = []
+
         for annotInstance in annotatedInstances:
-            proposition = {}
-            proposition["value"]     = annotInstance.value
-            proposition["unit"]     = annotInstance.unit
-            proposition["authors"]     = ""
-            proposition["year"]     = ""
-            proposition["journal"]     = ""
-            proposition["parameterInstance"] = annotInstance
+            proposition = {"value": annotInstance.value,
+                           "unit": annotInstance.unit,
+                           "authors": "",
+                           "year": "",
+                           "journal": "",
+                           "parameterInstance": annotInstance}
             self.propositions.append(proposition)
 
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
+        self.layoutChanged.emit()
 
-
-    def rowCount(self, parent = None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.propositions)
 
-    def columnCount(self, parent = None):
+    def columnCount(self, parent=QModelIndex()):
         return self.nbCol 
 
 
 
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
 
-        #if role == QtCore.Qt.BackgroundRole:
+        #if role == Qt.BackgroundRole:
         #    if self.checkIdFct(self.getID(index.row())):
-        #        return QtGui.QBrush(QtGui.QColor(215, 214, 213), QtCore.Qt.SolidPattern)
+        #        return QtGui.QBrush(QtGui.QColor(215, 214, 213), Qt.SolidPattern)
         #    else:
         #        return None
 
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             try:
                 return self.propositions[index.row()][self.header[index.column()]]
             except KeyError:
@@ -56,20 +54,17 @@ class PropositionTableModel(QtCore.QAbstractTableModel):
         return None
 
 
-    def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, col, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.header[col]
         return None
 
     #def sort(self, col, order):
     #    #sort table by given column number col
-    #    self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
-    #    reverse = (order == QtCore.Qt.DescendingOrder)
+    #    self.layoutAboutToBeChanged.emit()
+    #    reverse = (order == Qt.DescendingOrder)
     #    self.refList = sorted(self.refList, key=lambda x: self.getByIndex(x, col), reverse = reverse)
-    #    self.emit(QtCore.SIGNAL("layoutChanged()"))
+    #    self.layoutChanged.emit()
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
-
-
+        self.layoutChanged.emit()

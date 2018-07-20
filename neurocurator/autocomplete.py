@@ -1,22 +1,27 @@
-from PySide import QtCore, QtGui
 from sys import platform as _platform
 
-class CustomQCompleter(QtGui.QCompleter):
+from PyQt5.QtCore import (pyqtSignal, QSortFilterProxyModel, QStringListModel,
+                          QEvent, QRegExp, Qt)
+from PyQt5.QtWidgets import QCompleter, QComboBox
+
+
+class CustomQCompleter(QCompleter):
     """
     adapted from: http://stackoverflow.com/a/7767999/2156909
     """
-    def __init__(self, *args):#parent=None):
-        super(CustomQCompleter, self).__init__(*args)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.local_completion_prefix = ""
         self.source_model = None
-        self.filterProxyModel = QtGui.QSortFilterProxyModel(self)
+        self.filterProxyModel = QSortFilterProxyModel(self)
         self.usingOriginalModel = False
 
     def setModel(self, strList): 
-        self.source_model =  QtGui.QStringListModel(strList)
-        self.filterProxyModel = QtGui.QSortFilterProxyModel(self)
+        self.source_model = QStringListModel(strList)
+        self.filterProxyModel = QSortFilterProxyModel(self)
         self.filterProxyModel.setSourceModel(self.source_model)
-        super(CustomQCompleter, self).setModel(self.filterProxyModel)
+        super().setModel(self.filterProxyModel)
         self.usingOriginalModel = True
 
 
@@ -24,9 +29,9 @@ class CustomQCompleter(QtGui.QCompleter):
         if not self.usingOriginalModel:
             self.filterProxyModel.setSourceModel(self.source_model)
 
-        pattern = QtCore.QRegExp(self.local_completion_prefix,
-                                QtCore.Qt.CaseInsensitive,
-                                QtCore.QRegExp.FixedString)
+        pattern = QRegExp(self.local_completion_prefix,
+                                Qt.CaseInsensitive,
+                                QRegExp.FixedString)
 
         self.filterProxyModel.setFilterRegExp(pattern)
 
@@ -35,24 +40,22 @@ class CustomQCompleter(QtGui.QCompleter):
         self.updateModel()
         if self.filterProxyModel.rowCount() == 0:
             self.usingOriginalModel = False
-            self.filterProxyModel.setSourceModel(QtGui.QStringListModel([path]))
+            self.filterProxyModel.setSourceModel(QStringListModel([path]))
             return [path]
 
         self.usingOriginalModel = True
         return []
 
-class AutoCompleteEdit(QtGui.QComboBox):
+class AutoCompleteEdit(QComboBox):
 
-    enterKeyPressed = QtCore.Signal(QtGui.QComboBox)
+    enterKeyPressed = pyqtSignal(QComboBox)
 
-    def __init__(self, *args, **kwargs):
-        super(AutoCompleteEdit, self).__init__(*args, **kwargs)
-
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setEditable(True)
         self.setInsertPolicy(self.NoInsert)
-
         self.comp = CustomQCompleter(self)
-        self.comp.setCompletionMode(QtGui.QCompleter.PopupCompletion)
+        self.comp.setCompletionMode(QCompleter.PopupCompletion)
         self.setCompleter(self.comp)
         self.setEditText("")
         self.erase = False
@@ -73,13 +76,13 @@ class AutoCompleteEdit(QtGui.QComboBox):
             if not self.deactivateClearing :
                 self.clearEditText()
 
-        super(AutoCompleteEdit, self).focusInEvent(event)
+        super().focusInEvent(event)
 
 
     def event(self, event):
-        if event.type() == QtCore.QEvent.KeyPress:
-            if event.key() == QtCore.Qt.Key_Enter or event.key() == 16777220:
-                # Enter (if event.key() == QtCore.Qt.Key_Enter) does not work
+        if event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Enter or event.key() == 16777220:
+                # Enter (if event.key() == Qt.Key_Enter) does not work
                 # for some reason
  
                 self.deactivateClearing = True
@@ -92,5 +95,5 @@ class AutoCompleteEdit(QtGui.QComboBox):
                 self.enterKeyPressed.emit(self)
                 self.deactivateClearing = False
                 
-        eventReturn = super(AutoCompleteEdit, self).event(event) 
+        eventReturn = super().event(event)
         return eventReturn

@@ -1,8 +1,8 @@
 __authors__ = ["Pierre-Alexandre Fonta", "Christian O'Reilly"]
 __maintainer__ = "Pierre-Alexandre Fonta"
 
-from PySide.QtCore import QModelIndex, Qt, QAbstractTableModel
-from PySide.QtGui import QColor, QBrush
+from PyQt5.QtCore import QModelIndex, Qt, QAbstractTableModel
+from PyQt5.QtGui import QColor, QBrush
 
 from nat.annotationSearch import AnnotationSearch
 

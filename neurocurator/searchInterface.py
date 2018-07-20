@@ -2,54 +2,55 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui, QtCore
-import pandas as pd
 import numpy as np
+import pandas as pd
+from PyQt5.QtCore import QModelIndex, pyqtSignal, pyqtSlot, Qt, QAbstractTableModel
+from PyQt5.QtWidgets import (QTableView, QCheckBox, QVBoxLayout, QWidget,
+                             QHBoxLayout, QGroupBox, QComboBox, QLineEdit,
+                             QFileDialog, QSplitter, QPushButton,
+                             QAbstractItemView, QHeaderView)
 
-
-from nat.annotationSearch import parameterKeys, annotationKeys, ParameterSearch, \
-    AnnotationSearch, parameterResultFields, annotationResultFields
+from nat.annotationSearch import (parameterKeys, annotationKeys,
+                                  ParameterSearch,
+                                  AnnotationSearch, parameterResultFields,
+                                  annotationResultFields)
 from nat.condition import ConditionAtom, ConditionAND, ConditionOR, ConditionNOT
 from nat.ontoManager import OntoManager
-
-from .itemDelegates import ParamTypeCbo, CheckBoxDelegate
 from .autocomplete import AutoCompleteEdit
+from .itemDelegates import ParamTypeCbo, CheckBoxDelegate
 
 
-class SearchWgt(QtGui.QWidget):
+class SearchWgt(QWidget):
 
-    annotationSelected = QtCore.Signal(object)
-    parameterSelected  = QtCore.Signal(object, object)
+    annotationSelected = pyqtSignal(object)
+    parameterSelected  = pyqtSignal(object, object)
 
-    
     def __init__(self, searchType="Parameter", parent=None):
-        super(SearchWgt, self).__init__(parent)
+        super().__init__(parent)
 
-        self.parent         = parent
+        # FIXME Delayed refactoring.
+        self._parent         = parent
+
         self.searchType     = searchType
         self.queryDef       = QueryDefinitionWgt(searchType, self)
         self.outputFormat   = OutputFormatWgt(searchType, self)
         
-        self.view = QtGui.QTableView()
+        self.view = QTableView()
         self.view.setWordWrap(True)
-        self.view.setTextElideMode(QtCore.Qt.ElideMiddle)
+        self.view.setTextElideMode(Qt.ElideMiddle)
         self.view.resizeRowsToContents()
-        self.view.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self.view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         
         self.model = PandasModel()
-        self.view.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.view.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        
-        
-        
-        self.view.setModel(self.model)        
-        
-        
-        self.buttonWgt  = QtGui.QWidget(self)
-        buttonLayout    = QtGui.QHBoxLayout(self.buttonWgt)
-        self.searchBtn  = QtGui.QPushButton("Search", self)
-        self.saveBtn    = QtGui.QPushButton("Save as .csv", self)
+        self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.view.setSelectionMode(QAbstractItemView.SingleSelection)
+
+        self.view.setModel(self.model)
+
+        self.buttonWgt  = QWidget(self)
+        buttonLayout    = QHBoxLayout(self.buttonWgt)
+        self.searchBtn  = QPushButton("Search", self)
+        self.saveBtn    = QPushButton("Save as .csv", self)
         buttonLayout.addWidget(self.searchBtn)
         buttonLayout.addWidget(self.saveBtn)
         
@@ -57,16 +58,15 @@ class SearchWgt(QtGui.QWidget):
         self.saveBtn.clicked.connect(self.saveResults)   
         self.view.doubleClicked.connect(self.loadItem)
 
-        self.splitter = QtGui.QSplitter(QtCore.Qt.Vertical, self)
+        self.splitter = QSplitter(Qt.Vertical, self)
         
         self.splitter.addWidget(self.queryDef)
         self.splitter.addWidget(self.outputFormat)
         self.splitter.addWidget(self.view)
         self.splitter.addWidget(self.buttonWgt)    
         
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self.splitter)
-
 
     def loadItem(self, index):
         if self.searchType == "Parameter":
@@ -83,12 +83,12 @@ class SearchWgt(QtGui.QWidget):
         
     def search(self):        
 
-        if self.parent is None:
+        if self._parent is None:
             dbPath = None
-        elif not hasattr(self.parent, "dbPath"):
+        elif not hasattr(self._parent, "dbPath"):
             dbPath = None
         else:
-            dbPath = self.parent.dbPath
+            dbPath = self._parent.dbPath
 
         if self.searchType == "Parameter":
             searcher = ParameterSearch(dbPath)
@@ -109,23 +109,20 @@ class SearchWgt(QtGui.QWidget):
         
     def saveResults(self):
         
-        fname, _ = QtGui.QFileDialog.getSaveFileName(self, 'Save research results')
+        fname, _ = QFileDialog.getSaveFileName(self, 'Save research results')
         if not fname == "":
             if not "." in fname:
                 fname = fname + ".csv"
             self.model._data.to_csv(fname)
-        
-        
-        
-        
-class QueryDefinitionWgt(QtGui.QGroupBox):
+
+
+class QueryDefinitionWgt(QGroupBox):
 
     def __init__(self, searchType, parent=None):
-        super(QueryDefinitionWgt, self).__init__("Search conditions", parent)
-        
+        super().__init__("Search conditions", parent)
         self.searchType = searchType
         self.node = QueryNodeWgt(self.searchType, self)       
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self.node)
         layout.addStretch(100)
         
@@ -133,27 +130,23 @@ class QueryDefinitionWgt(QtGui.QGroupBox):
         return self.node.getQuery()
     
 
-class QueryNodeWgt(QtGui.QWidget):
+class QueryNodeWgt(QWidget):
 
-    valueTypeChanged = QtCore.Signal(object, object)
+    valueTypeChanged = pyqtSignal(object, object)
 
     def __init__(self, searchType, parent=None):
-        super(QueryNodeWgt, self).__init__(parent)
-            
-        self.conditionTypeCbo = QtGui.QComboBox(self)
-        self.rowsWgt          = QtGui.QWidget(self)
+        super().__init__(parent)
+        self.conditionTypeCbo = QComboBox(self)
+        self.rowsWgt          = QWidget(self)
         self.conditionTypeCbo.addItems(["", "AND", "OR", "NOT"])
         self.searchType = searchType
         self.queryRows  = []
-        layout = QtGui.QHBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.addWidget(self.conditionTypeCbo)
         layout.addWidget(self.rowsWgt)
-        self.rowsLayout = QtGui.QVBoxLayout(self.rowsWgt)
+        self.rowsLayout = QVBoxLayout(self.rowsWgt)
         self.addARow()
-        
-        self.conditionTypeCbo.currentIndexChanged.connect(self.conditionTypeChanged)        
-
-
+        self.conditionTypeCbo.currentIndexChanged.connect(self.conditionTypeChanged)
 
     def getQuery(self):
         query = None
@@ -215,10 +208,10 @@ class QueryNodeWgt(QtGui.QWidget):
         nodeWgt = QueryNodeWgt(self.searchType, self)
         self.queryRows.append(nodeWgt)
         self.rowsLayout.addWidget(self.queryRows[-1])
-        nodeWgt.valueTypeChanged.connect(self.valueTypeChangedSlot) 
+        nodeWgt.valueTypeChanged.connect(self.valueTypeChangedSlot)
 
-
-    @QtCore.Slot(object, object)
+    @pyqtSlot(object)
+    @pyqtSlot(object, object)
     def valueTypeChangedSlot(self, rowObject, nodeObject=None):
         if self.conditionTypeCbo.currentText() in ["", "NOT"]:
             self.valueTypeChanged.emit(rowObject, self)
@@ -231,12 +224,11 @@ class QueryNodeWgt(QtGui.QWidget):
             elif rowObject.valueType.currentText() != "" and noRow == self.rowsLayout.count()-1 :
                 #if self.conditionTypeCbo.currentText() in ["AND", "OR"]:
                 self.addANode()
-                
 
-        
-class QueryRowWgt(QtGui.QWidget):
 
-    valueTypeChanged = QtCore.Signal(object)
+class QueryRowWgt(QWidget):
+
+    valueTypeChanged = pyqtSignal(object)
     
     ontoMng  = OntoManager()
     treeData = ontoMng.trees 
@@ -247,11 +239,12 @@ class QueryRowWgt(QtGui.QWidget):
     del treeData    
     
     def __init__(self, searchType, parent=None):
-        super(QueryRowWgt, self).__init__(parent)
+        super().__init__(parent)
         
         self.searchType = searchType
-        self.valueType  = QtGui.QComboBox(self)
+        self.valueType  = QComboBox(self)
         self.valueType.addItem("")
+
         if self.searchType == "Annotation":
             self.valueType.addItems(annotationKeys)    
         elif self.searchType == "Parameter":
@@ -261,13 +254,12 @@ class QueryRowWgt(QtGui.QWidget):
             
         self.valueType.currentIndexChanged.connect(self.valueTypeChangedEmit)
         
-        self.value      = QtGui.QLineEdit(self)
+        self.value      = QLineEdit(self)
         self.value.setEnabled(False)
 
-        self.layout = QtGui.QHBoxLayout(self)
+        self.layout = QHBoxLayout(self)
         self.layout.addWidget(self.valueType)
         self.layout.addWidget(self.value)
-
 
     def valueTypeChangedEmit(self):
         self.value.setEnabled(self.valueType.currentText() != "")            
@@ -275,10 +267,10 @@ class QueryRowWgt(QtGui.QWidget):
         child = self.layout.takeAt(1)
         child.widget().deleteLater()    
         if self.valueType.currentText() == "Has parameter":
-            self.value = QtGui.QComboBox(self)
+            self.value = QComboBox(self)
             self.value.addItems(["False", "True"])
         elif self.valueType.currentText() == "Annotation type":
-            self.value = QtGui.QComboBox(self)
+            self.value = QComboBox(self)
             self.value.addItems(["text", "figure", "table", "equation", "position"])
         elif self.valueType.currentText() == "Parameter name":
             self.value = ParamTypeCbo(self)
@@ -286,10 +278,10 @@ class QueryRowWgt(QtGui.QWidget):
             self.value = AutoCompleteEdit(self)
             self.value.setModel(QueryRowWgt.tagNames)                        
         elif self.valueType.currentText() == "Result type":
-            self.value = QtGui.QComboBox(self)
+            self.value = QComboBox(self)
             self.value.addItems(["pointValue", "function", "numericalTrace"])
         else:
-            self.value = QtGui.QLineEdit(self)
+            self.value = QLineEdit(self)
  
         self.layout.addWidget(self.value)
         self.valueTypeChanged.emit(self)
@@ -300,9 +292,9 @@ class QueryRowWgt(QtGui.QWidget):
         if self.valueType.currentText() == "":
             return None
             
-        if isinstance(self.value, QtGui.QLineEdit):
+        if isinstance(self.value, QLineEdit):
             value = self.value.text()
-        elif isinstance(self.value, QtGui.QComboBox):
+        elif isinstance(self.value, QComboBox):
             value = self.value.currentText()
         else:
             raise TypeError
@@ -310,14 +302,12 @@ class QueryRowWgt(QtGui.QWidget):
         return ConditionAtom(self.valueType.currentText(), value)
 
 
-
-        
-class OutputFormatWgt(QtGui.QGroupBox):
+class OutputFormatWgt(QGroupBox):
 
     def __init__(self, searchType, parent=None):
-        super(OutputFormatWgt, self).__init__("Output format", parent)
-        self.searchType = searchType
+        super().__init__("Output format", parent)
 
+        self.searchType = searchType
 
         if self.searchType == "Parameter":
             self.fields = parameterResultFields
@@ -325,10 +315,9 @@ class OutputFormatWgt(QtGui.QGroupBox):
             self.fields = annotationResultFields
         else:
             raise ValueError
-    
 
         self.fieldsTblWdg       = FieldTableView(self)
-        self.paramListModel     = FieldListModel(self)
+        self.paramListModel     = FieldListModel(parent=self)
         #self.paramListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         #self.paramListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.fieldsTblWdg.setModel(self.paramListModel)
@@ -337,13 +326,11 @@ class OutputFormatWgt(QtGui.QGroupBox):
 
         self.outputProperties = OutputPropertiesWgt(searchType, self)
 
-        layout = QtGui.QHBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.addWidget(self.fieldsTblWdg)
         layout.addWidget(self.outputProperties)
         
         self.paramListModel.load(self.fields)
-
-        
     
     def getFields(self):
         return self.paramListModel.getSelectedFields()
@@ -352,20 +339,18 @@ class OutputFormatWgt(QtGui.QGroupBox):
         self.outputProperties.setSearcherProperties(searcher)
 
 
-
-        
-class OutputPropertiesWgt(QtGui.QWidget):
+class OutputPropertiesWgt(QWidget):
 
     def __init__(self, searchType, parent=None):
-        super(OutputPropertiesWgt, self).__init__(parent)
+        super().__init__(parent)
+
         self.searchType = searchType
 
-
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
 
         if self.searchType == "Parameter":
-            self.expandRequiredTagsChk  = QtGui.QCheckBox("Expand required tags")
-            self.onlyCentralTendancyChk = QtGui.QCheckBox("Show only central tendency of parameter values")
+            self.expandRequiredTagsChk  = QCheckBox("Expand required tags")
+            self.onlyCentralTendancyChk = QCheckBox("Show only central tendency of parameter values")
             layout.addWidget(self.onlyCentralTendancyChk)
             layout.addWidget(self.expandRequiredTagsChk)
             layout.addStretch(1)
@@ -375,8 +360,6 @@ class OutputPropertiesWgt(QtGui.QWidget):
         
         else:
             raise ValueError
-
-        
 
     def setSearcherProperties(self, searcher):
 
@@ -391,17 +374,13 @@ class OutputPropertiesWgt(QtGui.QWidget):
             raise ValueError
 
 
+class PandasModel(QAbstractTableModel):
 
-
-
-
-
-class PandasModel(QtCore.QAbstractTableModel):
     def __init__(self, data=pd.DataFrame(), parent=None):
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        super().__init__(parent)
         self._data = data
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self._data.values)
 
     def columns(self):
@@ -410,12 +389,12 @@ class PandasModel(QtCore.QAbstractTableModel):
     def indDisplayColumns(self):
         return [no for no, col in enumerate(self._data.columns) if col[:4] != "obj_"] 
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return len(self.columns())
 
-    def data(self, index, role= QtCore.Qt.DisplayRole):
+    def data(self, index, role= Qt.DisplayRole):
         if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
+            if role == Qt.DisplayRole:
                 return str(self._data.values[index.row()][self.indDisplayColumns()[index.column()]])
         return None
 
@@ -425,48 +404,37 @@ class PandasModel(QtCore.QAbstractTableModel):
                 return self._data[objField][index.row()]
         raise ValueError
 
-    def headerData(self, index, orientation, role):
-        if   orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, index, orientation, role=Qt.DisplayRole):
+        if   orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.columns()[index]
-        elif orientation == QtCore.Qt.Vertical and role == QtCore.Qt.DisplayRole:
+        elif orientation == Qt.Vertical and role == Qt.DisplayRole:
             return str(self._data.index[index])
         return None
 
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
+        self.layoutChanged.emit()
 
 
+class FieldTableView(QTableView):
 
+    tableCheckBoxClicked = pyqtSignal(int)
 
-
-
-
-
-
-
-
-
-class FieldTableView(QtGui.QTableView):
-
-
-    tableCheckBoxClicked = QtCore.Signal(int)
-
-    def __init__(self, *args, **kwargs):
-        QtGui.QTableView.__init__(self, *args, **kwargs)
-        
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setItemDelegateForColumn(0, CheckBoxDelegate(self))      
 
-    @QtCore.Slot(object) #, str
-    def checkBoxClicked(self):
+    @pyqtSlot(bool)
+    def checkBoxClicked(self, clicked):
         self.model().toggleParameter(self.sender().row)
         self.tableCheckBoxClicked.emit(self.sender().row)
 
 
-class FieldListModel(QtCore.QAbstractTableModel):
+class FieldListModel(QAbstractTableModel):
 
-    def __init__(self, parent, colHeader = ['', 'Fields to include'], *args): #'Type',
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+    def __init__(self, colHeader = ['', 'Fields to include'], parent=None): #'Type',
+        super().__init__(parent)
+
         #self.parameterList = parameterList
         self.colHeader = colHeader
         self.nbCol     = len(colHeader)
@@ -479,10 +447,10 @@ class FieldListModel(QtCore.QAbstractTableModel):
     #        self.selected[id] = False
     #    self.refresh()
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.fields)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return self.nbCol 
 
 
@@ -495,23 +463,23 @@ class FieldListModel(QtCore.QAbstractTableModel):
             raise ValueError
 
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole:
+        if role != Qt.DisplayRole:
             return None
 
         return self.getByIndex(index.row(), index.column())
 
 
     def flags(self, index):
-        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled
 
 
 
-    def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.colHeader[section]        
         return None
 
@@ -529,7 +497,7 @@ class FieldListModel(QtCore.QAbstractTableModel):
         self.selected[row] = not self.selected[row]
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
+        self.layoutChanged.emit()
 
     def getSelectedFields(self):
         return [field for field, selected in zip(self.fields, self.selected) if selected]

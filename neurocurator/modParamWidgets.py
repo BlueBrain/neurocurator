@@ -2,29 +2,31 @@
 
 __author__ = "Christian O'Reilly"
 
-# Contributed libraries imports
-from PySide import QtGui, QtCore
+from PyQt5.QtCore import QModelIndex, pyqtSignal, pyqtSlot, QAbstractTableModel, Qt
+from PyQt5.QtWidgets import (QMessageBox, QGridLayout, QAbstractItemView,
+                             QGroupBox, QSplitter, QVBoxLayout, QLabel,
+                             QHBoxLayout, QStackedWidget, QCheckBox, QComboBox,
+                             QTableView, QWidget, QPushButton)
 
-from nat.modelingParameter import getParameterTypeFromName, \
-    getParameterTypeNameFromID, getParameterTypeFromID
-from nat.ontoManager import OntoManager  
+from nat.modelingParameter import (getParameterTypeFromName,
+                                   getParameterTypeNameFromID,
+                                   getParameterTypeFromID)
+from nat.ontoManager import OntoManager
 from nat.tag import RequiredTag
 from nat.tagUtilities import nlx2ks
-
 from .itemDelegates import ReqTagDelegate
 from .paramFunctionWgt import ParamFunctionWgt
 from .paramRelationWgt import ParamRelationWgt
 from .paramTraceWgt import ParamTraceWgt
-from .paramValueWgt import ParamValueWgt 
+from .paramValueWgt import ParamValueWgt
 
 
+class RequiredTagsTableView(QTableView):
 
-class RequiredTagsTableView(QtGui.QTableView):
+    setReqTags = pyqtSignal(str)
 
-    setReqTags = QtCore.Signal(str)
-
-    def __init__(self, *args, **kwargs):
-        QtGui.QTableView.__init__(self, *args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.reqTagDelegate = ReqTagDelegate(self)
         self.setItemDelegateForColumn(1, self.reqTagDelegate)
         ontoMng = OntoManager()
@@ -51,11 +53,10 @@ class RequiredTagsTableView(QtGui.QTableView):
 
 
 
-class RequiredTagsListModel(QtCore.QAbstractTableModel):
+class RequiredTagsListModel(QAbstractTableModel):
 
-    def __init__(self, parent, colHeader = ['Required categories', 'Selected tag'], *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
-
+    def __init__(self, colHeader = ['Required categories', 'Selected tag'], parent=None):
+        super().__init__(parent)
         self.colHeader             = colHeader
         self.nbCol                 = len(colHeader)
         self.requiredTagsIds       = []
@@ -67,17 +68,17 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
         self.dicData                   = ontoMng.dics
 
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.requiredTagsNames)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return self.nbCol 
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if not role in [QtCore.Qt.DisplayRole, QtCore.Qt.UserRole]:
+        if not role in [Qt.DisplayRole, Qt.UserRole]:
             return None
 
         if index.column() == 0:
@@ -88,7 +89,7 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
             return None
 
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(self, index, value, role=Qt.DisplayRole):
         if value is None:
             value = ""
 
@@ -119,20 +120,19 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if index.column() == 0:
-            result = super(RequiredTagsListModel, self).flags(index)
-            result &= ~QtCore.Qt.ItemIsEditable
+            result = super().flags(index)
+            result &= ~Qt.ItemIsEditable
             return result
         else:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
-    def headerData(self, section, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.colHeader[section]        
         return None
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
+        self.layoutChanged.emit()
 
     def addTag(self, requiredTagId, requiredTagName, selectedTagId, selectedTagName):
         self.requiredTagsNames.append(requiredTagName)
@@ -155,36 +155,36 @@ class RequiredTagsListModel(QtCore.QAbstractTableModel):
 
 
 
-class ParamModWgt(QtGui.QWidget):
+class ParamModWgt(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
-        self.parent = parent
-        super(ParamModWgt, self).__init__()
+        self.main_window = parent
 
         self.buildRequiredTagsGB()
 
         # Widgets        
-        self.newParamBtn        = QtGui.QPushButton("New")
-        self.deleteParamBtn     = QtGui.QPushButton("Delete")
-        self.paramSaveAnnotBtn  = QtGui.QPushButton("Save") 
-        buttonWidget             = QtGui.QWidget(self)
+        self.newParamBtn        = QPushButton("New")
+        self.deleteParamBtn     = QPushButton("Delete")
+        self.paramSaveAnnotBtn  = QPushButton("Save")
+        buttonWidget             = QWidget(self)
 
-        self.existingParamsGB     = QtGui.QGroupBox("Existing parameters", self)
+        self.existingParamsGB     = QGroupBox("Existing parameters", self)
 
-        self.paramListTblWdg      = QtGui.QTableView() 
-        self.paramListModel     = ParameterListModel(self)
-        self.paramListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.paramListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.paramListTblWdg      = QTableView()
+        self.paramListModel     = ParameterListModel(parent=self)
+        self.paramListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.paramListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.paramListTblWdg.setModel(self.paramListModel)
 
         self.paramListTblWdg.setColumnWidth(0, 150)
         self.paramListTblWdg.setColumnWidth(1, 350)
 
         self.relationWgt    = ParamRelationWgt(parent)
-        self.newParamsGB    = QtGui.QGroupBox("Parameter details", self)
-        self.resultTypeCbo  = QtGui.QComboBox(self)
-        self.isExpProp      = QtGui.QCheckBox("is an experimental property", self)
+        self.newParamsGB    = QGroupBox("Parameter details", self)
+        self.resultTypeCbo  = QComboBox(self)
+        self.isExpProp      = QCheckBox("is an experimental property", self)
 
         self.resultTypeCbo.addItems(["point value", "function", "numerical trace"])
         
@@ -194,11 +194,10 @@ class ParamModWgt(QtGui.QWidget):
 
         self.functionParamWgt.mainWgt = self
 
-        self.paramModStack       = QtGui.QStackedWidget(self)
+        self.paramModStack       = QStackedWidget(self)
         self.paramModStack.addWidget(self.singleValueParamWgt)
         self.paramModStack.addWidget(self.functionParamWgt)
         self.paramModStack.addWidget(self.traceParamWgt)
-
 
         # Signals
         selectionModel = self.paramListTblWdg.selectionModel()
@@ -212,28 +211,27 @@ class ParamModWgt(QtGui.QWidget):
         self.functionParamWgt.paramTypeSelected.connect(self.newParamTypeSelected)
         self.traceParamWgt.paramTypeSelected.connect(self.newParamTypeSelected)
 
-
         # Layout
-        buttonLayout = QtGui.QVBoxLayout(buttonWidget)
+        buttonLayout = QVBoxLayout(buttonWidget)
         buttonLayout.addWidget(self.paramSaveAnnotBtn)
         buttonLayout.addWidget(self.deleteParamBtn)
         buttonLayout.addWidget(self.newParamBtn)
 
-        existGrid     = QtGui.QHBoxLayout(self.existingParamsGB)
+        existGrid     = QHBoxLayout(self.existingParamsGB)
         existGrid.addWidget(buttonWidget)
         existGrid.addWidget(self.paramListTblWdg)
         
-        newGrid     = QtGui.QGridLayout(self.newParamsGB)
-        newGrid.addWidget(QtGui.QLabel("Result type"), 0, 0)
+        newGrid     = QGridLayout(self.newParamsGB)
+        newGrid.addWidget(QLabel("Result type"), 0, 0)
         newGrid.addWidget(self.resultTypeCbo, 0, 1)
         newGrid.addWidget(self.isExpProp, 0, 2)
         
         newGrid.addWidget(self.paramModStack, 1, 0, 1, 3)
         newGrid.addWidget(self.relationWgt, 1, 3)
 
-        layout = QtGui.QVBoxLayout(self)        
-        self.rootLayout = QtGui.QSplitter(QtCore.Qt.Vertical, parent=self)
-        self.rootLayout.setOrientation(QtCore.Qt.Vertical)
+        layout = QVBoxLayout(self)
+        self.rootLayout = QSplitter(Qt.Vertical, self)
+        self.rootLayout.setOrientation(Qt.Vertical)
         self.rootLayout.addWidget(self.existingParamsGB)
         self.rootLayout.addWidget(self.newParamsGB)
         self.rootLayout.addWidget(self.requireTagGB)
@@ -245,7 +243,6 @@ class ParamModWgt(QtGui.QWidget):
         self.paramSaveAnnotBtn.setEnabled(False)
         self.additionMode = False
         self.newParamsGB.setEnabled(False)
-
 
     def setRootLayoutSizes(self, sizes):
         self.rootLayout.setSizes(sizes)
@@ -261,7 +258,7 @@ class ParamModWgt(QtGui.QWidget):
 
         
 
-    @QtCore.Slot(object, str)
+    @pyqtSlot(str)
     def newParamTypeSelected(self, paramName):
         self.requiredTagsListModel.clear()
         self.requiredTagsListModel.refresh()
@@ -279,18 +276,18 @@ class ParamModWgt(QtGui.QWidget):
     def buildRequiredTagsGB(self):
 
         # Widgets            
-        self.requireTagGB = QtGui.QGroupBox("Required tag categories", self)
+        self.requireTagGB = QGroupBox("Required tag categories", self)
 
         self.requiredTagsListTblWdg      = RequiredTagsTableView() 
-        self.requiredTagsListModel       = RequiredTagsListModel(self)
-        self.requiredTagsListTblWdg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.requiredTagsListTblWdg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.requiredTagsListModel       = RequiredTagsListModel(parent=self)
+        self.requiredTagsListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.requiredTagsListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.requiredTagsListTblWdg.setModel(self.requiredTagsListModel)
         self.requiredTagsListTblWdg.setColumnWidth(0, 200)
         self.requiredTagsListTblWdg.setColumnWidth(1, 200)
 
         # Layout
-        requiredTagLayout = QtGui.QGridLayout(self.requireTagGB)
+        requiredTagLayout = QGridLayout(self.requireTagGB)
         requiredTagLayout.addWidget(self.requiredTagsListTblWdg, 0, 0, 4, 1)
 
 
@@ -320,7 +317,7 @@ class ParamModWgt(QtGui.QWidget):
         # parameters        
         if len(self.paramListTblWdg.selectionModel().selectedRows()) != 0:
             selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
-            paramId = self.parent.currentAnnotation.parameters[selectedRow].id        
+            paramId = self.main_window.currentAnnotation.parameters[selectedRow].id
         else:
             paramId = None
         
@@ -337,13 +334,13 @@ class ParamModWgt(QtGui.QWidget):
                 selectedRow = -1
 
             if selectedRow >= 0:
-                self.parent.currentAnnotation.parameters[selectedRow] = param
+                self.main_window.currentAnnotation.parameters[selectedRow] = param
             else:
-                self.parent.currentAnnotation.parameters.append(param)
+                self.main_window.currentAnnotation.parameters.append(param)
 
             self.additionMode = False
-            nbParams = len(self.parent.currentAnnotation.parameters)
-            self.parent.saveAnnotation()            
+            nbParams = len(self.main_window.currentAnnotation.parameters)
+            self.main_window.saveAnnotation()
 
             if selectedRow < 0 :
                 selectedRow = nbParams-1
@@ -354,8 +351,8 @@ class ParamModWgt(QtGui.QWidget):
 
     def deleteParameter(self):
         selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
-        del self.parent.currentAnnotation.parameters[selectedRow]
-        self.parent.saveAnnotation()
+        del self.main_window.currentAnnotation.parameters[selectedRow]
+        self.main_window.saveAnnotation()
         self.refreshModelingParameters()
 
 
@@ -373,10 +370,10 @@ class ParamModWgt(QtGui.QWidget):
         self.requiredTagsListModel.clear()
         self.requiredTagsListModel.refresh()
 
-        if self.parent.currentAnnotation is None:
+        if self.main_window.currentAnnotation is None:
             self.paramListModel.parameterList = []
         else:
-            self.paramListModel.parameterList = self.parent.currentAnnotation.parameters
+            self.paramListModel.parameterList = self.main_window.currentAnnotation.parameters
 
             aRowIsSelected = not row is None
             if aRowIsSelected:
@@ -420,15 +417,15 @@ class ParamModWgt(QtGui.QWidget):
         if selectedRow is None:
             selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
         
-        if self.parent.currentAnnotation is None:        
+        if self.main_window.currentAnnotation is None:
             clear()
             return
         
-        if selectedRow < 0 or selectedRow >= len(self.parent.currentAnnotation.parameters) :
+        if selectedRow < 0 or selectedRow >= len(self.main_window.currentAnnotation.parameters) :
             clear()
             return
             
-        currentParameter = self.parent.currentAnnotation.parameters[selectedRow]
+        currentParameter = self.main_window.currentAnnotation.parameters[selectedRow]
     
         self.newParamBtn.setEnabled(True)
         self.deleteParamBtn.setEnabled(True)
@@ -453,7 +450,7 @@ class ParamModWgt(QtGui.QWidget):
         ## UPDATING REQUIRED TAGS
         self.requiredTagsListModel.clear()       
         for tag in currentParameter.requiredTags:        
-            self.requiredTagsListModel.addTag(tag.rootId, self.parent.dicData[tag.rootId], tag.id, tag.name)
+            self.requiredTagsListModel.addTag(tag.rootId, self.main_window.dicData[tag.rootId], tag.id, tag.name)
         
         ## Adding new required tags that may have been specified since the 
         ## creation of this parameter instance.
@@ -462,7 +459,7 @@ class ParamModWgt(QtGui.QWidget):
         for reqTagRootId, reqTag in reqTags.items():
             #print(nlxCheck(reqTagRootId), [nlxCheck(tag.rootId) for tag in currentParameter.requiredTags])
             if not nlxCheck(reqTagRootId) in [nlxCheck(tag.rootId) for tag in currentParameter.requiredTags]:
-                self.requiredTagsListModel.addTag(reqTag.rootId, self.parent.dicData[reqTag.rootId], reqTag.id, reqTag.name)
+                self.requiredTagsListModel.addTag(reqTag.rootId, self.main_window.dicData[reqTag.rootId], reqTag.id, reqTag.name)
             
         self.requiredTagsListModel.refresh()
 
@@ -473,12 +470,12 @@ class ParamModWgt(QtGui.QWidget):
         if len(selected.indexes()) == 0:
             return
         if self.additionMode:
-            msgBox = QtGui.QMessageBox(self)
+            msgBox = QMessageBox(self)
             msgBox.setWindowTitle("Cancellation")
             msgBox.setText("Are you sure you want to cancel the addition of the new parameter being edited? If not, say no and then hit 'Save' to save this new parameter.")
-            msgBox.setStandardButtons(QtGui.QMessageBox.No | QtGui.QMessageBox.Yes)
-            msgBox.setDefaultButton(QtGui.QMessageBox.No)
-            if msgBox.exec_() == QtGui.QMessageBox.Yes:
+            msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+            msgBox.setDefaultButton(QMessageBox.No)
+            if msgBox.exec_() == QMessageBox.Yes:
                 self.additionMode = False
                 self.loadRow()
             else:
@@ -488,22 +485,18 @@ class ParamModWgt(QtGui.QWidget):
             self.loadRow()
 
 
+class ParameterListModel(QAbstractTableModel):
 
-
-
-
-class ParameterListModel(QtCore.QAbstractTableModel):
-
-    def __init__(self, parent, parameterList = [], header = ['ID', 'Type', 'Description'], *args):
-        QtCore.QAbstractTableModel.__init__(self, parent, *args)
+    def __init__(self, parameterList = [], header = ['ID', 'Type', 'Description'], parent=None):
+        super().__init__(parent)
         self.parameterList = parameterList
         self.header = header
         self.nbCol = len(header)
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.parameterList)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent=QModelIndex()):
         return self.nbCol 
 
 
@@ -512,7 +505,7 @@ class ParameterListModel(QtCore.QAbstractTableModel):
         if isinstance(selection, list):
             if selection == []:
                 return None
-            elif isinstance(selection[0], QtCore.QModelIndex):
+            elif isinstance(selection[0], QModelIndex):
                 index = selection[0]
         else:
             if selection.at(0) is None:
@@ -540,30 +533,26 @@ class ParameterListModel(QtCore.QAbstractTableModel):
         else:
             raise ValueError
 
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole:
+        if role != Qt.DisplayRole:
             return None
 
         return self.getByIndex(self.parameterList[index.row()], index.column())
 
-    def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+    def headerData(self, col, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self.header[col]
         return None
 
-    def sort(self, col, order):
-        """sort table by given column number col"""
-        self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
-        reverse = (order == QtCore.Qt.DescendingOrder)
-        self.annotationList = sorted(self.parameterList, key=lambda x: x.getByIndex(col), reverse = reverse) 
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
+    def sort(self, col, order=Qt.AscendingOrder):
+        # Sort table by given col number col.
+        self.layoutAboutToBeChanged.emit()
+        reverse = (order == Qt.DescendingOrder)
+        self.annotationList = sorted(self.parameterList, key=lambda x: x.getByIndex(col), reverse = reverse)
+        self.layoutChanged.emit()
 
     def refresh(self):
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
-
-
-
+        self.layoutChanged.emit()

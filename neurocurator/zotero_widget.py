@@ -1,9 +1,9 @@
 __authors__ = ["Pierre-Alexandre Fonta", "Christian O'Reilly"]
 __maintainer__ = "Pierre-Alexandre Fonta"
 
-from PySide.QtCore import Slot, Qt
-from PySide.QtGui import (QAbstractItemView, QSortFilterProxyModel, QWidget,
-                          QTableView, QVBoxLayout, QLineEdit, QFormLayout)
+from PyQt5.QtCore import Qt, pyqtSlot, QSortFilterProxyModel
+from PyQt5.QtWidgets import (QAbstractItemView, QWidget, QTableView,
+                             QVBoxLayout, QLineEdit, QFormLayout)
 
 from nat.zotero_wrap import ZoteroWrap
 from neurocurator import utils
@@ -81,7 +81,7 @@ class ZoteroTableWidget(QWidget):
 
     # Slots section.
 
-    @Slot()
+    @pyqtSlot()
     def refresh_database(self):
         """Start the thread refreshing the Zotero data.
 
@@ -89,7 +89,7 @@ class ZoteroTableWidget(QWidget):
         """
         self.refresh_thread.start()
 
-    @Slot()
+    @pyqtSlot()
     def refresh_started(self):
         """Disable the Zotero widget when the thread refreshing its data runs.
 
@@ -98,7 +98,7 @@ class ZoteroTableWidget(QWidget):
         # TODO Display an information on top of the disabled widget.
         self.setDisabled(True)
 
-    @Slot()
+    @pyqtSlot()
     def refresh_finished(self):
         """Enable the Zotero widget when the thread refreshing its data finishes.
 
@@ -108,7 +108,7 @@ class ZoteroTableWidget(QWidget):
         self.view.selectionModel().reset()
         self.setEnabled(True)
 
-    @Slot()
+    @pyqtSlot()
     def add_reference(self):
         """Display the form for and handle the creation of a new reference."""
         dialog = ZoteroReferenceDialog(self._zotero.reference_templates, self)
@@ -127,7 +127,7 @@ class ZoteroTableWidget(QWidget):
             proxy_index = self.view.model().mapFromSource(source_index)
             self.view.selectRow(proxy_index.row())
 
-    @Slot()
+    @pyqtSlot()
     def edit_reference(self):
         """Display the form for and handle the edition of the selected reference."""
         selected = self.view.selectionModel().currentIndex()
