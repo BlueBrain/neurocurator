@@ -1081,10 +1081,10 @@ class Window(QMainWindow):
     def waitForOCR(self, paperId, notify):
         
         while(not self.restClient.checkOCRFinished(paperId, self.dbPath)):
-            self.window.statusLabel.setText("Performing OCR...")
+            self.statusBar().showMessage("Performing OCR...")
             time.sleep(5)          
         
-        self.window.statusLabel.setText("OCR finished.")
+        self.statusBar().showMessage("OCR finished.")
         if notify == QMessageBox.Yes:
             msgBox = QMessageBox()
             msgBox.setStandardButtons(QMessageBox.Cancel)
