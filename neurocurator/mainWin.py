@@ -1072,7 +1072,7 @@ class Window(QMainWindow):
     def waitForOCR(self, paperId, notify):
         
         while(not self.restClient.checkOCRFinished(paperId, self.dbPath)):
-            self.statusBar().showMessage("Performing OCR...", 10*1000)
+            self.statusBar().showMessage("Performing OCR...")
             time.sleep(5)          
         
         self.statusBar().showMessage("OCR finished.", 10*1000)
