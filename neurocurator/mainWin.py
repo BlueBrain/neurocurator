@@ -74,11 +74,6 @@ class Window(QMainWindow):
 
         self.needSavingDisabled = False
 
-        # FIXME Delayed refactoring. Use signals/slots to update the message.
-        self._statusBar = self.statusBar()
-        self.statusLabel = QLabel("")
-        self._statusBar.addWidget(self.statusLabel)
-
         # Get the system username. It will be used to identify the curator
         # in the annotations.
         self.username = getpass.getuser()
@@ -1065,8 +1060,6 @@ class Window(QMainWindow):
                 if not persistId in selectedTags:
                     unusedPersistedSuggestedTags.append(persistId)
 
-
-
             for id in unusedPersistedSuggestedTags + tagIds:    
                 self.addSuggestedTagFromId(id)
 
@@ -1074,17 +1067,15 @@ class Window(QMainWindow):
     def clearPaper(self):
         #self.refEdt.setText("")
         self.IdTxt.setText("")
+
         
-
-
-
     def waitForOCR(self, paperId, notify):
         
         while(not self.restClient.checkOCRFinished(paperId, self.dbPath)):
-            self.statusBar().showMessage("Performing OCR...")
+            self.statusBar().showMessage("Performing OCR...", 10*1000)
             time.sleep(5)          
         
-        self.statusBar().showMessage("OCR finished.")
+        self.statusBar().showMessage("OCR finished.", 10*1000)
         if notify == QMessageBox.Yes:
             msgBox = QMessageBox()
             msgBox.setStandardButtons(QMessageBox.Cancel)
