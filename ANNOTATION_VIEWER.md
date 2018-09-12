@@ -40,6 +40,7 @@ requirements as NeuroCurator**.
 - [PyQt 5.10+](https://www.riverbankcomputing.com/software/pyqt/download5)
 - [Poppler 0.64+](https://poppler.freedesktop.org/) with Qt 5
 - [python-poppler-qt5](https://github.com/wbsoft/python-poppler-qt5)
+- [fuzzysearch](https://pypi.org/project/fuzzysearch/)
 
 ### A - Installation - NeuroCurator
 
@@ -83,6 +84,12 @@ pip install . --no-deps
 ```
 
 ### B - Installation - Annotation Viewer
+
+**Common instructions**
+
+```bash
+pip install fuzzysearch
+```
 
 **Instructions for Ubuntu 16.04+**
 
