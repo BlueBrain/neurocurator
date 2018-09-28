@@ -48,7 +48,7 @@ pip install neurocurator
 **Requirements**
 
 - System side:
-    - [Python 3.4+](https://www.python.org/downloads/)
+    - [Python 3.5+](https://www.python.org/downloads/)
     - [Qt 5.11+](https://doc.qt.io/qt-5/gettingstarted.html)
     - [Git 1.7.0+](https://git-scm.com/downloads)
     - [ImageMagick 6](http://docs.wand-py.org/en/latest/guide/install.html)
