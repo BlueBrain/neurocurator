@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, QSortFilterProxyModel
 from PyQt5.QtWidgets import (QAbstractItemView, QWidget, QTableView,
                              QVBoxLayout, QLineEdit, QFormLayout)
 
-from nat.zotero_wrap import ZoteroWrap
+from nat import ZoteroWrap
 from neurocurator import utils
 from neurocurator.zotero_edition import ZoteroReferenceDialog
 from neurocurator.zotero_model import ZoteroTableModel
