@@ -135,12 +135,12 @@ class ProjectSettings(QWidget):
 
         if self.settings is None:
             self.gitProtocol.setCurrentIndex(0)
-            self.gitRemoteTxt     = QLineEdit('github.com/christian-oreilly/corpus-thalamus.git', self)
+            self.gitRemoteTxt     = QLineEdit('', self)
             self.gitLocalTxt      = QLineEdit(os.path.expanduser('~/curator_DB/'), self)
-            self.gitUserTxt       = QLineEdit("git", self) #getpass.getuser(), self)
+            self.gitUserTxt       = QLineEdit('', self) #getpass.getuser(), self)
 
-            self.zoteroLibIDTxt   = QLineEdit('427244', self)
-            self.zoteroApiKeyTxt  = QLineEdit('4D3rDZsAVBd139alqoVZBKOO', self)
+            self.zoteroLibIDTxt   = QLineEdit('', self)
+            self.zoteroApiKeyTxt  = QLineEdit('', self)
             self.zoteroLibraryTypeCB.setCurrentIndex(0)
 
             self.restServerURLTxt = QLineEdit(SettingsDlg.restRoot + "neurocurator/api/v1.0/", self)
