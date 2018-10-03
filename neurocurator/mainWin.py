@@ -299,11 +299,12 @@ class Window(QMainWindow):
         addToOntologyAction = QAction(QIcon(), '&Add a term to ontologies', self)
         addToOntologyAction.setStatusTip('Add a new ontological term')
         addToOntologyAction.triggered.connect(self.addToOntology)
+        addToOntologyAction.setVisible(False)  # FIXME
 
         addModParamTypeAction = QAction(QIcon(), '&Add a modeling parameter type', self)
         addModParamTypeAction.setStatusTip('Add a new type of modeling parameter')
         addModParamTypeAction.triggered.connect(self.addModParamType)
-        
+        addModParamTypeAction.setVisible(False)  # FIXME
 
         commandMenu = menu_bar.addMenu('&Command')
         commandMenu.addAction(pushToServerAction)

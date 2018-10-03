@@ -39,6 +39,7 @@ class ParamTraceWgt(QWidget):
         self.addSample         = QPushButton("Add sample")
         self.deleteSample      = QPushButton("Delete sample")
         self.loadCSV           = QPushButton("Load CSV")
+        self.loadCSV.setVisible(False)  # FIXME
 
         self.deleteSample.setDisabled(True)
         self.deleteIndepVarBtn.setDisabled(True)

@@ -131,6 +131,7 @@ class ProjectSettings(QWidget):
         protocols = ["http", "git+ssh"]
         self.gitProtocol.addItems(protocols)
         self.noRemotechkbox = QCheckBox("Don't use any remote", self)
+        self.noRemotechkbox.setVisible(False)  # FIXME
 
         if self.settings is None:
             self.gitProtocol.setCurrentIndex(0)
