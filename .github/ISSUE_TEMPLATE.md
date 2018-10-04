@@ -2,6 +2,7 @@ Title: [TOPIC] What does not work
 TOPIC can be: Installation, Packaging, Configuration, References, Annotations, Search.
 
 Description:
+NEUROCURATOR VERSION (`pip list | grep neurocurator`)
 UNEXPECTED BEHAVIOUR (happens after the steps)
 STEPS
 EXAMPLE TAKEN
