@@ -1,22 +1,21 @@
-_Tell in the title the affected section (References, Annotations, Search, Notebooks, Installation, Packaging) between square brackets and what doesn't work._
+Title: [TOPIC] What does not work
+TOPIC can be: Installation, Packaging, Configuration, References, Annotations, Search.
 
-_Please **do not** specify 'Assignees', 'Labels', 'Projects' or 'Milestones'._
-
-Steps:
-
-1. _Describe the first step, after opening NeuroCurator, to reproduce the non expected behavior._
-2. _Describe the second step._
-3. _And so on..._
-4. _Describe the non expected behaviour happening after these steps._
-
-_Specify the example taken. For example, the reference ID._
-
-_Comment if needed._
-
-_Link to other issues if suitable._
+Description:
+UNEXPECTED BEHAVIOUR (happens after the steps)
+STEPS
+EXAMPLE TAKEN
+COMMENT (if needed)
+LINK(S) TO OTHER ISSUES (if suitable)
 
 Stack trace:
-
 ```
 Copy-paste here the stack trace, if any, printed in the terminal after doing the steps.
 ```
+
+STEPS template:
+1. Describe the first step, after opening NeuroCurator, to reproduce the unexpected behavior.
+2. Describe the second step.
+3. And so on...
+
+EXAMPLE TAKEN can be a reference ID, an annotation ID, a parameter ID, ...
