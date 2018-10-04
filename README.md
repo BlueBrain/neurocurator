@@ -30,63 +30,51 @@ With NeuroCurator, annotations are:
 
 ### Installation
 
-After having **installed Git and ImageMagick 6**:
+After having **installed the [requirements](#requirements)**:
 
 ```bash
 pip3 install neurocurator
 ```
 
-If you would like to simplify the installation with Miniconda:
+**Before**, you might want to create a dedicated environment with `conda`:
 
 ```bash
-conda create --name nc python=3.7
-conda activate nc
-conda install beautifulsoup4 gitpython lxml numpy pandas scipy
-pip install neurocurator
+conda create --name neurocurator_env python=3.7
+conda activate neurocurator_env
 ```
 
-**Requirements**
-
-- System side:
-    - [Python 3.5+](https://www.python.org/downloads/)
-    - [Qt 5.11+](https://doc.qt.io/qt-5/gettingstarted.html)
-    - [Git 1.7.0+](https://git-scm.com/downloads)
-    - [ImageMagick 6](http://docs.wand-py.org/en/latest/guide/install.html)
-    - [Miniconda](https://conda.io/miniconda.html) (optional)
-
-- Python side:
-    - [NAT](https://pypi.org/project/nat/)
-    - [PyQt5](https://pypi.org/project/PyQt5/)
-    - [NumPy](https://pypi.org/project/numpy/)
-    - [pandas](https://pypi.org/project/pandas/)
-    - [Wand](https://pypi.org/project/Wand/)
-
-### Launch
+To launch NeuroCurator:
 
 ```bash
 neurocurator
 ```
 
-If you have used Miniconda:
+#### Requirements
 
-```bash
-conda activate nc
-neurocurator
-```
+  - [Python 3.5+](https://www.python.org/downloads/)
+  - [Git 1.7.0+](https://git-scm.com/downloads) (NAT)
+  - [ImageMagick **6**](http://docs.wand-py.org/en/latest/guide/install.html) (Wand)
+  - [Miniconda](https://conda.io/miniconda.html) (optional)
+
+#### Python dependencies
+
+  - [NAT](https://pypi.org/project/nat/)
+  - [PyQt5](https://pypi.org/project/PyQt5/)
+  - [NumPy](https://pypi.org/project/numpy/)
+  - [pandas](https://pypi.org/project/pandas/)
+  - [Wand](https://pypi.org/project/Wand/)
 
 ## Upgrade
 
 ```bash
-pip install --upgrade neurocurator
+pip3 install --upgrade neurocurator
 ```
 
-If you have used Miniconda:
+If you have used `conda`, activate the environment before:
 
 ```bash
-conda activate nc
-pip install --upgrade neurocurator
+conda activate neurocurator_env
 ```
-
 
 ## Releases
 
@@ -97,9 +85,8 @@ https://github.com/BlueBrain/neurocurator/releases/).
 
 **Ongoing**
 
-1. Make the annotations publishable into a [Blue Brain Nexus](
-https://bluebrain.github.io/nexus/) instance.
-2. Stabilize NeuroCurator and NAT (Software Architecture).
+1. Stabilize NeuroCurator and NAT (Software Architecture).
+2. Split NAT into nat-core, nat-analytics and nat-server (separation of scope).
 
 **TODO**
 
@@ -110,12 +97,14 @@ into NeuroCurator.
 
 **Done** (latest first)
 
+* Make the annotations publishable into a [Blue Brain Nexus](
+https://bluebrain.github.io/nexus/) instance.
 * Remove legacy dependencies in NeuroCurator (Qt 4 and Python 3.4).
 * Integrate OpenMinTeD annotations into the literature curation framework.
 * Visualize NeuroCurator and OpenMinTeD annotations directly on PDFs.
 * Make NeuroCurator easily installable, especially by scientists.
 
-Updated on 20.07.18.
+Updated on 04.10.18.
 
 ## Status
 

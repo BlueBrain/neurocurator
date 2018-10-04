@@ -5,7 +5,7 @@ import os
 
 from setuptools import setup
 
-NEUROCURATOR_VERSION = "0.4.6"
+NEUROCURATOR_VERSION = "0.4.5"
 NAT_MINIMUM_VERSION = "0.4.4"
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -30,18 +30,18 @@ setup(
     # maintainer_email="pierre-alexandre@epfl.ch",
     license="GPLv3",
     packages=["neurocurator"],
-    python_requires=">=3.5",  # Package nat / pandas requires Python 3.5+.
+    python_requires=">=3.5",  # Packages NAT and pandas requires Python 3.5+.
     install_requires=[
         "nat>=" + NAT_MINIMUM_VERSION,
         "PyQt5",
         "numpy",
         "pandas",
-        "wand"
+        "wand",
     ],
     data_files=[("", ["LICENSE.txt"])],
     entry_points={
         # NB: gui_scripts: on Windows no console is attached (no stdout/stderr).
-        "console_scripts": ["neurocurator = neurocurator.__main__:main"]
+        "console_scripts": ["neurocurator = neurocurator.__main__:main"],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -57,6 +57,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
-        "Natural Language :: English"
+        "Natural Language :: English",
     ]
 )
