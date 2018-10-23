@@ -36,11 +36,12 @@ After having **installed the [requirements](#requirements)**:
 pip3 install neurocurator
 ```
 
-**Before**, you might want to create a dedicated environment with `conda`:
+You might want to install NeuroCurator in a dedicated `conda` environment:
 
 ```bash
 conda create --name neurocurator_env python=3.7
 conda activate neurocurator_env
+pip install neurocurator
 ```
 
 To launch NeuroCurator:
