@@ -5,8 +5,8 @@ import os
 
 from setuptools import setup
 
-NEUROCURATOR_VERSION = "0.4.5"
-NAT_MINIMUM_VERSION = "0.4.4"
+NEUROCURATOR_VERSION = "0.5.0"
+NAT_MINIMUM_VERSION = "0.5.0"
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
