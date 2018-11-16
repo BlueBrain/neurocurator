@@ -74,7 +74,7 @@ pip install nat==0.4.2 --no-deps
 git clone -b annotation_viewer https://github.com/BlueBrain/neurocurator.git
 ```
 
-Adapt line 938 in neurocurator/annotation_viewer.py the path (`"/usr/local/bin/python3"`)
+Adapt line 938 in neurocurator/mainWin.py the path (`"/usr/local/bin/python3"`)
 to the Python 3 environment installed below.
 
 ```bash
