@@ -30,8 +30,8 @@ class RequiredTagsTableView(QTableView):
         self.reqTagDelegate = ReqTagDelegate(self)
         self.setItemDelegateForColumn(1, self.reqTagDelegate)
         ontoMng = OntoManager()
-        self.treeData                  = ontoMng.trees 
-        self.dicData                   = ontoMng.dics
+        self.treeData = ontoMng.trees 
+        self.dicData = ontoMng.dics
         self.reqTagDelegate.cboNeedPopulation.connect(self.setReqTags)
 
     def setReqTags(self, tagName):
@@ -39,9 +39,9 @@ class RequiredTagsTableView(QTableView):
         try:
             tagId = list(self.dicData.keys())[list(self.dicData.values()).index(tagName)]
         except ValueError:
-            ontoMng       = OntoManager(recompute=True)      
+            ontoMng = OntoManager(recompute=True)      
             self.treeData = ontoMng.trees 
-            self.dicData  = ontoMng.dics    
+            self.dicData = ontoMng.dics    
             tagId = list(self.dicData.keys())[list(self.dicData.values()).index(tagName)]
             
         
@@ -57,15 +57,15 @@ class RequiredTagsListModel(QAbstractTableModel):
 
     def __init__(self, colHeader = ['Required categories', 'Selected tag'], parent=None):
         super().__init__(parent)
-        self.colHeader             = colHeader
-        self.nbCol                 = len(colHeader)
-        self.requiredTagsIds       = []
-        self.requiredTagsNames     = []
-        self.selectedTagsIds       = []
-        self.selectedTagsNames     = []
+        self.colHeader = colHeader
+        self.nbCol = len(colHeader)
+        self.requiredTagsIds = []
+        self.requiredTagsNames = []
+        self.selectedTagsIds = []
+        self.selectedTagsNames = []
         ontoMng = OntoManager()
-        self.treeData                  = ontoMng.trees 
-        self.dicData                   = ontoMng.dics
+        self.treeData = ontoMng.trees 
+        self.dicData = ontoMng.dics
 
 
     def rowCount(self, parent=QModelIndex()):
@@ -96,22 +96,22 @@ class RequiredTagsListModel(QAbstractTableModel):
         if index.column() == 0:
             self.requiredTagsNames[index.row()] = value
             tagId = list(self.dicData.keys())[list(self.dicData.values()).index(value)]            
-            self.requiredTagsIds[index.row()]   = tagId
+            self.requiredTagsIds[index.row()] = tagId
             
         elif index.column() == 1:
             if self.checkTagValidity(index.row(), value):
                 self.selectedTagsNames[index.row()] = value
                 tagId = list(self.dicData.keys())[list(self.dicData.values()).index(value)]    
-                self.selectedTagsIds[index.row()]   = tagId
+                self.selectedTagsIds[index.row()] = tagId
 
     def checkTagValidity(self, row, tagName):
 
         tagId = self.requiredTagsIds[row]
 
         if not tagId in self.treeData:    
-            ontoMng       = OntoManager(recompute=True)      
+            ontoMng = OntoManager(recompute=True)      
             self.treeData = ontoMng.trees 
-            self.dicData  = ontoMng.dics            
+            self.dicData = ontoMng.dics            
             if not tagId in self.treeData:                
                 raise ValueError("Tag '" + tagId + "' is not a treeData root. TreeData roots are the following:" + str(list(self.treeData.keys())))
 
@@ -142,10 +142,10 @@ class RequiredTagsListModel(QAbstractTableModel):
         self.refresh()
 
     def clear(self):
-        self.requiredTagsNames  = []
-        self.requiredTagsIds    = []
-        self.selectedTagsNames  = []
-        self.selectedTagsIds    = []
+        self.requiredTagsNames = []
+        self.requiredTagsIds = []
+        self.selectedTagsNames = []
+        self.selectedTagsIds = []
         self.refresh()
 
     def getRequiredTags(self):
@@ -160,68 +160,89 @@ class ParamModWgt(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+
+        ### Parameters section
+
+        self.existingParamsGB = QGroupBox("Existing parameters", self)
+
+        buttonWidget = QWidget(self)
+
+        self.paramSaveAnnotBtn = QPushButton("Save")
+        self.paramSaveAnnotBtn.setEnabled(False)
+        self.paramSaveAnnotBtn.clicked.connect(self.saveParameter)
+
+        self.deleteParamBtn = QPushButton("Delete")
+        self.deleteParamBtn.setEnabled(False)
+        self.deleteParamBtn.clicked.connect(self.deleteParameter)
+
+        self.newParamBtn = QPushButton("New")
+        self.newParamBtn.setEnabled(True)
+        self.newParamBtn.clicked.connect(self.newParameter)
+
+        buttonLayout = QVBoxLayout(buttonWidget)
+        buttonLayout.addWidget(self.paramSaveAnnotBtn)
+        buttonLayout.addWidget(self.deleteParamBtn)
+        buttonLayout.addWidget(self.newParamBtn)
+
+        self.paramListModel = ParameterListModel(parent=self)
+
+        self.paramListTblWdg = QTableView()
+        self.paramListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.paramListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.paramListTblWdg.setModel(self.paramListModel)
+        self.paramListTblWdg.setColumnWidth(0, 150)
+        self.paramListTblWdg.setColumnWidth(1, 350)
+
+        selectionModel = self.paramListTblWdg.selectionModel()
+        selectionModel.selectionChanged.connect(self.selectedParameterChanged)  # FIXME External selectedParameterChanged.
+
+        existGrid = QHBoxLayout(self.existingParamsGB)
+        existGrid.addWidget(buttonWidget)
+        existGrid.addWidget(self.paramListTblWdg)
+
+
+        ### Parameter section
+
+
+
+        ###
+
+
         self.main_window = parent
 
         self.buildRequiredTagsGB()
 
-        # Widgets        
-        self.newParamBtn        = QPushButton("New")
-        self.deleteParamBtn     = QPushButton("Delete")
-        self.paramSaveAnnotBtn  = QPushButton("Save")
-        buttonWidget             = QWidget(self)
+        # Widgets
 
-        self.existingParamsGB     = QGroupBox("Existing parameters", self)
 
-        self.paramListTblWdg      = QTableView()
-        self.paramListModel     = ParameterListModel(parent=self)
-        self.paramListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.paramListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.paramListTblWdg.setModel(self.paramListModel)
-
-        self.paramListTblWdg.setColumnWidth(0, 150)
-        self.paramListTblWdg.setColumnWidth(1, 350)
-
-        self.relationWgt    = ParamRelationWgt(parent)
-        self.newParamsGB    = QGroupBox("Parameter details", self)
-        self.resultTypeCbo  = QComboBox(self)
-        self.isExpProp      = QCheckBox("is an experimental property", self)
+        self.relationWgt = ParamRelationWgt(parent)
+        self.newParamsGB = QGroupBox("Parameter details", self)
+        self.resultTypeCbo = QComboBox(self)
+        self.isExpProp = QCheckBox("is an experimental property", self)
 
         self.resultTypeCbo.addItems(["point value", "function", "numerical trace"])
         
         self.singleValueParamWgt = ParamValueWgt(parent)
-        self.functionParamWgt    = ParamFunctionWgt(parent)
-        self.traceParamWgt       = ParamTraceWgt(parent)
+        self.functionParamWgt = ParamFunctionWgt(parent)
+        self.traceParamWgt = ParamTraceWgt(parent)
 
         self.functionParamWgt.mainWgt = self
 
-        self.paramModStack       = QStackedWidget(self)
+        self.paramModStack = QStackedWidget(self)
         self.paramModStack.addWidget(self.singleValueParamWgt)
         self.paramModStack.addWidget(self.functionParamWgt)
         self.paramModStack.addWidget(self.traceParamWgt)
 
         # Signals
-        selectionModel = self.paramListTblWdg.selectionModel()
-        selectionModel.selectionChanged.connect(self.selectedParameterChanged)
 
-        self.newParamBtn.clicked.connect(self.newParameter)
-        self.deleteParamBtn.clicked.connect(self.deleteParameter)
-        self.paramSaveAnnotBtn.clicked.connect(self.saveParameter)
         self.resultTypeCbo.currentIndexChanged.connect(self.paramModStack.setCurrentIndex)
         self.singleValueParamWgt.paramTypeSelected.connect(self.newParamTypeSelected)
         self.functionParamWgt.paramTypeSelected.connect(self.newParamTypeSelected)
         self.traceParamWgt.paramTypeSelected.connect(self.newParamTypeSelected)
 
         # Layout
-        buttonLayout = QVBoxLayout(buttonWidget)
-        buttonLayout.addWidget(self.paramSaveAnnotBtn)
-        buttonLayout.addWidget(self.deleteParamBtn)
-        buttonLayout.addWidget(self.newParamBtn)
 
-        existGrid     = QHBoxLayout(self.existingParamsGB)
-        existGrid.addWidget(buttonWidget)
-        existGrid.addWidget(self.paramListTblWdg)
-        
-        newGrid     = QGridLayout(self.newParamsGB)
+        newGrid = QGridLayout(self.newParamsGB)
         newGrid.addWidget(QLabel("Result type"), 0, 0)
         newGrid.addWidget(self.resultTypeCbo, 0, 1)
         newGrid.addWidget(self.isExpProp, 0, 2)
@@ -229,20 +250,15 @@ class ParamModWgt(QWidget):
         newGrid.addWidget(self.paramModStack, 1, 0, 1, 3)
         newGrid.addWidget(self.relationWgt, 1, 3)
 
-        layout = QVBoxLayout(self)
-        self.rootLayout = QSplitter(Qt.Vertical, self)
-        self.rootLayout.setOrientation(Qt.Vertical)
-        self.rootLayout.addWidget(self.existingParamsGB)
-        self.rootLayout.addWidget(self.newParamsGB)
-        self.rootLayout.addWidget(self.requireTagGB)
-        layout.addWidget(self.rootLayout)
-
         # Initial behavior
-        self.newParamBtn.setEnabled(True)
-        self.deleteParamBtn.setEnabled(False)
-        self.paramSaveAnnotBtn.setEnabled(False)
         self.additionMode = False
         self.newParamsGB.setEnabled(False)
+
+
+
+
+
+
 
     def setRootLayoutSizes(self, sizes):
         self.rootLayout.setSizes(sizes)
@@ -263,7 +279,7 @@ class ParamModWgt(QWidget):
         self.requiredTagsListModel.clear()
         self.requiredTagsListModel.refresh()
 
-        paramType  = getParameterTypeFromName(paramName)
+        paramType = getParameterTypeFromName(paramName)
         if paramType is None:
             raise ValueError("Parameter type with name '" + paramName + "' was not found.")
 
@@ -278,8 +294,8 @@ class ParamModWgt(QWidget):
         # Widgets            
         self.requireTagGB = QGroupBox("Required tag categories", self)
 
-        self.requiredTagsListTblWdg      = RequiredTagsTableView() 
-        self.requiredTagsListModel       = RequiredTagsListModel(parent=self)
+        self.requiredTagsListTblWdg = RequiredTagsTableView() 
+        self.requiredTagsListModel = RequiredTagsListModel(parent=self)
         self.requiredTagsListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.requiredTagsListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
         self.requiredTagsListTblWdg.setModel(self.requiredTagsListModel)
@@ -324,8 +340,8 @@ class ParamModWgt(QWidget):
         param = self.paramModStack.currentWidget().saveParameter(relationship, paramId)
 
         if not param is None:
-            param.requiredTags             = self.requiredTagsListModel.getRequiredTags()
-            param.isExperimentProperty     = self.isExpProp.isChecked()
+            param.requiredTags = self.requiredTagsListModel.getRequiredTags()
+            param.isExperimentProperty = self.isExpProp.isChecked()
 
             selectedRow = self.paramListTblWdg.selectionModel().currentIndex().row()
             # Even when there is no selection, selectedRow can take a zero value. This "if" 

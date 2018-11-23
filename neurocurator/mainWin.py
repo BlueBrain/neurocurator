@@ -171,10 +171,10 @@ class Window(QMainWindow):
     def closeEvent(self, event):
         # FIXME Delayed refactoring. Do settings management with QSettings.
         window_settings = self.settings.config['WINDOW']
-        window_settings['mainSplitterPos'] = str(self.mainWidget.sizes())
-        window_settings['leftSplitterPos'] = str(self.leftPanel.sizes())
-        window_settings['rightSplitterPos'] = str(self.rightPanel.sizes())
-        window_settings['paramModWgtSplitterPos'] = str(self.modParamWgt.rootLayout.sizes())
+        window_settings['mainSplitterPos'] = str(self.mainWidget.sizes())  # FIXME Refactoring.
+        window_settings['leftSplitterPos'] = str(self.leftPanel.sizes())  # FIXME Refactoring.
+        window_settings['rightSplitterPos'] = str(self.rightPanel.sizes())  # FIXME Refactoring.
+        window_settings['paramModWgtSplitterPos'] = str(self.modParamWgt.rootLayout.sizes())  # FIXME Refactoring.
 
         zotero_view = self.zotero_widget.view
 
@@ -189,10 +189,10 @@ class Window(QMainWindow):
         window_settings['zotTableSortOrder'] = str(int(zotero_sort_order))
         window_settings['zotTableSortCol'] = str(zotero_sort_column)
 
-        colWidths = str([self.annotListTblWdg.columnWidth(i) for i in range(self.annotTableModel.columnCount())])
+        colWidths = str([self.annotListTblWdg.columnWidth(i) for i in range(self.annotTableModel.columnCount())])  # FIXME Refactoring.
         window_settings['annotTableViewColWidth'] = colWidths
-        window_settings['annotTableSortOrder']      = str(int(self.annotTableModel.sortOrder))
-        window_settings['annotTableSortCol']      = str(self.annotTableModel.sortCol)
+        window_settings['annotTableSortOrder']      = str(int(self.annotTableModel.sortOrder))  # FIXME Refactoring.
+        window_settings['annotTableSortCol']      = str(self.annotTableModel.sortCol)  # FIXME Refactoring.
 
         self.settings.save()
 
@@ -222,26 +222,26 @@ class Window(QMainWindow):
         # FIXME Delayed refactoring. Save/Restore also the main window size.
         if self.firstShow:
             if 'mainSplitterPos' in self.settings.config['WINDOW']:
-                self.mainWidget.setSizes(eval(self.settings.config['WINDOW']['mainSplitterPos']))
+                self.mainWidget.setSizes(eval(self.settings.config['WINDOW']['mainSplitterPos']))  # FIXME Refactoring.
             if 'leftSplitterPos' in self.settings.config['WINDOW']:
-                self.leftPanel.setSizes(eval(self.settings.config['WINDOW']['leftSplitterPos']))
+                self.leftPanel.setSizes(eval(self.settings.config['WINDOW']['leftSplitterPos']))  # FIXME Refactoring.
             if 'rightSplitterPos' in self.settings.config['WINDOW']:
-                self.rightPanel.setSizes(eval(self.settings.config['WINDOW']['rightSplitterPos']))
+                self.rightPanel.setSizes(eval(self.settings.config['WINDOW']['rightSplitterPos']))  # FIXME Refactoring.
             if 'paramModWgtSplitterPos' in self.settings.config['WINDOW']:
-                self.modParamWgt.setRootLayoutSizes(eval(self.settings.config['WINDOW']['paramModWgtSplitterPos']))
+                self.modParamWgt.setRootLayoutSizes(eval(self.settings.config['WINDOW']['paramModWgtSplitterPos']))  # FIXME Refactoring.
 
             if 'zotTableViewColWidth' in self.settings.config['WINDOW']:            
                 for i, width in enumerate(eval(self.settings.config['WINDOW']['zotTableViewColWidth'])):
                     self.zotero_widget.view.setColumnWidth(i, width)
             if 'annotTableViewColWidth' in self.settings.config['WINDOW']:
                 for i, width in enumerate(eval(self.settings.config['WINDOW']['annotTableViewColWidth'])):
-                    self.annotListTblWdg.setColumnWidth(i, width)
+                    self.annotListTblWdg.setColumnWidth(i, width)  # FIXME Refactoring.
 
             if 'annotTableSortOrder' in self.settings.config['WINDOW']:
-                self.annotTableModel.sortOrder = Qt.SortOrder(int(self.settings.config['WINDOW']['annotTableSortOrder']))
+                self.annotTableModel.sortOrder = Qt.SortOrder(int(self.settings.config['WINDOW']['annotTableSortOrder']))  # FIXME Refactoring.
 
             if 'annotTableSortCol' in self.settings.config['WINDOW']:
-                self.annotTableModel.sortCol = int(self.settings.config['WINDOW']['annotTableSortCol'])
+                self.annotTableModel.sortCol = int(self.settings.config['WINDOW']['annotTableSortCol'])  # FIXME Refactoring.
 
             # FIXME Delayed refactoring. Do settings management with QSettings.
             window_settings = self.settings.config['WINDOW']
@@ -253,8 +253,7 @@ class Window(QMainWindow):
                 # Triggers a sorting.
                 self.zotero_widget.view.horizontalHeader().setSortIndicator(zotero_sort_column, zotero_sort_order)
 
-            self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, 
-                                           self.annotTableModel.sortOrder)
+            self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, self.annotTableModel.sortOrder)  # FIXME Refactoring.
 
             self.firstShow = False
 
@@ -357,16 +356,14 @@ class Window(QMainWindow):
         # this refreshed ontology into account without restarting the app.
 
     def setupWindowsUI(self) :
-        self.setupPaperGB()
-        self.setupListAnnotGB()
-        self.setupEditAnnotGB()
+        self.cancelledAnnotSelectinChange = False
         self.setupTagAnnotGB()
-        self.modParamWgt = ParamModWgt(self)
-        self.expPropWgt = ExpPropWgt(self)
 
         # Main layout
         # FIXME Delayed refactoring. Create a dedicated QTabWidget object.
         self.mainTabs = QTabWidget(self)
+
+        ### START Zotero widget
 
         # FIXME Delayed refactoring. Do settings management with QSettings.
         zotero_settings = self.settings.config["ZOTERO"]
@@ -389,43 +386,11 @@ class Window(QMainWindow):
 
         self.mainTabs.addTab(self.zotero_widget, "References (Zotero)")
 
-        self.taggingTabs = QTabWidget(self)
-        self.taggingTabs.addTab(self.tagAnnotGroupBox, "Tagging")
-        self.taggingTabs.addTab(self.modParamWgt,      "Parameters")
-        #self.taggingTabs.addTab(self.expPropWgt,       "Relevant experimental properties")
+        ### END Zotero widget
 
-        self.rightPanel = QSplitter(Qt.Vertical, self)
-        self.rightPanel.setOrientation(Qt.Vertical)
+        self.annotation_widget = AnnotationWidget()
 
-        self.leftPanel = QSplitter(Qt.Vertical, self)
-        self.leftPanel.setOrientation(Qt.Vertical)
-
-        paperPannel = QWidget(self)
-        paperPannel.setLayout(QVBoxLayout())
-        paperPannel.layout().addWidget(self.paperGroupBox)
-        paperPannel.layout().addWidget(self.listAnnotGroupBox)
-
-        bottomPannel = QWidget(self)
-        bottomPannel.setLayout(QVBoxLayout())
-        bottomPannel.layout().addWidget(self.taggingTabs)
-
-
-
-        self.rightPanel.addWidget(bottomPannel)
-
-
-        self.leftPanel.addWidget(paperPannel)
-        self.leftPanel.addWidget(self.editAnnotWgt)
-        self.expPropGB = QGroupBox("Relevant experimental properties")
-        expPropLayout = QVBoxLayout(self.expPropGB)
-        expPropLayout.addWidget(self.expPropWgt)
-        self.leftPanel.addWidget(self.expPropGB)
-
-        self.mainWidget = QSplitter(Qt.Horizontal, self)
-        self.mainWidget.addWidget(self.leftPanel)
-        self.mainWidget.addWidget(self.rightPanel)
-
-        self.mainTabs.addTab(self.mainWidget, "Annotations")    
+        self.mainTabs.addTab(self.annotation_widget, "Annotations")
 
         self.searchTabs =  QTabWidget(self)
         self.annotSearchWgt = SearchWgt("Annotation", self)
@@ -444,89 +409,21 @@ class Window(QMainWindow):
         #self.mainWidget.setStretchFactor(1, 1)
         self.setCentralWidget(self.mainTabs)
 
-        # Initial behavior
-        self.taggingTabs.setDisabled(True)
-
     @pyqtSlot(QModelIndex)
     def changeTagToAnnotations(self, index):
         # FIXME Delayed refactoring. No use of the index sent by ZoteroTableView::doubleClicked?
         self.mainTabs.setCurrentIndex(1)
-    
-    def setupPaperGB(self):
-        # Widgets
-        self.openPDFBtn                = QPushButton('Open PDF', self)
-        self.IdTxt                    = QLineEdit('', self)
-
-        # Signals
-        self.openPDFBtn.clicked.connect(self.openPDF)
-
-        # Layout
-        self.paperGroupBox = QGroupBox("Paper")
-        gridPaper = QGridLayout(self.paperGroupBox)
-        gridPaper.addWidget(QLabel('ID', self), 0, 0)
-        gridPaper.addWidget(self.IdTxt, 0, 1)
-        gridPaper.addWidget(self.openPDFBtn, 0, 3)
-        #gridPaper.addWidget(self.refEdt, 1, 0, 1, 4)
-
-        # Initial behavior
-        self.paperGroupBox.setDisabled(True)
-        #disableTextWidget(self.refEdt)
-        disableTextWidget(self.IdTxt)
-
-
-
-    def setupListAnnotGB(self):
-        self.cancelledAnnotSelectinChange = False        
-
-        # Widget        
-        self.annotListTblWdg      = QTableView()
-        self.annotTableModel     = AnnotationListModel(parent=self)
-        self.annotListTblWdg.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.annotListTblWdg.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.annotListTblWdg.setModel(self.annotTableModel)
-
-        # Signals
-        self.annotationSelectionModel = self.annotListTblWdg.selectionModel()
-        self.annotationSelectionModel.selectionChanged.connect(self.selectedAnnotationChanged)
-        self.annotTableModel.layoutChanged.connect(self.annotTableLayoutChanged)
-
-
-        # Layout
-        self.listAnnotGroupBox     = QGroupBox("Listing of existing annotations")
-        gridListAnnotations     = QGridLayout(self.listAnnotGroupBox)
-        gridListAnnotations.addWidget(self.annotListTblWdg, 0, 0)
-        
-        # Initial behavior
-        self.listAnnotGroupBox.setDisabled(True)        
-        self.annotListTblWdg.setSortingEnabled(True)
-        self.annotListTblWdg.horizontalHeader().sectionClicked.connect(self.setAnnotSortCol)
-
-
-    def setAnnotSortCol(self, col):
-        self.annotTableModel.sortCol = col        
-        self.annotTableModel.sortOrder = self.annotListTblWdg.horizontalHeader().sortIndicatorOrder()
-
-
-    def setupEditAnnotGB(self):
-
-        self.editAnnotSubWgt = EditAnnotWgt(self)
-
-        self.editAnnotWgt = QGroupBox("Annotation details")
-        layout               = QVBoxLayout(self.editAnnotWgt)
-        layout.addWidget(self.editAnnotSubWgt)
-        self.editAnnotWgt.setEnabled(False)
-
 
     def setupTagAnnotGB(self):
-        # Widgets        
+        # Widgets
 
         # This fields provide a text fields that can be used
         # to enter tags. It is using an autocompletion scheme which
         # suggests available ontological tags according to entrer word.
         # Matching between entered text and ontological concepts are
-        # is not case-sensitive and is not using a prefix scheme (i.e., 
+        # is not case-sensitive and is not using a prefix scheme (i.e.,
         # matching can be done anywhere within the strings, not only with
-        # their begininings)  
+        # their begininings)
         self.tagEdit = AutoCompleteEdit(self)
         self.tagEdit.setMinimumWidth(10)
 
@@ -539,7 +436,7 @@ class Window(QMainWindow):
         self.selectedTagsWidget.setSelectionMode(QAbstractItemView.SingleSelection)
 
         # List tags that are suggested to the user based on his previous tagging
-        # history and on tags that have already been used for other annotations 
+        # history and on tags that have already been used for other annotations
         # on this paper.
         self.suggestedTagsWidget = QListWidget(self)
         self.suggestedTagsWidget.showMaximized()
@@ -551,10 +448,10 @@ class Window(QMainWindow):
 
 
         self.tagSelectionTabs = QTabWidget(self)
-        self.tagSelectionTabs.addTab(self.suggestedTagsWidget, "Suggested tags")     
-        self.tagSelectionTabs.addTab(self.onlineOntoWgt, "Search online ontologies")     
+        self.tagSelectionTabs.addTab(self.suggestedTagsWidget, "Suggested tags")
+        self.tagSelectionTabs.addTab(self.onlineOntoWgt, "Search online ontologies")
 
-    
+
         # Signals
         self.tagEdit.activated[str].connect(self.tagSuggestionSelected)
         self.tagEdit.editTextChanged.connect(self.editTextChanged)
@@ -562,15 +459,12 @@ class Window(QMainWindow):
         # Layout
         self.tagAnnotGroupBox     = QGroupBox()
         gridTagAnnotations     = QGridLayout(self.tagAnnotGroupBox)
-        gridTagAnnotations.addWidget(QLabel('Annotation tags', self), 0, 0)
+        gridTagAnnotations.addWidget(QLabel('Annotation tags', self), 0, 0)  # FIXME Move it to the QGroupBox constructor.
         gridTagAnnotations.addWidget(self.selectedTagsWidget, 1, 0)
         gridTagAnnotations.addWidget(self.tagEdit, 2, 0)
         gridTagAnnotations.addWidget(self.tagSelectionTabs, 0, 1, 3, 1)
         gridTagAnnotations.setColumnStretch(0, 1)
         gridTagAnnotations.setColumnStretch(1, 1)
-
-
-
 
     def updateAutoCompleteTagList(self):
         # Sort list of suggestions so that more often used tags 
@@ -623,23 +517,23 @@ class Window(QMainWindow):
             raise ValueError("No matching annotation ID found!")
 
         row = -1
-        for row, annot in enumerate(self.annotTableModel.annotationList):
+        for row, annot in enumerate(self.annotTableModel.annotationList):  # FIXME Refactoring.
             if annot.ID == annotation.ID:
                 break
         assert(row > -1)
 
-        self.annotListTblWdg.selectRow(row)
+        self.annotListTblWdg.selectRow(row)  # FIXME Refactoring.
         self.mainTabs.setCurrentIndex(1)
 
     @pyqtSlot(object, object)
     def viewParameter(self, annotation, parameter):
         self.viewAnnotation(annotation)        
-        self.modParamWgt.viewParameter(parameter)
-        self.taggingTabs.setCurrentIndex(1)
+        self.modParamWgt.viewParameter(parameter)  # FIXME Refactoring.
+        self.taggingTabs.setCurrentIndex(1)  # FIXME Refactoring.
 
 
     def refreshModelingParam(self):
-        self.modParamWgt.loadModelingParameter()
+        self.modParamWgt.loadModelingParameter()  # FIXME Refactoring.
 
 
 
@@ -660,14 +554,14 @@ class Window(QMainWindow):
 
 
     def annotTableLayoutChanged(self):
-        self.selectedAnnotationChanged(self.annotListTblWdg.selectedIndexes())
+        self.selectedAnnotationChanged(self.annotListTblWdg.selectedIndexes())  # FIXME Refactoring.
 
     # Note: No @pyqtSlot because QModelIndexList doesn't exist in PyQt5.
     # @pyqtSlot(QModelIndexList)
     # @pyqtSlot(QItemSelection, QItemSelection)
     def selectedAnnotationChanged(self, selected, deselected=None):
 
-        if not hasattr(self, "editAnnotWgt"):
+        if not hasattr(self, "editAnnotWgt"):  # FIXME Refactoring.
             # This if is triggered when selectedAnnotationChanged is automatically called
             # in the construction of the dialog. We don't want to run this function in this 
             # context because not all the components of the dialog has been initialized yet.
@@ -683,32 +577,32 @@ class Window(QMainWindow):
         if self.checkSavingAnnot() == False:
             if not deselected is None :
                 self.cancelledAnnotSelectinChange = True
-                self.annotListTblWdg.selectRow(deselected.indexes()[0].row())        
+                self.annotListTblWdg.selectRow(deselected.indexes()[0].row())   # FIXME Refactoring.
             return False
         ###################
 
 
         self.needSavingDisabled = True 
-        self.editAnnotWgt.setDisabled(False)
-        self.currentAnnotation = self.annotTableModel.getSelectedAnnotation(selected)
+        self.editAnnotWgt.setDisabled(False)  # FIXME Refactoring.
+        self.currentAnnotation = self.annotTableModel.getSelectedAnnotation(selected)  # FIXME Refactoring.
         if self.currentAnnotation is None:
             # The current index is invalid. Thus, we deactivate controls
             # used to modify the current annotation.
             self.clearAddAnnotation()
         else:
-            self.editAnnotSubWgt.selectAnnotType(self.currentAnnotation.type)
+            self.editAnnotSubWgt.selectAnnotType(self.currentAnnotation.type)  # FIXME Refactoring.
 
             ## UPDATING EXPERIMENTAL PROPERTIES
             #self.expPropWgt.expPropertiesListModel.clear()
             #for prop in self.currentAnnotation.experimentProperties:
             #    self.expPropWgt.expPropertiesListModel.addProperty(prop.name, prop.value, prop.unit)
-            self.expPropWgt.fillingExpPropList()   
-            self.expPropWgt.expPropertiesListModel.refresh()
+            self.expPropWgt.fillingExpPropList()     # FIXME Refactoring.
+            self.expPropWgt.expPropertiesListModel.refresh()  # FIXME Refactoring.
 
 
         self.refreshTagList()
         #self.tagAnnotGroupBox.setDisabled(self.currentAnnotation is None)    
-        self.taggingTabs.setDisabled(self.currentAnnotation is None)    
+        self.taggingTabs.setDisabled(self.currentAnnotation is None)   # FIXME Refactoring.
 
         self.detectAnnotChange = False
         self.selectedAnnotationChangedConfirmed.emit()
@@ -769,8 +663,8 @@ class Window(QMainWindow):
             tagEdit.clicked.connect(self.selectedTagClicked)
 
             # Check if the tag has been persisted for this paper    
-            if self.IdTxt.text() in self.selectedTagPersist:
-                tagEdit.persist = tagId in self.selectedTagPersist[self.IdTxt.text()]
+            if self.IdTxt.text() in self.selectedTagPersist:  # FIXME Refactoring.
+                tagEdit.persist = tagId in self.selectedTagPersist[self.IdTxt.text()]  # FIXME Refactoring.
 
 
 
@@ -806,7 +700,7 @@ class Window(QMainWindow):
     def selectedTagClicked(self, tag):
         modifiers = QApplication.keyboardModifiers()
         if modifiers == Qt.ShiftModifier:
-            ID = self.IdTxt.text()
+            ID = self.IdTxt.text()  # FIXME Refactoring.
             if not ID in self.selectedTagPersist:
                 self.selectedTagPersist[ID] = []
             if tag.id in self.selectedTagPersist[ID]:
@@ -816,14 +710,14 @@ class Window(QMainWindow):
         
                 # If there is already other annotations associated with this 
                 # paper, ask if the persistence should also be applied to them.
-                fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
+                fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"  # FIXME Refactoring.
                 with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
                     try:
                         annotations = Annotation.readIn(f)
                     except ValueError:
                         raise ValueError("Problem reading file " + fileName + ". The JSON coding of this file seems corrupted.")
             
-                isNewAnnot = not self.currentAnnotation in self.annotTableModel.annotationList or self.currentAnnotation is None
+                isNewAnnot = not self.currentAnnotation in self.annotTableModel.annotationList or self.currentAnnotation is None  # FIXME Refactoring.
                 if len(annotations) > 1 - int(isNewAnnot) :
                     msgBox = QMessageBox(self)
                     msgBox.setWindowTitle("Tag persistence propagation")
@@ -890,24 +784,6 @@ class Window(QMainWindow):
     def removeSuggestedTag(self, tag):
         self.addTagToAnnotation(tag.id)
 
-    def openPDF(self):
-        base_path = join(self.dbPath, Id2FileName(self.IdTxt.text()))
-        pdf_path = base_path + ".pdf"
-
-        if not os.path.isfile(pdf_path):
-            msgBox = QMessageBox(self)
-            msgBox.setWindowTitle("Missing PDF")
-            msgBox.setText("The PDF file seems to be missing. Do you want to attach one?")
-            msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
-            msgBox.setDefaultButton(QMessageBox.Yes)
-            if msgBox.exec_() == QMessageBox.Yes:
-                if not self.importPDF():
-                    return
-            else:
-                return
-
-        QDesktopServices.openUrl(QUrl.fromLocalFile(pdf_path))
-
     def checkSavingAnnot(self):
         if self.needSaving:
             msgBox = QMessageBox(self)
@@ -916,7 +792,7 @@ class Window(QMainWindow):
             msgBox.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
             msgBox.setDefaultButton(QMessageBox.Yes)
             if msgBox.exec_() == QMessageBox.Yes:
-                self.editAnnotSubWgt.commentEdt.setFocus()
+                self.editAnnotSubWgt.commentEdt.setFocus()  # FIXME Refactoring.
                 if self.saveAnnotation() == False:
                     return False
             self.needSaving = False
@@ -966,10 +842,10 @@ class Window(QMainWindow):
             else:
                 isDOI = True
 
-            self.IdTxt.setText(reference_id)
+            self.IdTxt.setText(reference_id)  # FIXME Refactoring.
 
             # Check if paper is already in the database
-            if not self.checkIdInDB(self.IdTxt.text()):
+            if not self.checkIdInDB(self.IdTxt.text()):  # FIXME Refactoring.
                 if isDOI or isPMID:
                     msgBox = QMessageBox(self)
                     msgBox.setWindowTitle("Paper not in the database")
@@ -1000,7 +876,7 @@ class Window(QMainWindow):
                                          "not provided.")
 
                     elif retCode == 1 and isDOI:
-                        url = "http://dx.doi.org/" + self.IdTxt.text()
+                        url = "http://dx.doi.org/" + self.IdTxt.text()  # FIXME Refactoring.
                         webbrowser.open(url)
                         return
                     else:
@@ -1008,15 +884,15 @@ class Window(QMainWindow):
                         return
 
                 elif isUNPUBLISHED:
-                    saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
+                    saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))  # FIXME Refactoring.
                     with open(saveFileName + ".pcr", 'w', encoding="utf-8", errors='ignore'):
                         self.gitMng.addFiles([saveFileName + ".pcr"])
 
 
-            self.openPDFBtn.setDisabled(isUNPUBLISHED)
+            self.openPDFBtn.setDisabled(isUNPUBLISHED)  # FIXME Refactoring.
             self.refreshListAnnotation(0)
-            self.paperGroupBox.setDisabled(False)
-            self.listAnnotGroupBox.setDisabled(False)
+            self.paperGroupBox.setDisabled(False)  # FIXME Refactoring.
+            self.listAnnotGroupBox.setDisabled(False)  # FIXME Refactoring.
 
 
     def invalidPaperChoice(self):
@@ -1024,11 +900,11 @@ class Window(QMainWindow):
         self.refreshListAnnotation()
         self.clearAddAnnotation()
         self.refreshTagList()
-        self.editAnnotWgt.setDisabled(True)
+        self.editAnnotWgt.setDisabled(True)  # FIXME Refactoring.
         #self.tagAnnotGroupBox.setDisabled(True)    
-        self.taggingTabs.setDisabled(True)    
-        self.paperGroupBox.setDisabled(True)        
-        self.listAnnotGroupBox.setDisabled(True)            
+        self.taggingTabs.setDisabled(True)     # FIXME Refactoring.
+        self.paperGroupBox.setDisabled(True)  # FIXME Refactoring.
+        self.listAnnotGroupBox.setDisabled(True)  # FIXME Refactoring.
 
 
     def refreshTagList(self):
@@ -1050,7 +926,7 @@ class Window(QMainWindow):
         # Suggested tag list
         self.suggestedTagsWidget.clear()
         if not self.currentAnnotation is None:
-            annotationFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
+            annotationFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"  # FIXME Refactoring.
             tagIds = self.tagSuggester.suggestions(annotationFileName, [tag.id for tag in self.getSelectedTags()], 200)
 
             unusedPersistedSuggestedTags = []
@@ -1064,12 +940,6 @@ class Window(QMainWindow):
             for id in unusedPersistedSuggestedTags + tagIds:    
                 self.addSuggestedTagFromId(id)
 
-
-    def clearPaper(self):
-        #self.refEdt.setText("")
-        self.IdTxt.setText("")
-
-        
     def waitForOCR(self, paperId, notify):
         
         while(not self.restClient.checkOCRFinished(paperId, self.dbPath)):
@@ -1089,19 +959,19 @@ class Window(QMainWindow):
     def importPDF(self):
         # Import a PDF
 
-        if not checkID(self.IdTxt.text()):
+        if not checkID(self.IdTxt.text()):  # FIXME Refactoring.
             errorMessage(self, "Error", "This ID seem to be invalid.")
             return
 
         fileName, _ = QFileDialog.getOpenFileName(self, 'Open file')
         fileName    = fileName.encode("utf-8").decode("utf-8")
         if fileName != '':
-            saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))
+            saveFileName = join(self.dbPath, Id2FileName(self.IdTxt.text()))  # FIXME Refactoring.
             if os.path.isfile(saveFileName + ".txt"):
                 errorMessage(self, "Error", "This PDF has already been imported to the database.")
 
             try:
-                self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)
+                self.restClient.importPDF(fileName, self.IdTxt.text(), self.dbPath)  # FIXME Refactoring.
                 
             except ConnectionError as e:
                 errorMessage(self, "Error", "Failed to connect to the REST server. Error message: " + str(e))                                
@@ -1115,7 +985,7 @@ class Window(QMainWindow):
                 msgBox.setDefaultButton(QMessageBox.Yes)
                 
                 thread = Thread(target = self.waitForOCR, 
-                                args = (self.IdTxt.text(), msgBox.exec_(), ))
+                                args = (self.IdTxt.text(), msgBox.exec_(), ))  # FIXME Refactoring.
                 thread.start()  
                 return False
 
@@ -1158,7 +1028,7 @@ class Window(QMainWindow):
 
     def getCurrentContext(self):
         try:
-            txtFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".txt"
+            txtFileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".txt"  # FIXME Refactoring.
             with open(txtFileName, 'r', encoding="utf-8", errors='ignore') as f :
                 fileText = f.read()
                 contextStart = self.currentAnnotation.start - self.contextLength
@@ -1170,12 +1040,12 @@ class Window(QMainWindow):
 
 
     def deleteAnnotation(self):
-        self.annotTableModel.annotationList.remove(self.currentAnnotation)
+        self.annotTableModel.annotationList.remove(self.currentAnnotation)  # FIXME Refactoring.
         self.currentAnnotation = None
 
-        fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
+        fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"  # FIXME Refactoring.
         with open(fileName, "w", encoding="utf-8", errors='ignore') as f:
-            Annotation.dump(f, self.annotTableModel.annotationList)
+            Annotation.dump(f, self.annotTableModel.annotationList)  # FIXME Refactoring.
 
         self.clearAddAnnotation()
         self.gitMng.addFiles([fileName])
@@ -1189,8 +1059,8 @@ class Window(QMainWindow):
 
     def saveAnnotation(self):
 
-        self.editAnnotSubWgt.updateCurrentAnnotation()
-        fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"
+        self.editAnnotSubWgt.updateCurrentAnnotation()  # FIXME Refactoring.
+        fileName = join(self.dbPath, Id2FileName(self.IdTxt.text())) + ".pcr"  # FIXME Refactoring.
 
         with open(fileName, "r", encoding="utf-8", errors='ignore') as f:
             try:
@@ -1205,9 +1075,9 @@ class Window(QMainWindow):
             return
 
 
-        self.currentAnnotation.experimentProperties = self.expPropWgt.getExpProperties()
+        self.currentAnnotation.experimentProperties = self.expPropWgt.getExpProperties()  # FIXME Refactoring.
 
-        if self.currentAnnotation in self.annotTableModel.annotationList:
+        if self.currentAnnotation in self.annotTableModel.annotationList:  # FIXME Refactoring.
             for i, annot in enumerate(annots):
                 if self.currentAnnotation.ID == annot.ID:
                     annots[i] = self.currentAnnotation
@@ -1240,14 +1110,14 @@ class Window(QMainWindow):
 
         self.clearAddAnnotation()
         self.annotListTblWdg.setCurrentIndex(QModelIndex())
-        self.currentAnnotation = Annotation(pubId=self.IdTxt.text())
-        if self.IdTxt.text() in self.selectedTagPersist:
-            for id in self.selectedTagPersist[self.IdTxt.text()]:
+        self.currentAnnotation = Annotation(pubId=self.IdTxt.text())  # FIXME Refactoring.
+        if self.IdTxt.text() in self.selectedTagPersist:  # FIXME Refactoring.
+            for id in self.selectedTagPersist[self.IdTxt.text()]:  # FIXME Refactoring.
                 self.currentAnnotation.addTag(id, self.dicData[id])
 
         self.needSaving = False
         self.refreshTagList()
-        self.taggingTabs.setEnabled(True)    
+        self.taggingTabs.setEnabled(True)  # FIXME Refactoring.
         self.refreshModelingParam()
         return True
 
@@ -1288,7 +1158,7 @@ class Window(QMainWindow):
 
 
     def clearAddAnnotation(self):
-        self.expPropWgt.fillingExpPropList(checkAll=True)
+        self.expPropWgt.fillingExpPropList(checkAll=True)  # FIXME Refactoring.
         self.currentAnnotation = None
         tmp = self.detectAnnotChange
         self.detectAnnotChange = False
@@ -1298,28 +1168,23 @@ class Window(QMainWindow):
 
     def refreshListAnnotation(self, row = None):
 
-        self.annotTableModel.annotationList = []
+        self.annotTableModel.annotationList = []  # FIXME Refactoring.
         try :
-            with open(join(self.dbPath, Id2FileName(self.IdTxt.text()) + ".pcr"), 'r', encoding="utf-8", errors='ignore') as f:        
-                self.annotTableModel.annotationList = Annotation.readIn(f)    
+            with open(join(self.dbPath, Id2FileName(self.IdTxt.text()) + ".pcr"), 'r', encoding="utf-8", errors='ignore') as f:  # FIXME Refactoring.
+                self.annotTableModel.annotationList = Annotation.readIn(f)  # FIXME Refactoring.
 
             if not row is None:
                 if row < 0:
-                    self.annotListTblWdg.selectRow(self.annotListTblWdg.model().rowCount()-row)
+                    self.annotListTblWdg.selectRow(self.annotListTblWdg.model().rowCount()-row)  # FIXME Refactoring.
                 else:
-                    self.annotListTblWdg.selectRow(row)
+                    self.annotListTblWdg.selectRow(row)  # FIXME Refactoring.
 
         except FileNotFoundError:
             # Set and invalid index
-            self.annotListTblWdg.selectRow(-1)
+            self.annotListTblWdg.selectRow(-1)  # FIXME Refactoring.
         finally:
-            self.selectedAnnotationChanged(self.annotListTblWdg.selectedIndexes())
+            self.selectedAnnotationChanged(self.annotListTblWdg.selectedIndexes())  # FIXME Refactoring.
 
-            self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, 
-                                           self.annotTableModel.sortOrder)
+            self.annotListTblWdg.sortByColumn(self.annotTableModel.sortCol, self.annotTableModel.sortOrder)  # FIXME Refactoring.
 
-            self.annotTableModel.refresh()
-
-
-
-
+            self.annotTableModel.refresh()  # FIXME Refactoring.
